@@ -583,8 +583,11 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     await gm.evaluate(id=>game.actors.get(id).update({"system.currency.gp":4000}),fixtures.alice);
     expect((await attempt(alice,"build",uuid,{size:"cramped"})).ok).toBe(true);
     await gm.evaluate(id=>game.actors.get(id).update({"system.tools.smith.value":1}),fixtures.bob);
-    const specials=[];
-    for(let i=0;i<5;i++){const result=await add(bob,fixtures.bobUuid,fixtures.special);expect(result.ok).toBe(true);specials.push(result.result.uuid);}
+    const first=await add(bob,fixtures.bobUuid,fixtures.special);expect(first.ok).toBe(true);
+    expect((await add(bob,fixtures.bobUuid,fixtures.special)).code).toBe("DuplicateFacility");
+    expect((await attempt(gm,"setTemplateRules",`Actor.${fixtures.bastion}`,{template:fixtures.special,level:9,order:"",hirelings:0,defenders:0,requirements:["tool:smith"],exceptions:[],repeatable:true})).ok).toBe(true);
+    const specials=[first.result.uuid];
+    for(let i=1;i<5;i++){const result=await add(bob,fixtures.bobUuid,fixtures.special);expect(result.ok).toBe(true);specials.push(result.result.uuid);}
     expect((await add(bob,fixtures.bobUuid,fixtures.special)).code).toBe("FacilityLimit");
     const extra=await add(gm,fixtures.bobUuid,fixtures.special,[{scope:"limit",reason:"Campaign reward"}]);expect(extra.ok).toBe(true);
     await gm.reload();await gm.waitForFunction(()=>game.ready===true);

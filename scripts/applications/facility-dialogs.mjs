@@ -60,6 +60,7 @@ export async function setFacilityRules(item, api, { actor } = {}) {
     requirements: (definition?.requirements ?? state.requirements ?? []).join("\n"), exceptionReasons
   }), element => ({
     level: Number(element.querySelector('[name="level"]').value), order: element.querySelector('[name="order"]').value,
+    repeatable: element.querySelector('[name="repeatable"]').checked,
     hirelings: Number(element.querySelector('[name="hirelings"]').value), defenders: Number(element.querySelector('[name="defenders"]').value),
     requirements: element.querySelector('[name="requirements"]').value.split(/\r?\n/).map(value => value.trim()).filter(Boolean),
     exceptions: exceptions(element)

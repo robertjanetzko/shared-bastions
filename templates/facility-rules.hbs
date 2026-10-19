@@ -1,6 +1,7 @@
 <div class="bastion-dialog-fields">
 <p>{{name}}</p>
 <label>{{localize "SHARED_BASTION.MinimumLevel"}}<input name="level" type="number" min="1" max="20" step="1" value="{{level}}" required></label>
+<label><input name="repeatable" type="checkbox" {{#if repeatable}}checked{{/if}}> {{localize "SHARED_BASTION.Repeatable"}}</label>
 <label>{{localize "SHARED_BASTION.Order"}}<select name="order">{{#each orders}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
 <label>{{localize "SHARED_BASTION.HirelingCapacity"}}<input name="hirelings" type="number" min="0" max="1000" step="1" value="{{hirelings}}" required></label>
 <label>{{localize "SHARED_BASTION.DefenderCapacity"}}<input name="defenders" type="number" min="0" max="1000" step="1" value="{{defenders}}" required></label>

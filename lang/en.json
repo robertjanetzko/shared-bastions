@@ -55,7 +55,8 @@
       "FacilityLimit": "The owner character has reached their special facility limit.",
       "PrerequisiteRequired": "The owner character does not meet all prerequisites for this facility.",
       "InvalidTemplate": "This facility template is unavailable or inaccessible.",
-      "UntrustedTemplate": "Players can edit this template. The GM must protect its rule definition first."
+      "UntrustedTemplate": "Players can edit this template. The GM must protect its rule definition first.",
+      "DuplicateFacility": "This character already owns this special facility."
     },
     "Views": "Bastion views",
     "ByOwner": "By owner",
@@ -111,6 +112,25 @@
     "TemplateRules": "Template rules",
     "TemplateRulesHint": "Define prerequisites and rule values for new facilities from this template. The definition stays in this world; the original item or compendium is unchanged. Existing facilities keep their current rules.",
     "CharacterLevel": "Level",
-    "FreeBasicAllowance": "initial free allowance"
+    "FreeBasicAllowance": "initial free allowance",
+    "OrderNames": {
+      "build": "Build",
+      "change": "Change",
+      "craft": "Craft",
+      "empower": "Empower",
+      "enlarge": "Enlarge",
+      "harvest": "Harvest",
+      "maintain": "Maintain",
+      "recruit": "Recruit",
+      "repair": "Repair",
+      "research": "Research",
+      "trade": "Trade"
+    },
+    "SizeNames": {
+      "cramped": "Cramped",
+      "roomy": "Roomy",
+      "vast": "Vast"
+    },
+    "Repeatable": "Repeatable when permitted by the facility description"
   }
 }

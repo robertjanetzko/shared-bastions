@@ -48,7 +48,10 @@ Item-Kompendien; das Modul liefert keine Regeltexte. Die Quellen müssen lesbar
 und ihre Definitionen vor Spielerbearbeitung geschützt sein. Neue Einrichtungen
 übernehmen weder laufende Aufträge noch Personal oder bereits erzeugte Ergebnisse
 von der Vorlage. Vorhandene Einrichtungen auf dem Besitzer zählen bis zum Transfer
-mit. Die kostenlosen Anfangsräume und besonderen Plätze kommen aus D&D5e.
+mit. Die kostenlosen Anfangsräume und besonderen Plätze kommen aus D&D5e. Die beiden
+Anfangsräume sind beengt und geräumig. Besondere Einrichtungen sind je Besitzer
+grundsätzlich einmalig; der GM kann Wiederholbarkeit festlegen, wenn ihre
+Beschreibung es erlaubt.
 
 Der GM kann unter „Vorlagenregeln“ Level, Auftragsart, Kapazitäten und zusätzliche
 Voraussetzungen für künftig hinzugefügte Einrichtungen festlegen. Diese Einstellungen

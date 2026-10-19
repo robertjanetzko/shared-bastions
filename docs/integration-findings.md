@@ -209,3 +209,10 @@ nicht für einen 500-GP-Bau. Nach Aufstockung sinkt ausschließlich das Besitzer
 Ausnahmen bleiben nach Neuladen sichtbar. Ein gelöschter Besitzer lässt sich durch
 GM-Neuzuordnung reparieren. Persönliche Level/Plätze werden nur dem Besitzer/GM
 angezeigt; die Zusammenfassungs-API prüft Rechte vor dem Lesen privater Regelwerte.
+
+Die zusätzliche native T06-Prüfung bestätigt die Einmaligkeit besonderer Typen je
+Besitzer. Eine ausdrückliche GM-Regeldefinition (`repeatable`) erlaubt mehrere;
+ungeachtet dessen bleibt das individuelle Platzlimit bestehen. Begründete
+Limitausnahmen bleiben möglich. Zwei Unit-Tests sichern die individuellen Grenzen
+und die unterschiedlichen Anfangsflächen 4/16 Rasterfelder. Deutsche Begriffe sind
+mit dem lokal bereitgestellten Handbuch abgeglichen; keine Regelprosa wird verpackt.

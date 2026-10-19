@@ -25,7 +25,8 @@ export function validateFacilityPayload(action, payload) {
     validateFacilityPayload("setFacilityRules", rules);
     if (payload.exceptions.length) throw new BastionError("InvalidRules");
   } else if (action === "setFacilityRules") {
-    if (keys !== "defenders,exceptions,hirelings,level,order,requirements" || !Number.isInteger(payload.level) || payload.level < 1 || payload.level > 20
+    if (!["defenders,exceptions,hirelings,level,order,requirements", "defenders,exceptions,hirelings,level,order,repeatable,requirements"].includes(keys)
+      || ("repeatable" in payload && typeof payload.repeatable !== "boolean") || !Number.isInteger(payload.level) || payload.level < 1 || payload.level > 20
       || ![payload.hirelings, payload.defenders].every(value => Number.isInteger(value) && value >= 0 && value <= 1000)
       || typeof payload.order !== "string" || !/^[a-z]*$/.test(payload.order)) throw new BastionError("InvalidRequest");
     validateRequirements(payload.requirements); validateExceptions(payload.exceptions);

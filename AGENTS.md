@@ -111,7 +111,7 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: siebzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: neunzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
@@ -199,6 +199,12 @@ in einer generierten Szene sind noch nicht geprüft.
   und Item-Elternaktor gleichsetzt. Er darf für zentrale Items nicht unverändert
   übernommen werden. Der Kalender sammelt Facility-Updates selbst; doppelte
   Verarbeitung durch zusätzliche Hooks ist zu verhindern.
+- Besondere Einrichtungen sind je Besitzer grundsätzlich einmalig. Wiederholbarkeit
+  wird ausdrücklich in einer GM-Regeldefinition gesetzt oder über eine begründete
+  Limitausnahme erlaubt. Die zwei kostenlosen Anfangsräume sind beengt/geräumig;
+  sie haben zusammen 4 und 16 Rasterfelder. Deutsche Oberflächenbegriffe folgen
+  dem vom Nutzer bereitgestellten Handbuch (Basiseinrichtungen, Mietlinge, Befehle,
+  Stufe). Vollständige Handbuchtexte werden nicht im Modularchiv verteilt.
 - Einfache Einrichtungen haben ein kostenloses Anfangskontingent, keine harte
   Obergrenze für weitere kostenpflichtige Räume. Systemwerte im Adapter lesen.
 - Details und verlinkte Quellcodebefunde: [Integrationsbefunde](docs/integration-findings.md).

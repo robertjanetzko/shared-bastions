@@ -94,3 +94,25 @@ test("owner summaries refuse foreign access before consulting private rule value
   Object.defineProperty(owner,"system",{get(){throw new Error("Private rule values must not be read");}});
   await assert.rejects(adapter.ownerSummary(bastion,owner.uuid,{active:true,isGM:false}),{code:"NotOwner"});
 });
+
+test("special uniqueness is per character and can only be relaxed by its rule definition or exception",async()=>{
+  const {adapter,owner,bastion,facility}=setup();owner.items=[];
+  facility.uuid="Actor.bastion.Item.self";
+  bastion.items[0].uuid=facility.uuid;
+  for(const item of [facility,...bastion.items]) item.system.type.subtype="library";
+  await adapter.assertRules(facility);
+  bastion.items.push({type:"facility",uuid:"Actor.bastion.Item.second",flags:{"shared-bastion":{owner:owner.uuid}},system:{type:{value:"special",subtype:"library"}}});
+  await assert.rejects(adapter.assertRules(facility),{code:"DuplicateFacility"});
+  facility.flags["shared-bastion"].repeatable=true;
+  await adapter.assertRules(facility);
+});
+
+test("the initial free basic rooms have one cramped and one roomy footprint",()=>{
+  const {adapter}=setup();
+  const first={system:{type:{value:"basic"},size:"cramped",building:{}}};
+  adapter.initialConstruction(first,{basic:{count:0,free:2},facilities:[]});
+  const second={system:{type:{value:"basic"},size:"cramped",building:{}}};
+  adapter.initialConstruction(second,{basic:{count:1,free:2},facilities:[first]});
+  assert.deepEqual([first.system.size,second.system.size],["cramped","roomy"]);
+  assert.ok(first.system.building.built&&second.system.building.built);
+});

@@ -42,7 +42,8 @@ export class Dnd5eAdapter {
       owner,
       level,
       basic: { count: count("basic"), free: allowance(facilities.advancement.basic, level) },
-      special: { count: count("special"), limit: allowance(facilities.advancement.special, level) }
+      special: { count: count("special"), limit: allowance(facilities.advancement.special, level) },
+      facilities: existing
     };
   }
 
@@ -58,6 +59,11 @@ export class Dnd5eAdapter {
     const squares = this.config.DND5E?.facilities?.sizes?.[facility.system.size]?.squares;
     if (!Number.isInteger(squares) || squares <= 0) throw new BastionError("InvalidSize");
     return squares;
+  }
+
+  label(category, value, fallback) {
+    const key = `SHARED_BASTION.${category}.${value}`;
+    return this.game.i18n.has(key) ? this.game.i18n.localize(key) : this.game.i18n.localize(fallback);
   }
 
   /** Public facility data only; viewing never resolves the private owner document. */
@@ -76,9 +82,9 @@ export class Dnd5eAdapter {
       type: system.type.value,
       typeLabel: localize(config.types[system.type.value]?.subtypes?.[system.type.subtype]
         ?? config.types[system.type.value]?.label ?? "SHARED_BASTION.UnknownType"),
-      sizeLabel: localize(config.sizes[system.size]?.label ?? "SHARED_BASTION.UnknownSize"),
+      sizeLabel: this.label("SizeNames", system.size, "SHARED_BASTION.UnknownSize"),
       stateLabel: localize(state),
-      orderLabel: active ? localize(config.orders[progress.order]?.label ?? "SHARED_BASTION.UnknownOrder")
+      orderLabel: active ? this.label("OrderNames", progress.order, "SHARED_BASTION.UnknownOrder")
         : localize("SHARED_BASTION.NoOrder"),
       progress: active ? { value: progress.value, max: progress.max,
         percent: Math.max(0, Math.min(100, Math.round(progress.value / progress.max * 100))) } : null,
@@ -90,7 +96,7 @@ export class Dnd5eAdapter {
   buildOptions() {
     const config = this.config.DND5E;
     return Object.entries(config.facilities.sizes).map(([value, size]) => ({ value,
-      label: this.game.i18n.localize(size.label), days: size.days, cost: size.value,
+      label: this.label("SizeNames", value, size.label), days: size.days, cost: size.value,
       currency: this.game.i18n.localize(config.currencies[config.defaultCurrency].abbreviation) }));
   }
 
@@ -108,7 +114,7 @@ export class Dnd5eAdapter {
     delete data._stats;
     data._id = id;
     data.flags = { dnd5e: foundry.utils.deepClone(source.flags.dnd5e ?? {}), [MODULE_ID]: { owner, revision: 0, source: source.uuid,
-      requirements: validateRequirements(source.flags[MODULE_ID]?.requirements ?? []), exceptions } };
+      requirements: validateRequirements(source.flags[MODULE_ID]?.requirements ?? []), repeatable: source.flags[MODULE_ID]?.repeatable === true, exceptions } };
     // Reset operation state rather than importing a template's occupants or completed rewards.
     data.system.building = { built: false, size: data.system.size };
     data.system.progress = { value: 0, max: null, order: "", paid: false };
@@ -125,19 +131,27 @@ export class Dnd5eAdapter {
       data.system.hirelings.max = definition.hirelings;
       data.system.defenders.max = definition.defenders;
       data.flags[MODULE_ID].requirements = validateRequirements(definition.requirements);
+      data.flags[MODULE_ID].repeatable = definition.repeatable === true;
     }
     return data;
   }
 
   initialConstruction(data, context) {
     data.system.building.built = data.system.type.value === "special" || context.basic.count < context.basic.free;
+    if (data.system.type.value === "basic" && data.system.building.built) {
+      const basic = context.facilities.filter(item => item.system.type.value === "basic");
+      const firstSize = ["cramped", "roomy"].includes(data.system.size) ? data.system.size : "cramped";
+      const size = basic.length ? (basic.some(item => item.system.size === "cramped") ? "roomy" : "cramped") : firstSize;
+      data.system.size = data.system.building.size = size;
+    }
   }
 
   rulesView(item) {
     return { level: item.system.level, hirelings: item.system.hirelings.max ?? 0, defenders: item.system.defenders.max ?? 0,
+      repeatable: item.flags[MODULE_ID]?.repeatable === true,
       orders: [{ value: "", label: this.game.i18n.localize("SHARED_BASTION.NoOrder") }, ...Object.entries(this.config.DND5E.facilities.orders)
         .filter(([value, config]) => item.system.type.value === "special" && !config.hidden && !config.basic && !["build", "change"].includes(value))
-        .map(([value, config]) => ({ value, label: config.label }))]
+        .map(([value, config]) => ({ value, label: this.label("OrderNames", value, config.label) }))]
         .map(entry => ({ ...entry, selected: entry.value === item.system.order })) };
   }
 
@@ -147,6 +161,7 @@ export class Dnd5eAdapter {
     return { "system.level": payload.level, "system.order": payload.order,
       "system.hirelings.max": payload.hirelings, "system.defenders.max": payload.defenders,
       [`flags.${MODULE_ID}.requirements`]: payload.requirements,
+      [`flags.${MODULE_ID}.repeatable`]: payload.repeatable === true,
       [`flags.${MODULE_ID}.exceptions`]: payload.exceptions.map(entry => ({ scope: entry.scope, reason: entry.reason.trim() })) };
   }
 
@@ -159,6 +174,12 @@ export class Dnd5eAdapter {
     }
     if (facility.system.type.value === "special" && context.special.count + Number(adding) > context.special.limit
       && !hasException(facility, "limit")) throw new BastionError("FacilityLimit");
+    const key = item => item.system.type.subtype || item.flags?.[MODULE_ID]?.source || item.system.identifier;
+    if (facility.system.type.value === "special" && key(facility) && !facility.flags?.[MODULE_ID]?.repeatable
+      && context.facilities.some(item => item !== facility && (!facility.uuid || item.uuid !== facility.uuid)
+        && item.system.type.value === "special" && key(item) === key(facility)) && !hasException(facility, "limit")) {
+      throw new BastionError("DuplicateFacility");
+    }
     const requirements = validateRequirements(facility.flags?.[MODULE_ID]?.requirements ?? []);
     const satisfied = requirement => {
       if (requirement === "spellcasting") return Object.keys(owner.spellcastingClasses ?? {}).length > 0;
