@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01 abgenommen; T02 in praktischer Integrationsprüfung.
+Stand: 2026-10-19 · Status: T01 und T02 abgenommen; nächster Schritt T03.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -178,11 +178,12 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
   - Abnahme: Modul lädt auf dokumentierten V14-/6.0.x-Builds ohne Fehler;
     tatsächlich vorhandene Entwicklungs- und Prüfkommandos sind dokumentiert.
 
-- [ ] **T02 – Integration des zentralen Facility-Speichers prüfen**
-  - Stand: Besitzerauflösung und individuelle Konfigurationsauswertung mit
-    Unit-Tests vorbereitet; native Schnittstellen anhand D&D5e 6.0.6 untersucht.
-    [Befunde und nächste praktische Prüfung](docs/integration-findings.md).
-    Noch keine erfolgreichen nativen Aufträge oder Ressourcenbuchungen.
+- [x] **T02 – Integration des zentralen Facility-Speichers prüfen**
+  - Stand: Kostenpflichtiger Spieler-Bauauftrag auf zentralem Item mit privatem
+    Besitzer auf Foundry 14.369 / D&D5e 6.0.6 nachgewiesen. Fremdbesitz,
+    Besitzerlevel und Ressourcen geprüft; native Fortschrittsberechnung,
+    Wiederholungsschutz und Erhalt nach Neuladen bestätigt.
+    [Integrationsbefunde](docs/integration-findings.md).
   - Umfang: Eine native Einrichtung auf dem zentralen Aktor mit einem anderen,
     privaten Charakter als Regelbesitzer betreiben; erforderliche Systemzugriffe
     und geeignete Erweiterungspunkte im Adapter festhalten.
@@ -352,15 +353,18 @@ Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
 `npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
-ausgeführt. Die zehn Unit-Tests prüfen Modulgrenzen; native Integration ist offen.
+ausgeführt. Zwölf Unit-Tests prüfen Modulgrenzen. Zwei Chromium-Integrationstests
+bestätigen Modulstart sowie den T02-Bauauftrag mit GM und zwei Spielern;
+Kalender, vollständige Betriebsaktionen und Szene bleiben separat offen.
 Die Docker-Testinstallation startet über `npm run dev:up`; Details in
 [README.md](README.md).
 
 ## 7. Grenzen und technische Nachweise
 
 - Vollständige Systemkompatibilität ist noch nicht praktisch nachgewiesen.
-  Insbesondere müssen native Aufträge und Kalenderfortschritt für zentral
-  gespeicherte Einrichtungen in T02 überprüft werden.
+  T02 bestätigt einen kostenpflichtigen zentralen Bauauftrag mit individuellem
+  Besitzer und nativer Fortschrittsberechnung. Weitere Aufträge und Kalender
+  werden in T07/T08 geprüft.
 - Der Systemadapter ist der wichtigste technische Aufwand. Die native Annahme
   „Item-Elternaktor ist Regelbesitzer“ darf nicht unbemerkt übernommen werden.
 - Der GM-Transport muss in T04 darauf geprüft werden, wie der Absender zuverlässig
@@ -392,3 +396,4 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | Umsetzungsinterview abgeschlossen: Besitzerabschnitte, Betriebsrechte, GM-Ausnahmen, Verzeichniseinstieg, kompakter Bau und Tokensicht präzisiert; Design und Prototyp ergänzt. | Zehn Antworten und Prototyp v1 abgeglichen; keine Foundry-Laufzeitprüfung. |
 | 2026-10-19 | T01 implementiert und T02 vorbereitet: Modulgerüst, Statusansicht mit D&D5e-Designvariablen, lesender Besitzeradapter, Übersetzungen, Prüf-/Paketbefehle und isolierte Docker-Testinstallation. Nutzer stellt Foundry-14.369-ZIP bereit; offizielles D&D5e 6.0.6 in Testinstallation kopiert. | `npm run check`, zehn Unit-Tests und `npm run build` erfolgreich; Foundry 14.369 startet und HTTP leitet auf `/license`. T01/T02 bleiben offen: Lizenzaktivierung, Modulstart in Welt und native Mehrclientintegration noch nicht geprüft; Browser-Skill meldet keine verfügbaren Browser. |
 | 2026-10-19 | T01 abgenommen: Lizenzierung abgeschlossen, Testwelt `shared-bastion-integration` erstellt, Modul aktiviert und ApplicationV2-Statusansicht gerendert. | Native Foundry-Schemaprüfung und Handlebars-Render erfolgreich; Chromium-Test T01 auf Foundry 14.369 / D&D5e 6.0.6 bestanden. Keine JavaScript-Fehler oder fehlerhaften Modulressourcen; Screenshot geprüft. Die Testclients nutzen Softwaregrafik, die Szenenabnahme steht separat aus. |
+| 2026-10-19 | T02 abgenommen: konkrete, serverseitig zugeordnete Spielerbefehle; Kostenplanung über native CurrencyManager-Funktion, Item-Fortschritt über native Bastion-API; private GM-Vorgangsbelege und atomare Mehrdokumentänderungen. | Zwölf Unit-Tests; T01/T02-Integration mit GM und zwei Spielern bestanden (25,1 s). Besitzerlevel 13 gegenüber Trägerlevel 0; Besitzer 1.000→500 GP, Träger 7.000 GP und anderer Besitzer 9.000 GP unverändert. Fremdbesitz, Level 4 und 499 GP abgewiesen; 20 Tage nativer Baufortschritt, doppelte Zustellung und GM-Neuladen ohne Doppelverarbeitung. Verwaltungsprüfung im nativen Modus ohne Canvas; Kalender-/Szenenabnahme offen. |

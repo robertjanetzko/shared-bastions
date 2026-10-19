@@ -1,4 +1,4 @@
-import { MODULE_ID, SOURCE_REVIEW } from "../constants.mjs";
+import { MODULE_ID, SOURCE_REVIEW, OWNER_PROOF_RUNTIME } from "../constants.mjs";
 import { BastionError } from "../core/errors.mjs";
 import { resolveFacilityOwner } from "../core/ownership.mjs";
 
@@ -47,6 +47,44 @@ export class Dnd5eAdapter {
     return squares;
   }
 
+  /** T02: derive a paid native build order; never accept client-supplied costs. */
+  async planBuild(facility, payload) {
+    const context = await this.ownerContext(facility);
+    const minimum = Math.min(...Object.keys(this.config.DND5E.facilities.advancement.basic).map(Number));
+    if (context.level < minimum) throw new BastionError("LevelRequired");
+    if (facility.system.type.value !== "basic" || facility.system.building.built) throw new BastionError("InvalidOrder");
+    if (facility.system.progress.max) throw new BastionError("OrderInProgress");
+    const size = this.config.DND5E.facilities.sizes[payload.size];
+    if (!size || !Number.isInteger(size.days) || !Number.isFinite(size.value) || size.value < 0) {
+      throw new BastionError("InvalidSize");
+    }
+    const manager = this.game.dnd5e?.applications?.CurrencyManager;
+    if (!manager?.getActorCurrencyUpdates) throw new BastionError("UnsupportedRuntime");
+    const { item, remainder, ...currency } = manager.getActorCurrencyUpdates(
+      context.owner, size.value, this.config.DND5E.defaultCurrency, { recursive: true, priority: "high" }
+    );
+    if (remainder) throw new BastionError("InsufficientFunds");
+    const operations = [{ action: "update", documentName: "Actor", updates: [{ _id: context.owner.id, ...currency }] }];
+    if (item?.length) operations.push({ action: "update", documentName: "Item", parent: context.owner, updates: item });
+    return {
+      operations,
+      updates: {
+        "system.building.size": payload.size,
+        "system.progress": { value: 0, max: size.days, order: "build", paid: true }
+      }
+    };
+  }
+
+  async planProgress(facility, payload) {
+    await this.ownerContext(facility);
+    const bastion = this.game.dnd5e?.bastion;
+    if (!bastion?.advanceTurn) throw new BastionError("UnsupportedRuntime");
+    const result = await bastion.advanceTurn(facility, { duration: payload.days, turn: false, performUpdates: false });
+    // Reward settlement is a later T07 task. Never discard a native result.
+    if (result.gold || result.items?.length) throw new BastionError("IntegrationPending");
+    return { operations: [], updates: result.updates };
+  }
+
   /** Only public runtime diagnostics: never include owner currency, traits, or documents. */
   diagnostics() {
     const status = this.compatibility();
@@ -56,7 +94,8 @@ export class Dnd5eAdapter {
       system: status.system,
       reviewedSystem: SOURCE_REVIEW.system,
       reviewedCommit: SOURCE_REVIEW.commit,
-      ownerIntegrationAccepted: false
+      ownerIntegrationAccepted: status.foundry === OWNER_PROOF_RUNTIME.foundry
+        && status.system === OWNER_PROOF_RUNTIME.system && status.supported
     };
   }
 }

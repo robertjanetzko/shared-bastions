@@ -61,9 +61,11 @@ test("room areas follow live system configuration and reject missing sizes", () 
   assert.throws(() => adapter.roomArea(facility), { code: "InvalidSize" });
 });
 
-test("public diagnostics do not expose private character data or imply integration acceptance", () => {
-  const { adapter } = setup();
+test("public diagnostics expose no private data and identify only the runtime with an owner proof", () => {
+  const { adapter, game } = setup();
   const diagnostics = adapter.diagnostics();
   assert.deepEqual(Object.keys(diagnostics).sort(), ["supported", "foundry", "system", "reviewedSystem", "reviewedCommit", "ownerIntegrationAccepted"].sort());
-  assert.equal(diagnostics.ownerIntegrationAccepted, false);
+  assert.equal(diagnostics.ownerIntegrationAccepted, true);
+  game.version = "14.370";
+  assert.equal(adapter.diagnostics().ownerIntegrationAccepted, false);
 });

@@ -4,9 +4,9 @@ Gemeinsame Bastion für Foundry VTT V14 und D&D5e 6.0.x. Die Einrichtungen solle
 als native Facility-Items auf einem zentralen Aktor leben und ihre Regeln und
 Ressourcen vom jeweiligen Besitzercharakter beziehen.
 
-**Entwicklungsstand:** Modulgerüst und lesender Besitzeradapter vorhanden.
-Gemeinsame Verwaltung, Aufträge und Szenengenerator sind noch nicht verfügbar.
-Die Abnahmen aus `PLAN.md` im Quellprojekt sind noch offen. Der dortige
+**Entwicklungsstand:** Modulgerüst und erster praktischer Besitzer-/Auftragsnachweis
+vorhanden. Die vollständige gemeinsame Verwaltung und der Szenengenerator fehlen
+noch. T01 und T02 aus `PLAN.md` im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 
 ## Lokal installieren
@@ -50,8 +50,10 @@ und dem Standardbenutzer `Gamemaster` ohne Passwort. Die Suite prüft die Welt-I
 vor Änderungen. Die Testwelt enthält keine echten Kampagnendaten.
 
 Der Modulstart und die Statusansicht wurden damit auf Foundry **14.369** /
-D&D5e **6.0.6** bestätigt. Gemeinsame Besitzerintegration und Szenen sind noch
-nicht abgenommen. Die Browserprüfung verwendet derzeit Softwaregrafik.
+D&D5e **6.0.6** bestätigt. T02 prüft zusätzlich einen kostenpflichtigen
+Spieler-Bauauftrag mit privatem Besitzer und zentralem Item, Ablehnungen,
+Wiederholungen und Fortschritt. Die Verwaltungsprüfungen verwenden Foundrys
+offiziellen Modus ohne Canvas. Kalender und Szenen sind noch nicht abgenommen.
 
 ## Isolierte Docker-Testumgebung
 

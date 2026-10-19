@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01 ist in der Testwelt abgenommen; T02 bleibt offen.**
+Laufzeitabnahme. T01 und der begrenzte T02-Nachweis sind in der Testwelt abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -15,6 +15,16 @@ wurde unter Chromium gerendert und als Screenshot geprüft; keine JavaScript-
 Fehler oder fehlgeschlagenen Modulressourcen. Native Manifestvalidierung und
 Handlebars-Render mit der bereitgestellten Foundry-Distribution bestanden.
 Die Testclients verwenden Softwaregrafik; dies ist keine Szenenabnahme.
+
+T02: Ein GM und zwei Spieler in getrennten Browserkontexten prüfen einen nativen
+Bauauftrag. Der Besitzer hat Level 13, der zentrale Träger Level 0. Der Bau
+verwendet 500 GP vom Besitzer (1.000→500), während 7.000 GP auf dem Träger
+und 9.000 GP auf dem fremden Charakter unverändert bleiben. Fremdbesitz,
+Besitzerlevel 4 und unzureichende Mittel (499 GP) werden abgewiesen. Der native
+Fortschritt beendet nach 20 Tagen den Bau auf dem zentralen Item. Doppelte
+Zustellung und Neuladen des GM erzeugen keine zweite Buchung oder Fortschreibung.
+Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Kalender, weitere
+Auftragsarten und GM-Wechsel werden später geprüft.
 
 - [Facility-Datenmodell](https://github.com/foundryvtt/dnd5e/blob/28f35531021bb07609c79c4cbbb9b7e7c2744bf9/module/data/item/facility.mjs):
   Native Felder für Bau, Größe, Level, Aufträge, Personal, Verteidiger, Handel
@@ -55,14 +65,26 @@ Tokenaktoren, Kompendiumaktoren und der Bastion-Träger sind keine Ersatzbesitze
 Spieler brauchen native `OWNER`-Rechte am Besitzercharakter. Es werden keine
 zusätzlichen Charakterrechte vergeben und keine privaten Daten gespiegelt.
 
-Der lesende Systemadapter ermittelt Level und individuelle Einrichtungskontingente.
+Der Systemadapter ermittelt Level und individuelle Einrichtungskontingente.
 Noch auf dem Charakter vorhandene Einrichtungen zählen mit. Öffentliche
-Diagnosedaten enthalten keine Charakterdaten. Es gibt noch keine Schreib-API.
+Diagnosedaten enthalten keine Charakterdaten. Die begrenzte Schreib-API akzeptiert
+konkrete Bauaufträge und einen GM-Fortschrittsschritt; keine freien Dokumentpatches.
+
+Die serverseitige Absenderzuordnung stammt aus dem nativen `createChatMessage`-
+Hook. Die ursprüngliche Anfrage wird bei Zustellung kopiert; spätere Bearbeitung
+der Nachricht führt nichts aus. Nur der gewählte aktive GM verarbeitet sie.
+Kosten werden mit `CurrencyManager.getActorCurrencyUpdates` geplant, Fortschritt
+mit `bastion.advanceTurn(..., { performUpdates: false })`. Ein privates GM-Journal
+enthält eindeutige Vorgangsbelege. Beleg, Kosten und Item-Fortschritt werden über
+die native `foundry.documents.modifyBatch`-API gemeinsam geschrieben. Native
+Beleg-ID-Kollisionen brechen den gesamten Batch ab. Praktisch bestätigt wurde
+auch, dass ein solcher Abbruch ohne Promise-Rejection auflösen kann; deshalb
+prüft der Befehlspfad den tatsächlich gespeicherten Beleg.
 
 Die Statusansicht verwendet die vorhandenen `--dnd5e-*`-Farb- und Schriftvariablen
 des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
-## Nächste praktische Prüfung: T02
+## Erledigte T02-Prüfung und anschließender Ausbau
 
 1. Leere Testwelt mit D&D5e 6.0.6 und Modul laden; konkrete Builds und
    Konsolenfehler dokumentieren (T01).
@@ -77,5 +99,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 5. Kalender, Zug, Wiederholung und GM-Wechsel prüfen. Bei Teilfehlern müssen
    Ressourcen und Fortschritt ohne doppelte Verbuchung wiederherstellbar sein.
 
-Die vollständige Verwaltungsoberfläche folgt erst nach diesem Nachweis;
-der Szenengenerator folgt der Stufe-1-Abnahme.
+Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
+Kalender, GM-Wechsel und vollständige Teilfehlerabnahme aus Punkt 5 stehen in
+T04/T08 aus. Als Nächstes folgt T03 (Bastion und Teilnehmerkonfiguration).
+Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.

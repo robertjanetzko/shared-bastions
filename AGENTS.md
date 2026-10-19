@@ -111,14 +111,16 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: zehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl und
-  individuellen Konfigurationskontext. Kein Nachweis nativer Integration.
+- `npm test`: zwölf Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+  konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
   Manifest-/Versionsprüfung und Handlebars-Render ohne Weltstart.
 - `npm run test:browser:install`: Chromium für die lokale Integrationssuite laden.
 - `npm run test:integration`: Modulprüfung in der bereits laufenden, eigenen
   Testwelt `shared-bastion-integration`; keine bestehende Spielwelt verwenden.
+  Die Suite nutzt für Stufe 1 den nativen Modus ohne Canvas; T01 und T02
+  bestehen mit einem GM und zwei Spielern. Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -132,8 +134,10 @@ Foundry **14.369** aus der vom Nutzer bereitgestellten ZIP startet im isolierten
 Docker-Container. In der Testwelt `shared-bastion-integration` wurde das Modul
 mit D&D5e **6.0.6** aktiviert; Start und Statusansicht wurden mit Chromium
 erfolgreich geprüft (T01). Der Quellcode wurde auf Commit
-`28f35531021bb07609c79c4cbbb9b7e7c2744bf9` geprüft. Die Besitzerintegration
-ist noch nicht abgenommen. Chromium nutzt Softwaregrafik; Sicht und Bewegung
+`28f35531021bb07609c79c4cbbb9b7e7c2744bf9` geprüft. Ein kostenpflichtiger
+zentraler Bauauftrag mit privatem Besitzer ist nachgewiesen (T02). Das bestätigt
+noch nicht alle Betriebsaktionen oder die Kalenderintegration. Chromium nutzt
+Softwaregrafik; Sicht und Bewegung
 in einer generierten Szene sind noch nicht geprüft.
 
 ## Aktueller Stand
@@ -145,8 +149,19 @@ in einer generierten Szene sind noch nicht geprüft.
 - T01 ist umgesetzt und abgenommen: Manifest, ES-Module,
   Systemabhängigkeit, Styles, Statusvorlage, Sprachdateien, Prüf- und Paketbefehle
   sowie Docker-Testumgebung sind vorhanden. Das Modul bietet noch keine Verwaltung.
-- Der lesende Besitzeradapter und zehn erfolgreiche Unit-Tests bilden die
-  Grundlage für T02. Die vollständige Oberfläche folgt erst nach dessen Nachweis.
+- T02 ist abgenommen: Eigener Spieler-Bauauftrag ohne GM-Klick, individuelle
+  Voraussetzungen/Kosten, zentraler nativer Fortschritt und Wiederholungsschutz
+  mit drei Clients praktisch bestätigt. Nächster Task: T03.
+- Der Befehlstransport verwendet native ChatMessage-Erstellung und deren vom
+  Server gelieferten `userId`, nicht eine selbst behauptete Absender-ID.
+  Anfragen werden bei Zustellung unveränderlich übernommen; Änderungen an
+  bestehenden Anfragen lösen keine erneute Ausführung aus. T04 muss noch
+  Mehr-GM-Wechsel und parallele Anfragen vervollständigen und prüfen.
+- `foundry.documents.modifyBatch` speichert Kosten, Item-Fortschritt und einen
+  eindeutigen Vorgangsbeleg gemeinsam. Belege liegen in einem privaten GM-Journal
+  mit stabiler ID. Ein abgebrochener Batch kann ohne Promise-Rejection auflösen;
+  den gespeicherten Beleg deshalb zusätzlich prüfen. Die native Kollisionsprüfung
+  für identische Beleg-IDs wurde praktisch bestätigt.
 - Native Aufträge verwenden einen separaten Zahlungsablauf, der Zahlungsaktor
   und Item-Elternaktor gleichsetzt. Er darf für zentrale Items nicht unverändert
   übernommen werden. Der Kalender sammelt Facility-Updates selbst; doppelte

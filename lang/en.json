@@ -2,6 +2,8 @@
   "SHARED_BASTION": {
     "Title": "Shared Bastion",
     "OpenStatus": "Show module status",
+    "CommandRequest": "Bastion action",
+    "ReceiptLedger": "Shared Bastion – Operation receipts",
     "StatusHint": "Facility management will follow the runtime verification of individual ownership context.",
     "FoundationNotice": "Development version: The module foundation is in place. Shared management is not available yet.",
     "ReviewedSystem": "Source reviewed",
@@ -16,7 +18,19 @@
       "InvalidUser": "The requesting user is not connected.",
       "NotOwner": "You can only manage facilities belonging to your own characters.",
       "InvalidOwnerLevel": "The owner character's level could not be determined.",
-      "InvalidSize": "The facility size is not available in the system configuration."
+      "InvalidSize": "The facility size is not available in the system configuration.",
+      "InvalidRequest": "This bastion action or its inputs are not allowed.",
+      "LevelRequired": "The owner character has not reached the required level.",
+      "InvalidOrder": "This order is not available for this facility.",
+      "OrderInProgress": "The facility is already executing an order.",
+      "InsufficientFunds": "The owner character does not have enough currency.",
+      "IntegrationPending": "This order workflow is not available in the development version yet.",
+      "NoGM": "No GM is connected. The bastion is currently read-only.",
+      "RequestTimeout": "The bastion action has not been confirmed yet. Check the current facility state before trying again.",
+      "LedgerUnavailable": "Bastion operation receipts are unavailable. Please contact the GM.",
+      "Conflict": "The facility has changed. Refresh the view and try again.",
+      "GMOnly": "Only a GM can perform this action.",
+      "CommitFailed": "The bastion action could not be fully saved. Please check the current state."
     }
   }
 }
