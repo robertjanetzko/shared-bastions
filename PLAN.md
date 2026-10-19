@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01 und T02 abgenommen; nächster Schritt T03.
+Stand: 2026-10-19 · Status: T01–T03 abgenommen; nächster Schritt T04.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -193,7 +193,12 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
     Fortschritt bleibt auf dem zentralen Item und wird genau einmal verarbeitet.
   - Deckt ab: B03, B08, R06, R07. Dieser Nachweis geht dem Ausbau der UI voraus.
 
-- [ ] **T03 – Bastion-Aktor, Einrichtung und Teilnehmer konfigurieren**
+- [x] **T03 – Bastion-Aktor, Einrichtung und Teilnehmer konfigurieren**
+  - Stand: GM-Erstellung im Akteurverzeichnis, dedizierter ApplicationV2-Bogen,
+    versionierte Teilnehmer-/Besitzermetadaten und minimale öffentliche
+    Teilnehmeridentität umgesetzt. Entfernen entzieht Leserechte; fehlende
+    Besitzer werden angezeigt und betroffene Aktionen abgewiesen. Nach Neuladen
+    und mit getrenntem Spielerclient geprüft; Charakterbögen bleiben unverändert.
   - Umfang: Markierten Aktor mit Spezialbogen erstellen; Teilnehmer,
     Besitzerreferenzen und versionierte Modul-Metadaten speichern.
   - Abhängigkeit: T02.
@@ -356,6 +361,11 @@ Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft
 ausgeführt. Zwölf Unit-Tests prüfen Modulgrenzen. Zwei Chromium-Integrationstests
 bestätigen Modulstart sowie den T02-Bauauftrag mit GM und zwei Spielern;
 Kalender, vollständige Betriebsaktionen und Szene bleiben separat offen.
+Der T03-Bedientest prüft zusätzlich Erstellung, Wiederöffnen, Teilnehmerrechte
+und gelöschte Besitzer. Native Einschränkung im Modus ohne Canvas: Foundry
+14.369 ruft bei Actor-Berechtigungsänderungen `canvas.tokens.cycleTokens` auf,
+obwohl die Tokenebene fehlt. Die Rechteänderung wird dennoch gespeichert;
+die Prüfung mit aktivem Canvas bleibt Teil der Stufe-1-Abnahme.
 Die Docker-Testinstallation startet über `npm run dev:up`; Details in
 [README.md](README.md).
 
@@ -397,3 +407,4 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | T01 implementiert und T02 vorbereitet: Modulgerüst, Statusansicht mit D&D5e-Designvariablen, lesender Besitzeradapter, Übersetzungen, Prüf-/Paketbefehle und isolierte Docker-Testinstallation. Nutzer stellt Foundry-14.369-ZIP bereit; offizielles D&D5e 6.0.6 in Testinstallation kopiert. | `npm run check`, zehn Unit-Tests und `npm run build` erfolgreich; Foundry 14.369 startet und HTTP leitet auf `/license`. T01/T02 bleiben offen: Lizenzaktivierung, Modulstart in Welt und native Mehrclientintegration noch nicht geprüft; Browser-Skill meldet keine verfügbaren Browser. |
 | 2026-10-19 | T01 abgenommen: Lizenzierung abgeschlossen, Testwelt `shared-bastion-integration` erstellt, Modul aktiviert und ApplicationV2-Statusansicht gerendert. | Native Foundry-Schemaprüfung und Handlebars-Render erfolgreich; Chromium-Test T01 auf Foundry 14.369 / D&D5e 6.0.6 bestanden. Keine JavaScript-Fehler oder fehlerhaften Modulressourcen; Screenshot geprüft. Die Testclients nutzen Softwaregrafik, die Szenenabnahme steht separat aus. |
 | 2026-10-19 | T02 abgenommen: konkrete, serverseitig zugeordnete Spielerbefehle; Kostenplanung über native CurrencyManager-Funktion, Item-Fortschritt über native Bastion-API; private GM-Vorgangsbelege und atomare Mehrdokumentänderungen. | Zwölf Unit-Tests; T01/T02-Integration mit GM und zwei Spielern bestanden (25,1 s). Besitzerlevel 13 gegenüber Trägerlevel 0; Besitzer 1.000→500 GP, Träger 7.000 GP und anderer Besitzer 9.000 GP unverändert. Fremdbesitz, Level 4 und 499 GP abgewiesen; 20 Tage nativer Baufortschritt, doppelte Zustellung und GM-Neuladen ohne Doppelverarbeitung. Verwaltungsprüfung im nativen Modus ohne Canvas; Kalender-/Szenenabnahme offen. |
+| 2026-10-19 | T03 abgenommen: Bastion im Akteurverzeichnis erstellen und Teilnehmer verwalten; Spezialbogen dauerhaft je Aktor zuordnen, öffentliche Identität begrenzen, Besitzerlöschung erkennen und Rechte entziehen. | Nativer GM-/Spieler-Bedientest bestanden (15,7 s), einschließlich Neuladen, unveränderter Charakterbögen, verweigerter Spielerkonfiguration, Rechteentzug und `MissingOwner` nach Löschen. Screenshot geprüft; zwölf Unit-Tests, Syntax-/Sprachprüfung und Paketierung erfolgreich. Foundry-eigener `cycleTokens`-Fehler bei Rechteänderung ohne Canvas dokumentiert. |

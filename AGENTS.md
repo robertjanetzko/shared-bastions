@@ -120,7 +120,9 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 - `npm run test:integration`: Modulprüfung in der bereits laufenden, eigenen
   Testwelt `shared-bastion-integration`; keine bestehende Spielwelt verwenden.
   Die Suite nutzt für Stufe 1 den nativen Modus ohne Canvas; T01 und T02
-  bestehen mit einem GM und zwei Spielern. Szenentests müssen Canvas aktivieren.
+  bestehen mit einem GM und zwei Spielern. T03 prüft den Verzeichniseinstieg,
+  persistente Spezialbögen, Teilnehmerrechte und fehlende Besitzer.
+  Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -148,10 +150,22 @@ in einer generierten Szene sind noch nicht geprüft.
   den exportierten interaktiven Prototyp v1.
 - T01 ist umgesetzt und abgenommen: Manifest, ES-Module,
   Systemabhängigkeit, Styles, Statusvorlage, Sprachdateien, Prüf- und Paketbefehle
-  sowie Docker-Testumgebung sind vorhanden. Das Modul bietet noch keine Verwaltung.
+  sowie Docker-Testumgebung sind vorhanden. Die Einrichtungsverwaltung ist noch
+  nicht vollständig umgesetzt.
 - T02 ist abgenommen: Eigener Spieler-Bauauftrag ohne GM-Klick, individuelle
   Voraussetzungen/Kosten, zentraler nativer Fortschritt und Wiederholungsschutz
-  mit drei Clients praktisch bestätigt. Nächster Task: T03.
+  mit drei Clients praktisch bestätigt.
+- T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
+  Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
+  getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T04.
+- Der Bogen wird nur dem markierten Träger über `core.sheetClass` zugeordnet;
+  er ist kein wählbarer Standard für normale Charaktere. Spieler bleiben auf
+  dem Träger OBSERVER; eigene Charakterbögen und deren Rechte bleiben unverändert.
+- Foundry 14.369 hat im Modus ohne Canvas einen bestätigten Kernfehler:
+  `Actor._onUpdate` ruft bei Berechtigungsänderungen für Spieler ungeschützt
+  `canvas.tokens.cycleTokens` auf. Die Berechtigungen ändern sich trotzdem
+  korrekt. Keine Kerndateien verändern; mit aktivem Canvas in T10 nachprüfen.
 - Der Befehlstransport verwendet native ChatMessage-Erstellung und deren vom
   Server gelieferten `userId`, nicht eine selbst behauptete Absender-ID.
   Anfragen werden bei Zustellung unveränderlich übernommen; Änderungen an

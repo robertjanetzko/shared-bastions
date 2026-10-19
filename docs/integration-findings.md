@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01 und der begrenzte T02-Nachweis sind in der Testwelt abgenommen.**
+Laufzeitabnahme. T01–T03 sind im jeweils dokumentierten Umfang abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -25,6 +25,20 @@ Fortschritt beendet nach 20 Tagen den Bau auf dem zentralen Item. Doppelte
 Zustellung und Neuladen des GM erzeugen keine zweite Buchung oder Fortschreibung.
 Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Kalender, weitere
 Auftragsarten und GM-Wechsel werden später geprüft.
+
+T03: Erstellung im nativen Akteurverzeichnis, Teilnehmerauswahl, gespeicherte
+`core.sheetClass`-Zuordnung und Wiederöffnen nach Neuladen sind mit GM und Spieler
+bestätigt. Teilnehmer erhalten OBSERVER am Träger; die bisherigen Rechte und der
+Bogen des privaten Charakters bleiben unverändert. Öffentliche Roster-Daten
+bestehen ausschließlich aus UUID, Name, Bild und Verfügbarkeit. Entfernen eines
+Teilnehmers entzieht seinen Lesezugriff. Ein gelöschter Besitzer wird angezeigt;
+Folgeaktionen scheitern mit `MissingOwner`.
+
+Foundry 14.369 hat dabei einen bestätigten Fehler im Modus ohne Canvas:
+`Actor._onUpdate` ruft nach Berechtigungsänderungen bei Spielern ungeschützt
+`canvas.tokens.cycleTokens` auf. Die Tokenebene existiert in diesem Modus nicht.
+Die Berechtigung wird dennoch gespeichert; der T03-Test prüft dies ausdrücklich.
+Der Kern wird nicht angepasst. Mit aktivem Canvas in T10 erneut prüfen.
 
 - [Facility-Datenmodell](https://github.com/foundryvtt/dnd5e/blob/28f35531021bb07609c79c4cbbb9b7e7c2744bf9/module/data/item/facility.mjs):
   Native Felder für Bau, Größe, Level, Aufträge, Personal, Verteidiger, Handel
@@ -101,5 +115,6 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
 Kalender, GM-Wechsel und vollständige Teilfehlerabnahme aus Punkt 5 stehen in
-T04/T08 aus. Als Nächstes folgt T03 (Bastion und Teilnehmerkonfiguration).
+T04/T08 aus. T03 ist ebenfalls bestätigt; als Nächstes folgt T04
+(vollständiger GM-Befehlspfad und Mehr-GM-/Parallelprüfung).
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.

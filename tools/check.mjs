@@ -41,7 +41,11 @@ for (const file of files) {
   if (!/\.(mjs|hbs)$/.test(file)) continue;
   const content = await readFile(path.join(root, file), "utf8");
   for (const [key] of content.matchAll(/SHARED_BASTION\.[A-Za-z][A-Za-z.]+/g)) {
-    if (!de.includes(key)) fail(`Missing translation ${key} in ${file}`);
+    const prefix = key.replace(/\.$/, "");
+    if (!de.includes(key) && !de.some(candidate => candidate.startsWith(`${prefix}.`))) fail(`Missing translation ${key} in ${file}`);
+  }
+  for (const [, code] of content.matchAll(/new BastionError\(["']([A-Za-z]+)["']/g)) {
+    if (!de.includes(`SHARED_BASTION.Errors.${code}`)) fail(`Missing error translation ${code} in ${file}`);
   }
   for (const [, relative] of content.matchAll(/(?:from\s+|import\s*\()["'](\.[^"']+)["']/g)) {
     if (!(await stat(path.resolve(root, path.dirname(file), relative))).isFile()) fail(`Missing import in ${file}`);

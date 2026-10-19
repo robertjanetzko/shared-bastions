@@ -17,7 +17,7 @@
   border: 0;
   margin: 0;
 }
-.shared-bastion .bastion-heading i {
+.shared-bastion .bastion-heading > i {
   font-size: 2rem;
   color: var(--dnd5e-color-gold, #9f9275);
 }
@@ -29,3 +29,19 @@
 .shared-bastion dl { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
 .shared-bastion dd { margin: 0; overflow-wrap: anywhere; }
 .shared-bastion .hint { color: var(--color-text-secondary, #666); }
+.bastion-sheet .window-content { padding: 0; }
+.shared-bastion .bastion-shell { display: flex; flex-direction: column; height: 100%; }
+.shared-bastion .bastion-shell > .bastion-heading { padding: 1.5rem; }
+.shared-bastion .bastion-heading > div { flex: 1; }
+.shared-bastion .bastion-eyebrow { color: var(--dnd5e-color-gold); font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; }
+.shared-bastion .bastion-body { overflow: auto; padding: 1.5rem; }
+.shared-bastion h2 { font-family: var(--dnd5e-font-roboto-slab, serif); font-size: 1.15rem; border-bottom: 1px solid var(--dnd5e-color-gold); padding-bottom: .5rem; }
+.shared-bastion .bastion-roster { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.shared-bastion .bastion-owner { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border: 1px solid var(--dnd5e-color-gold); border-radius: 4px; }
+.shared-bastion .bastion-owner img { width: 32px; height: 32px; object-fit: cover; border: none; border-radius: 3px; }
+.shared-bastion .bastion-facility { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem; border-bottom: 1px solid var(--dnd5e-color-gold); }
+.shared-bastion .bastion-empty { padding: 3rem 1rem; text-align: center; color: var(--color-text-secondary); }
+.shared-bastion .bastion-empty i { font-size: 3rem; color: var(--dnd5e-color-gold); }
+.shared-bastion .bastion-count { color: var(--dnd5e-color-gold); font-size: .85rem; }
+.shared-bastion .bastion-warning { color: var(--dnd5e-color-note-warn, #9b6903); }
+.bastion-participant-choice { display: flex; align-items: center; gap: .5rem; padding: .35rem; }

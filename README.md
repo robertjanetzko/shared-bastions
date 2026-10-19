@@ -4,9 +4,10 @@ Gemeinsame Bastion für Foundry VTT V14 und D&D5e 6.0.x. Die Einrichtungen solle
 als native Facility-Items auf einem zentralen Aktor leben und ihre Regeln und
 Ressourcen vom jeweiligen Besitzercharakter beziehen.
 
-**Entwicklungsstand:** Modulgerüst und erster praktischer Besitzer-/Auftragsnachweis
-vorhanden. Die vollständige gemeinsame Verwaltung und der Szenengenerator fehlen
-noch. T01 und T02 aus `PLAN.md` im Quellprojekt sind abgenommen. Der dortige
+**Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
+und Bastionerstellung mit Teilnehmerverwaltung sind vorhanden. Die vollständige
+Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T03 aus `PLAN.md`
+im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 
 ## Lokal installieren
@@ -16,9 +17,15 @@ kopieren oder dort verlinken. Foundry neu starten und das Modul in einer
 D&D5e-Testwelt aktivieren. Unter den Moduleinstellungen öffnet „Modulstatus
 anzeigen“ die Entwicklungsdiagnose. Bestehende Charakterbögen werden nicht verändert.
 
+Der GM erstellt die Bastion über „Bastion erstellen“ im Akteurverzeichnis und
+wählt die Teilnehmercharaktere. Danach öffnen alle Teilnehmer den gemeinsamen
+Aktor aus demselben Verzeichnis. Im Bastion-Bogen verwaltet der GM die Teilnehmer.
+Der gemeinsame Aktor enthält nur die benötigte öffentliche Identität der
+Charaktere; ihre eigenen Bögen behalten ihre bisherigen Rechte.
+
 Zielbereich: Foundry ab **14.367 innerhalb V14**, D&D5e **6.0.x**. Der offizielle
 Systemquellcode **6.0.6**, Commit `28f35531021bb07609c79c4cbbb9b7e7c2744bf9`, wurde
-geprüft. Das ist keine bestätigte Laufzeitkompatibilität.
+geprüft. Bestätigte Laufzeitprüfungen gelten derzeit für 14.369 / 6.0.6.
 
 ## Entwickeln und prüfen
 
@@ -54,6 +61,11 @@ D&D5e **6.0.6** bestätigt. T02 prüft zusätzlich einen kostenpflichtigen
 Spieler-Bauauftrag mit privatem Besitzer und zentralem Item, Ablehnungen,
 Wiederholungen und Fortschritt. Die Verwaltungsprüfungen verwenden Foundrys
 offiziellen Modus ohne Canvas. Kalender und Szenen sind noch nicht abgenommen.
+T03 bestätigt zusätzlich Erstellung im Verzeichnis, Wiederöffnen nach Neuladen,
+Teilnehmerrechte und den Umgang mit gelöschten Besitzern. Bei Rechteänderungen
+meldet Foundry 14.369 im Modus ohne Canvas einen eigenen `cycleTokens`-Fehler;
+die gespeicherten Berechtigungen wurden trotzdem korrekt geprüft. Die native
+Prüfung mit aktivem Canvas folgt bei der Stufe-1-Abnahme.
 
 ## Isolierte Docker-Testumgebung
 

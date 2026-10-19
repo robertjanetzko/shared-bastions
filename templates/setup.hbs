@@ -1,0 +1,11 @@
+<div class="form-group">
+  <label for="bastion-name">{{localize "SHARED_BASTION.Name"}}</label>
+  <div class="form-fields"><input id="bastion-name" name="name" value="{{name}}" required maxlength="120"></div>
+</div>
+<fieldset>
+  <legend>{{localize "SHARED_BASTION.Participants"}}</legend>
+  <p class="hint">{{localize "SHARED_BASTION.ParticipantHint"}}</p>
+  {{#each characters}}
+  <label class="bastion-participant-choice"><input type="checkbox" name="participants" value="{{uuid}}" {{#if selected}}checked{{/if}}> {{name}}</label>
+  {{else}}<p>{{localize "SHARED_BASTION.NoCharacters"}}</p>{{/each}}
+</fieldset>
