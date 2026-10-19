@@ -2,6 +2,7 @@ import { MODULE_ID, SOURCE_REVIEW, OWNER_PROOF_RUNTIME } from "../constants.mjs"
 import { BastionError } from "../core/errors.mjs";
 import { resolveFacilityOwner, resolveParticipantOwner, assertCanManage } from "../core/ownership.mjs";
 import { validateRequirements, hasException } from "../core/rules.mjs";
+import { OrderAdapter } from "./orders.mjs";
 
 /** All system-specific reads belong here. No system or core files are patched. */
 export class Dnd5eAdapter {
@@ -9,6 +10,7 @@ export class Dnd5eAdapter {
     this.game = game;
     this.config = config;
     this.resolveUuid = resolveUuid;
+    this.operations = new OrderAdapter(this);
   }
 
   compatibility() {
@@ -72,6 +74,7 @@ export class Dnd5eAdapter {
     const config = this.config.DND5E.facilities;
     const localize = key => this.game.i18n.localize(key);
     const progress = system.progress;
+    const result = facility.flags[MODULE_ID]?.lastResult;
     const active = Number.isFinite(progress.max) && progress.max > 0;
     const state = system.disabled ? "SHARED_BASTION.State.Disabled"
       : active && progress.order === "build" ? "SHARED_BASTION.State.Building"
@@ -84,6 +87,8 @@ export class Dnd5eAdapter {
         ?? config.types[system.type.value]?.label ?? "SHARED_BASTION.UnknownType"),
       sizeLabel: this.label("SizeNames", system.size, "SHARED_BASTION.UnknownSize"),
       stateLabel: localize(state),
+      disabled: Boolean(system.disabled),
+      lastResult: result ? { ...result, label: this.label("OrderNames", result.order, "SHARED_BASTION.UnknownOrder") } : null,
       orderLabel: active ? this.label("OrderNames", progress.order, "SHARED_BASTION.UnknownOrder")
         : localize("SHARED_BASTION.NoOrder"),
       progress: active ? { value: progress.value, max: progress.max,
@@ -186,7 +191,7 @@ export class Dnd5eAdapter {
       const [kind, value] = requirement.split(":");
       if (kind === "tool") return (owner.system.tools?.[value]?.value ?? 0) >= 1;
       if (kind === "weapon") return owner.system.traits.weaponProf.value.has(value);
-      if (kind === "item") return owner.items.some(item => item.system.identifier === value);
+      if (kind === "item") return owner.items.some(item => item.identifier === value);
       // Explicit approvals cover prerequisites that the system does not model.
       return false;
     };
@@ -235,13 +240,11 @@ export class Dnd5eAdapter {
   }
 
   async planProgress(facility, payload) {
-    await this.ownerContext(facility);
+    const { owner } = await this.ownerContext(facility);
     const bastion = this.game.dnd5e?.bastion;
     if (!bastion?.advanceTurn) throw new BastionError("UnsupportedRuntime");
     const result = await bastion.advanceTurn(facility, { duration: payload.days, turn: false, performUpdates: false });
-    // Reward settlement is a later T07 task. Never discard a native result.
-    if (result.gold || result.items?.length) throw new BastionError("IntegrationPending");
-    return { operations: [], updates: result.updates };
+    return this.operations.settle(facility, owner, result);
   }
 
   /** Only public runtime diagnostics: never include owner currency, traits, or documents. */

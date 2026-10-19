@@ -37,9 +37,14 @@
             {{#if progress}}<div class="bastion-progress"><progress value="{{progress.value}}" max="{{progress.max}}" aria-label="{{localize 'SHARED_BASTION.Progress'}}"></progress><span>{{progress.value}} / {{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>{{/if}}
             {{#if notes}}<p class="bastion-note">{{notes}}</p>{{/if}}
             {{#if exceptions.length}}<ul class="bastion-exceptions">{{#each exceptions}}<li>{{localize label}}: {{reason}}</li>{{/each}}</ul>{{/if}}
+            {{#if lastResult}}<div class="bastion-result"><strong>{{localize "SHARED_BASTION.LastResult"}}: {{lastResult.label}}</strong>{{#if lastResult.gold}} {{lastResult.gold}} {{localize "SHARED_BASTION.GoldPieces"}}{{/if}}{{#each lastResult.items}} · {{quantity}} × {{name}}{{/each}}</div>{{/if}}
+            {{#each staff}}{{#if maximum}}<div class="bastion-staff"><span>{{localize label}}: {{count}} / {{maximum}}</span>{{#each people}}<span>{{name}}{{#if missing}} <span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}</span>{{/each}}</div>{{/if}}{{/each}}
           </div>
           <div class="bastion-facility-actions">
             {{#if buildable}}<button type="button" class="bastion-build" data-action="buildFacility" title="{{localize buildReason}}" {{#unless canBuild}}disabled{{/unless}}><i class="fa-solid fa-hammer" aria-hidden="true"></i> {{localize "SHARED_BASTION.Build"}}</button>{{/if}}
+            {{#each orders}}<button type="button" data-action="issueOrder" data-order="{{value}}" {{#unless ../canOrder}}disabled{{/unless}}>{{label}}</button>{{/each}}
+            {{#each staff}}{{#if maximum}}<button type="button" data-action="setOccupants" data-role="{{role}}" {{#unless ../canManage}}disabled{{/unless}}>{{localize label}}</button>{{/if}}{{/each}}
+            {{#if canManage}}{{#if progress}}<button type="button" data-action="cancelOrder">{{localize "SHARED_BASTION.CancelOrder"}}</button>{{/if}}{{/if}}
             {{#if canManage}}<button type="button" data-action="editFacility">{{localize "SHARED_BASTION.EditFacility"}}</button><button type="button" data-action="removeFacility">{{localize "SHARED_BASTION.RemoveFacility"}}</button>{{/if}}
             {{#if @root.isGM}}<div class="bastion-admin-actions"><button type="button" data-action="reassignFacility" title="{{localize 'SHARED_BASTION.ReassignFacility'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-user-pen" aria-hidden="true"></i></button><button type="button" data-action="setFacilityRules" title="{{localize 'SHARED_BASTION.FacilityRules'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div>{{/if}}
           </div>

@@ -19,7 +19,8 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       viewFacility: BastionSheet.viewFacility, buildFacility: BastionSheet.buildFacility,
       addFacility: BastionSheet.addFacility, editFacility: BastionSheet.manageFacility,
       removeFacility: BastionSheet.manageFacility, reassignFacility: BastionSheet.manageFacility,
-      setFacilityRules: BastionSheet.manageFacility, configureTemplates: BastionSheet.configureTemplates }
+      setFacilityRules: BastionSheet.manageFacility, configureTemplates: BastionSheet.configureTemplates,
+      issueOrder: BastionSheet.issueOrder, cancelOrder: BastionSheet.cancelOrder, setOccupants: BastionSheet.setOccupants }
   };
 
   static PARTS = { bastion: { template: template("bastion"), scrollable: [".bastion-body"] } };
@@ -109,6 +110,40 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
     finally { if (item) this.busy.delete(item.id); await this.render(); }
   }
 
+  static async issueOrder(event, target) {
+    let item;
+    try {
+      item = this.facility(target);
+      if (this.busy.has(item.id)) return;
+      this.busy.add(item.id); target.disabled = true;
+      const payload = await this.api.configureOrder(item, target.dataset.order);
+      if (payload) await this.api.request("order", item.uuid, payload);
+    } catch (error) { reportError(error); }
+    finally { if (item) this.busy.delete(item.id); await this.render(); }
+  }
+
+  static async cancelOrder(event, target) {
+    try {
+      const item = this.facility(target);
+      const confirmed = await DialogV2.confirm({ window: { title: "SHARED_BASTION.CancelOrder" },
+        content: await foundry.applications.handlebars.renderTemplate(template("cancel-order"), { name: item.name }), rejectClose: false });
+      if (confirmed) await this.api.request("cancelOrder", item.uuid, {});
+    } catch (error) { reportError(error); }
+  }
+
+  static async setOccupants(event, target) {
+    try {
+      const item = this.facility(target);
+      const role = target.dataset.role;
+      const context = await this.api.occupantForm(item, role);
+      const actors = await DialogV2.wait({ window: { title: context.title }, position: { width: 520 },
+        content: await foundry.applications.handlebars.renderTemplate(template("occupants"), context), rejectClose: false,
+        buttons: [{ action: "save", label: "SHARED_BASTION.Save", default: true,
+          callback: (event, button, dialog) => context.slots.map(slot => dialog.element.querySelector(`[name="${slot.name}"]`).value).filter(Boolean) }] });
+      if (Array.isArray(actors)) await this.api.request("setOccupants", item.uuid, { role, actors });
+    } catch (error) { reportError(error); }
+  }
+
   async _prepareContext(options) {
     if (!isBastion(this.actor)) throw new BastionError("InvalidBastion");
     const context = await super._prepareContext(options);
@@ -135,6 +170,9 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
           label: { level: "SHARED_BASTION.ExceptionLevel", limit: "SHARED_BASTION.ExceptionLimit", requirements: "SHARED_BASTION.ExceptionRequirements" }[entry.scope] })),
         own, canManage: canWrite && own && !this.busy.has(item.id),
         canBuild: canWrite && own && rules?.allowed && !this.busy.has(item.id),
+        canOrder: canWrite && own && rules?.allowed && !data.progress && !data.disabled && !this.busy.has(item.id),
+        orders: this.api.presentation.orders(item),
+        staff: await this.api.presentation.staff(item),
         buildReason: !owner?.available ? "SHARED_BASTION.Errors.MissingOwner"
           : !own ? "SHARED_BASTION.Errors.NotOwner" : !hasGM ? "SHARED_BASTION.Errors.NoGM"
           : !game.socket.connected ? "SHARED_BASTION.Errors.ConnectionRequired"

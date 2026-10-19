@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01–T06 sind im jeweils dokumentierten Umfang abgenommen.**
+Laufzeitabnahme. T01–T07 sind im jeweils dokumentierten Umfang abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -115,7 +115,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
 T04 bestätigt zusätzlich GM-Wechsel und die Transaktionsgrenze. Kalender und
-vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T07.
+vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T08.
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -152,7 +152,7 @@ Hook-Veto ohne Teilbuchung und ohne späteren Wiederanlauf, sowie Ausfall des
 Executors vor Commit und nach Commit vor Rückmeldung. Im letzten Fall wird nur
 die vorhandene Antwort erneut zugestellt. Neuladen erzeugt keine zweite Buchung.
 Ein natives, zum Spieler herabgestuftes User-Modell hat keinen Lesezugriff auf
-Träger oder private Journale. Die sieben Integrationstests und siebzehn Unit-Tests
+Träger oder private Journale. Die acht Integrationstests und einundzwanzig Unit-Tests
 sind bestanden; der bekannte native Fehler ohne Canvas bleibt separat dokumentiert.
 
 ## T05: Gemeinsame Übersicht
@@ -216,3 +216,34 @@ ungeachtet dessen bleibt das individuelle Platzlimit bestehen. Begründete
 Limitausnahmen bleiben möglich. Zwei Unit-Tests sichern die individuellen Grenzen
 und die unterschiedlichen Anfangsflächen 4/16 Rasterfelder. Deutsche Begriffe sind
 mit dem lokal bereitgestellten Handbuch abgeglichen; keine Regelprosa wird verpackt.
+
+## T07: Native Befehle und Ergebnisabrechnung
+
+Die T07-Prüfung und die vollständige Gesamtsuite mit acht Integrationstests sind
+bestanden; 21 Unit-Tests und die native Manifest-/Vorlagenprüfung sind ebenfalls grün.
+Der native `OrderUsageDialog` wird auf einem ephemeren Item mit Order-Aktivität
+geöffnet. Er liefert ausschließlich Optionen; `Item.use` und die native
+`bastionOrder`-Zahlungsnachricht werden nicht ausgeführt. Kosten-/Tagesfelder sind
+schreibgeschützt. Der Executor ignoriert clientseitige Preiswerte und berechnet
+Bau, Erweiterung, Herstellung und Handel aus den geprüften Quellen erneut.
+
+Praktisch bestätigt: Herstellung eines 100-GP-Items über native CraftCost (10 Tage,
+50 GP) mit einem Ergebnis-Item beim Besitzer; drei geerntete Items; Warenkauf 100 GP,
+Verkauf 40 mit 20 Prozent Gewinn (48 GP); Kreaturenkauf/-verkauf anhand nativer
+NSC-Preise; abgebrochener Verkauf gibt die vorgemerkten Kreaturen zurück. Normale
+Befehlabbrüche erstatten Kosten nicht. Vorab-Dialogschließen verändert nichts.
+
+Eine normale Erweiterung kostet 500 GP und dauert 25 Tage; die dafür vorgesehene
+besondere Einrichtung wird unmittelbar erweitert. Auch ein auf 0 manipulierter
+nativer Dialogpreis führt zur regulären 500-GP-Abbuchung. Der Besitzer endet bei
+900 GP, während anderer Charakter (9.000 GP) und Träger (7.000 GP) unverändert bleiben.
+Eine native Ergebnis-Item-Veto-Hook verhindert auch die Fortschrittsbuchung. Nach
+Entfernen des Vetos erzeugt ein neuer Fortschrittsauftrag das Ergebnis einmal.
+Wiederholung und Neuladen ergeben weder weitere Items noch Erlöse.
+
+Mietlinge wurden über Foundrys echte DocumentTags-Drop-Felder zugeordnet;
+Kapazitätsüberschreitungen und fremde Befehle werden abgewiesen. Referenzen
+speichern nur UUID/Name/Bild. Der native Item-Identifier stammt aus dem Document-
+Mixin (`item.identifier`), nicht ausschließlich aus `system.identifier`.
+Reine Beschreibungs-/Erzählwirkungen bleiben wie im nativen System außerhalb der
+automatischen Ergebnisabrechnung.

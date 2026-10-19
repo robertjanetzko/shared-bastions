@@ -56,7 +56,12 @@
       "PrerequisiteRequired": "The owner character does not meet all prerequisites for this facility.",
       "InvalidTemplate": "This facility template is unavailable or inaccessible.",
       "UntrustedTemplate": "Players can edit this template. The GM must protect its rule definition first.",
-      "DuplicateFacility": "This character already owns this special facility."
+      "DuplicateFacility": "This character already owns this special facility.",
+      "OperationSourceUnavailable": "The required item or creature template is missing or inaccessible.",
+      "FacilityDisabled": "This facility is currently shut down.",
+      "TradeCapacity": "This trade exceeds the available stock or capacity.",
+      "OccupantCapacity": "This facility does not have enough spaces.",
+      "InvalidOrderDuration": "A valid duration could not be determined for this order."
     },
     "Views": "Bastion views",
     "ByOwner": "By owner",
@@ -131,6 +136,14 @@
       "roomy": "Roomy",
       "vast": "Vast"
     },
-    "Repeatable": "Repeatable when permitted by the facility description"
+    "Repeatable": "Repeatable when permitted by the facility description",
+    "OrderCostHint": "Cost and duration are calculated from the selected action and template.",
+    "CancelOrder": "Cancel order",
+    "CancelOrderHint": "The current order will end. Previously paid costs are not refunded.",
+    "LastResult": "Last completed",
+    "GoldPieces": "GP",
+    "Hirelings": "Hirelings",
+    "Defenders": "Bastion defenders",
+    "OccupantsHint": "Drag NPCs from the actor directory or an accessible compendium into the slots. Empty slots remain unoccupied."
   }
 }

@@ -633,3 +633,146 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     for(const c of contexts) await c.close().catch(()=>{});
   }
 });
+
+test("T07: native orders settle owner costs, goods and income once",async({browser})=>{
+  const gmContext=await browser.newContext();const aliceContext=await browser.newContext();const bobContext=await browser.newContext();
+  const gm=await join(gmContext,"Gamemaster");let fixtures;
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T07 ";
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture).sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      for(const item of game.items.filter(i=>i.flags["shared-bastion"]?.integrationFixture)) await item.delete();
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const alice=await User.create({name:prefix+"Alice",role:CONST.USER_ROLES.PLAYER});const bob=await User.create({name:prefix+"Bob",role:CONST.USER_ROLES.PLAYER});
+      const flag={"shared-bastion":{integrationFixture:true}};
+      const owner=await Actor.create({name:prefix+"Owner",type:"character",ownership:{default:0,[alice.id]:3},flags:flag,system:{currency:{gp:2000}},items:[{name:"Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      const other=await Actor.create({name:prefix+"Other",type:"character",ownership:{default:0,[bob.id]:3},flags:flag,system:{currency:{gp:9000}},items:[{name:"Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      await alice.update({character:owner.id});await bob.update({character:other.id});
+      const bastion=await game.modules.get("shared-bastion").api.repository.create({name:prefix+"Bastion",participants:[owner.uuid,other.uuid]});
+      await bastion.setFlag("shared-bastion","integrationFixture",true);await bastion.update({"system.currency.gp":7000});
+      const recipe=await Item.create({name:prefix+"Crafted Tool",type:"loot",ownership:{default:2},flags:flag,system:{price:{value:100,denomination:"gp"},quantity:1}});
+      const npc=await Actor.create({name:prefix+"Hireling",type:"npc",ownership:{default:2},flags:flag,system:{attributes:{price:{value:10,denomination:"gp"}}}});
+      const definitions=[
+        ["Bedroom","basic","bedroom","",{}],["Workshop","special","workshop","craft",{hirelings:{max:2},defenders:{max:1}}],
+        ["Garden","special","garden","harvest",{}],["Storehouse","special","storehouse","trade",{trade:{stock:{max:1000},profit:20}}],
+        ["Menagerie","special","menagerie","trade",{trade:{creatures:{max:2},profit:20}}],
+        ["Armory","special","armory","empower",{enlargeable:true}]
+      ];
+      const facilities=await bastion.createEmbeddedDocuments("Item",definitions.map(([name,type,subtype,order,extras])=>({name:prefix+name,type:"facility",flags:{"shared-bastion":{owner:owner.uuid,revision:0}},
+        system:{type:{value:type,subtype},order,size:"cramped",building:{built:true,size:"cramped"},...extras}})));
+      const ids=Object.fromEntries(facilities.map(f=>[f.name.slice(prefix.length).toLowerCase(),f.uuid]));
+      const craftCost=await recipe.system.getCraftCost({baseItem:"craft"});
+      return {...ids,owner:owner.id,other:other.id,bastion:bastion.id,alice:alice.id,bob:bob.id,aliceName:alice.name,bobName:bob.name,recipe:recipe.uuid,recipeId:recipe.id,npc:npc.uuid,npcId:npc.id,craftCost};
+    });
+    const alice=await join(aliceContext,fixtures.aliceName);const bob=await join(bobContext,fixtures.bobName);
+    const attempt=(page,action,uuid,payload)=>page.evaluate(async({action,uuid,payload})=>{
+      try{return {ok:true,result:await game.modules.get("shared-bastion").api.request(action,uuid,payload)};}catch(error){return {ok:false,code:error.code};}
+    },{action,uuid,payload});
+    const order=(uuid,kind,options={})=>attempt(alice,"order",uuid,{order:kind,options});
+    const advance=(uuid,days)=>attempt(gm,"advance",uuid,{days});
+    const gold=()=>gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner);
+    const state=uuid=>gm.evaluate(async uuid=>{const f=await fromUuid(uuid);return {size:f.system.size,progress:foundry.utils.deepClone(f.system.progress),trade:foundry.utils.deepClone(f.system.trade)};},uuid);
+    expect((await attempt(bob,"order",fixtures.workshop,{order:"craft",options:{item:fixtures.recipe,buyBaseItem:false}})).code).toBe("NotOwner");
+    expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"hirelings",actors:[fixtures.npc,fixtures.npc,fixtures.npc]})).code).toBe("OccupantCapacity");
+    await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    const workshopId=fixtures.workshop.split(".").at(-1);
+    await alice.locator(`[data-facility-id="${workshopId}"] [data-action="setOccupants"][data-role="hirelings"]`).click();
+    await alice.locator('dialog [name="occupant-0"]').evaluate((element,uuid)=>{
+      const transfer=new DataTransfer();transfer.setData("text/plain",JSON.stringify({type:"Actor",uuid}));
+      element.dispatchEvent(new DragEvent("drop",{bubbles:true,cancelable:true,dataTransfer:transfer}));
+    },fixtures.npc);
+    await expect.poll(()=>alice.locator('dialog [name="occupant-0"]').evaluate(element=>element.value)).toBe(fixtures.npc);
+    await alice.locator('dialog [data-action="save"]').click();
+    await expect.poll(()=>gm.evaluate(async uuid=>(await fromUuid(uuid)).system.hirelings.value,fixtures.workshop)).toEqual([fixtures.npc]);
+    expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"hirelings",actors:[fixtures.npc,fixtures.npc]})).ok).toBe(true);
+    expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"defenders",actors:[fixtures.npc]})).ok).toBe(true);
+    await alice.locator(`[data-facility-id="${workshopId}"] [data-action="issueOrder"][data-order="craft"]`).click();
+    await alice.locator('.activity-usage [name="craft.item"]').evaluate((element,uuid)=>{
+      const transfer=new DataTransfer();transfer.setData("text/plain",JSON.stringify({type:"Item",uuid}));
+      element.dispatchEvent(new DragEvent("drop",{bubbles:true,cancelable:true,dataTransfer:transfer}));
+    },fixtures.recipe);
+    await expect(alice.locator('.activity-usage [name="costs.gold"]')).toHaveValue(String(fixtures.craftCost.gold));
+    await alice.locator(".activity-usage").screenshot({path:"test-results/t07-native-craft.png"});
+    await alice.locator('.activity-usage [data-action="use"]').click();
+    await expect.poll(async()=> (await state(fixtures.workshop)).progress.max).toBe(fixtures.craftCost.days);
+    expect(await gold()).toBe(2000-fixtures.craftCost.gold);
+    expect((await order(fixtures.workshop,"craft",{item:fixtures.recipe,buyBaseItem:false})).code).toBe("OrderInProgress");
+    expect((await advance(fixtures.workshop,fixtures.craftCost.days)).ok).toBe(true);
+    const rewards=()=>gm.evaluate(id=>game.actors.get(id).items.filter(i=>i.flags["shared-bastion"]?.resultFrom).map(i=>({from:i.flags["shared-bastion"].resultFrom,quantity:i.system.quantity})),fixtures.owner);
+    expect(await rewards()).toEqual([{from:fixtures.workshop,quantity:1}]);
+    const replay=uuid=>gm.evaluate(uuid=>{
+      const message=[...game.messages].reverse().find(m=>m.flags["shared-bastion"]?.request?.action==="advance"&&m.flags["shared-bastion"].request.facility===uuid);
+      Hooks.callAll("createChatMessage",message,{},message.author.id);
+    },uuid);
+    await replay(fixtures.workshop);
+    expect(await rewards()).toHaveLength(1);
+    expect((await order(fixtures.garden,"harvest",{item:fixtures.recipe,quantity:3})).ok).toBe(true);
+    await gm.evaluate(({owner,garden})=>{globalThis.sbT07Veto=Hooks.on("preCreateItem",item=>item.parent?.id===owner&&item.flags["shared-bastion"]?.resultFrom===garden?false:undefined);},fixtures);
+    expect((await advance(fixtures.garden,7)).code).toBe("CommitFailed");
+    expect((await state(fixtures.garden)).progress.max).toBe(7);expect(await rewards()).toHaveLength(1);
+    await gm.evaluate(()=>Hooks.off("preCreateItem",globalThis.sbT07Veto));
+    expect((await advance(fixtures.garden,7)).ok).toBe(true);
+    expect(await rewards()).toHaveLength(2);expect((await rewards()).find(r=>r.from===fixtures.garden).quantity).toBe(3);
+    const storehouseId=fixtures.storehouse.split(".").at(-1);
+    await alice.locator(`[data-facility-id="${storehouseId}"] [data-action="issueOrder"][data-order="trade"]`).click();
+    await alice.locator('.activity-usage [name="trade.stock.value"] input[type="number"]').fill("100");
+    await alice.locator('.activity-usage [name="trade.stock.value"] input[type="number"]').press("Tab");
+    await expect(alice.locator('.activity-usage [name="costs.gold"]')).toHaveValue("100");
+    await alice.locator('.activity-usage [data-action="use"]').click();
+    await expect.poll(async()=> (await state(fixtures.storehouse)).progress.max).toBe(7);
+    expect((await advance(fixtures.storehouse,7)).ok).toBe(true);
+    expect((await state(fixtures.storehouse)).trade.stock.value).toBe(100);
+    const beforeSale=await gold();
+    expect((await order(fixtures.storehouse,"trade",{mode:"stock",sell:true,value:40})).ok).toBe(true);
+    expect((await advance(fixtures.storehouse,7)).ok).toBe(true);
+    expect(await gold()).toBe(beforeSale+48);expect((await state(fixtures.storehouse)).trade.stock.value).toBe(60);
+    await replay(fixtures.storehouse);expect(await gold()).toBe(beforeSale+48);
+    expect((await order(fixtures.menagerie,"trade",{mode:"creatures",sell:false,actors:[fixtures.npc]})).ok).toBe(true);
+    expect((await advance(fixtures.menagerie,7)).ok).toBe(true);
+    expect((await state(fixtures.menagerie)).trade.creatures.value).toEqual([fixtures.npc]);
+    expect((await order(fixtures.menagerie,"trade",{mode:"creatures",sell:true,indices:[0]})).ok).toBe(true);
+    expect((await attempt(alice,"cancelOrder",fixtures.menagerie,{})).ok).toBe(true);
+    expect((await state(fixtures.menagerie)).trade.creatures.value).toEqual([fixtures.npc]);
+    expect((await order(fixtures.menagerie,"trade",{mode:"creatures",sell:true,indices:[0]})).ok).toBe(true);
+    expect((await advance(fixtures.menagerie,7)).ok).toBe(true);
+    // The native dialog configures enlargement but performs no world writes itself.
+    await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    const bedroomId=fixtures.bedroom.split(".").at(-1);
+    const button=alice.locator(`[data-facility-id="${bedroomId}"] [data-action="issueOrder"][data-order="enlarge"]`);
+    const beforeDialog=await gold();
+    await button.click();await expect(alice.locator('.activity-usage [name="costs.gold"]')).toHaveAttribute("readonly","");
+    await alice.locator('.activity-usage .window-header [data-action="close"]').click();expect(await gold()).toBe(beforeDialog);
+    await button.click();
+    await alice.locator('.activity-usage [name="costs.gold"]').evaluate(input=>{input.value="0";input.dispatchEvent(new Event("change",{bubbles:true}));});
+    await alice.locator('.activity-usage [data-action="use"]').click();
+    await expect.poll(async()=> (await state(fixtures.bedroom)).progress.max).toBe(25);
+    expect(await gold()).toBe(beforeDialog-500);
+    expect((await advance(fixtures.bedroom,25)).ok).toBe(true);expect((await state(fixtures.bedroom)).size).toBe("roomy");
+    expect((await order(fixtures.armory,"enlarge")).ok).toBe(true);expect((await state(fixtures.armory)).size).toBe("roomy");
+    expect(await gold()).toBe(950-fixtures.craftCost.gold);
+    for(const kind of ["research","recruit","maintain"]) {
+      expect((await attempt(gm,"setFacilityRules",fixtures.workshop,{level:5,order:kind,hirelings:2,defenders:1,requirements:[],exceptions:[]})).ok).toBe(true);
+      expect((await order(fixtures.workshop,kind)).ok).toBe(true);
+      expect((await advance(fixtures.workshop,7)).ok).toBe(true);
+    }
+    expect((await order(fixtures.armory,"empower")).ok).toBe(true);expect((await advance(fixtures.armory,7)).ok).toBe(true);
+    expect((await order(fixtures.garden,"change")).ok).toBe(true);expect((await advance(fixtures.garden,21)).ok).toBe(true);
+    const identifier=await gm.evaluate(id=>game.actors.get(id).items.find(item=>item.flags["shared-bastion"]?.resultFrom).identifier,fixtures.owner);
+    expect((await attempt(gm,"setFacilityRules",fixtures.armory,{level:5,order:"empower",hirelings:0,defenders:0,requirements:[`item:${identifier}`],exceptions:[]})).ok).toBe(true);
+    expect((await order(fixtures.armory,"empower")).ok).toBe(true);expect((await advance(fixtures.armory,7)).ok).toBe(true);
+    await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await expect(alice.locator(".bastion-result").first()).toContainText("Last completed:");
+    await alice.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t07-operations.png"});
+    await gm.reload();await gm.waitForFunction(()=>game.ready===true);await replay(fixtures.workshop);
+    expect(await rewards()).toHaveLength(2);expect(await gold()).toBe(950-fixtures.craftCost.gold);
+    expect(await gm.evaluate(data=>({other:game.actors.get(data.other).system.currency.gp,carrier:game.actors.get(data.bastion).system.currency.gp}),fixtures)).toEqual({other:9000,carrier:7000});
+    console.log("T07 passed",JSON.stringify({craftCost:fixtures.craftCost,gold:await gold(),rewards:await rewards(),nativeDialog:true}));
+  } finally {
+    await aliceContext.close().catch(()=>{});await bobContext.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      await game.actors.get(data.bastion)?.delete();for(const id of [data.owner,data.other,data.npcId]) await game.actors.get(id)?.delete();
+      await game.items.get(data.recipeId)?.delete();for(const id of [data.alice,data.bob]) await game.users.get(id)?.delete();
+    },fixtures);
+    await gmContext.close();
+  }
+});

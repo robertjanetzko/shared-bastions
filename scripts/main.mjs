@@ -37,11 +37,14 @@ Hooks.once("ready", () => {
   game.modules.get(MODULE_ID).api = Object.freeze({
     diagnostics: () => adapter.diagnostics(),
     repository,
-    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions(), rules: item => adapter.rulesView(item) }),
+    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions(), rules: item => adapter.rulesView(item),
+      orders: item => adapter.operations.orders(item), staff: item => adapter.operations.staff(item) }),
     catalog: () => facilities.catalog(),
     templateRules: uuid => foundry.utils.deepClone(game.settings.get(MODULE_ID, "templateRules")[uuid] ?? null),
     checkRules: item => adapter.ruleStatus(item, game.user),
     ownerSummary: (bastion, uuid) => adapter.ownerSummary(bastion, uuid, game.user),
+    configureOrder: (item, order) => adapter.operations.configure(item, order, game.user),
+    occupantForm: (item, role) => adapter.operations.occupantForm(item, role, game.user),
     request: (action, facility, payload) => bus.request(action, facility, payload)
   });
   if (canWrite) void repository.migrate().then(() => bus.resume()).catch(console.error);

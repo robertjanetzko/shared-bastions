@@ -81,3 +81,6 @@
 .shared-bastion .bastion-admin-actions button { flex: 1; min-width: 40px; }
 .shared-bastion .bastion-exceptions { margin: .5rem 0 0; padding-inline-start: 1rem; color: var(--dnd5e-color-gold); font-size: .8rem; }
 .shared-bastion .bastion-note { font-size: .8rem; white-space: pre-wrap; margin: .4rem 0; }
+.shared-bastion .bastion-result { margin: .5rem 0; font-size: .8rem; color: var(--dnd5e-color-gold); }
+.shared-bastion .bastion-staff { display: flex; flex-wrap: wrap; gap: .25rem .6rem; margin-top: .4rem; font-size: .8rem; }
+.shared-bastion .bastion-staff > span:first-child { color: var(--color-text-secondary); }

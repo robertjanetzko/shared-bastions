@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01–T06 abgenommen; nächster Schritt T07.
+Stand: 2026-10-19 · Status: T01–T07 abgenommen; nächster Schritt T08.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -13,6 +13,9 @@ Ein Foundry-VTT-Modul für eine gemeinsame D&D-Bastion nach den Regeln von 2024.
 Alle Teilnehmer öffnen denselben Bastion-Bogen. Die Einrichtungen werden tatsächlich
 auf der gemeinsamen Bastion gespeichert und gehören jeweils einem Charakter.
 Spieler verwalten ihre Einrichtungen selbst; ihre Charakterbögen bleiben privat.
+
+Aktueller Arbeitsauftrag: **Stufe 1 bis einschließlich T10 fertigstellen**.
+Stufe 2 bleibt geplanter späterer Ausbau und gehört nicht zur aktuellen Abnahme.
 
 Die Umsetzung erfolgt in zwei unabhängig abnehmbaren Stufen:
 
@@ -252,7 +255,11 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
     direkt ändern; fremde private Charakterdaten bleiben unzugänglich.
   - Deckt ab: B04, B07, B08, R01, R08–R10.
 
-- [ ] **T07 – Aufträge, Bau, Personal und Ergebnisse**
+- [x] **T07 – Aufträge, Bau, Personal und Ergebnisse**
+  - Stand: Native Befehlsdialoge ohne unmittelbare Dokumentänderung, validierte
+    Betriebsaktionen, Erweiterung, Mietlinge/Verteidiger, Waren-/Kreaturenhandel
+    sowie automatische Ergebnisübergabe an den Besitzer implementiert. Native
+    T07-Prüfung und vollständige Regression mit acht Integrationstests bestanden.
   - Umfang: Systemadapter für Aufträge, Bau/Erweiterung, Personal,
     Verteidiger, Kosten und Belohnungen vervollständigen; passende native
     Funktionen und Dialoge integrieren.
@@ -288,7 +295,7 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
   - Abnahme: Alle Kriterien für Stufe 1 aus Abschnitt 6 sind erfüllt;
     Stufe 1 ist ohne Szenengenerator verwendbar.
 
-### Stufe 2 – Begehbare Bastion
+### Stufe 2 – Begehbare Bastion (zurückgestellt)
 
 - [ ] **T11 – Grundriss und Änderungsvorschau berechnen**
   - Umfang: Raumflächen aus Systemgrößen ableiten; rechteckige Räume,
@@ -373,9 +380,9 @@ Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
 `npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
-ausgeführt. Neunzehn Unit-Tests prüfen Modulgrenzen. Sieben Chromium-Integrationstests
-bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T06 mit getrennten Clients;
-Kalender, vollständige Betriebsaktionen und Szene bleiben separat offen.
+ausgeführt. Einundzwanzig Unit-Tests prüfen Modulgrenzen. Acht Chromium-Integrationstests
+bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T07 mit getrennten Clients;
+Kalender und Transfer bleiben separat offen; die Szene ist zurückgestellt.
 Der T03-Bedientest prüft zusätzlich Erstellung, Wiederöffnen, Teilnehmerrechte
 und gelöschte Besitzer. Native Einschränkung im Modus ohne Canvas: Foundry
 14.369 ruft bei Actor-Berechtigungsänderungen `canvas.tokens.cycleTokens` auf,
@@ -428,3 +435,5 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | T05 abgenommen: Besitzerabschnitte und Gesamtansicht, getrennte einfache/besondere Einrichtungen, Alle/Eigene/Besitzerfilter, native Größen-/Bau-/Auftrags-/Fortschrittsanzeige und eigenes Bauen aus dem Bogen. | Sechs native Integrationstests bestanden (1,7 min), vierzehn Unit-Tests und Paketierung erfolgreich. Zwei Spieler sehen dieselben acht zentralen Items bei privaten Charakteren; fremde Bauaktionen gesperrt. Namensänderung und 20-Tage-Baufortschritt erscheinen ohne Neuladen; Dialogabbruch ohne Kosten. GM-Abmeldung sperrt Schreiben, Rückkehr aktiviert es; Ansichten/Filter bleiben nutzbar. GM-Ansicht visuell geprüft. |
 | 2026-10-19 | T06 abgenommen: geschützte Vorlagen aus Welt/Kompendien, weltlokale GM-Vorlagenregeln, eigene Namen/Notizen/Entfernung, GM-Besitzerreparatur, individuelle Level/Plätze und sichtbare begründete Ausnahmen. | Siebzehn Unit-Tests und sieben native Integrationstests bestanden (2,2 min). Level 5/13 mit individuellen Limits; noch private Einrichtungen zählen mit, Trägerlevel 20 gewährt keine kostenlosen Besitzerplätze. Welt- und natives Testwelt-Kompendium bleiben unverändert. Spielerregelpatch und Fremdbesitz abgewiesen; Levelausnahme umgeht keine Werkzeugbedingung, zusätzliche Ausnahme keine Zahlung. Besitzer 4.000→3.500 GP, anderer Besitzer 9.000 und Träger 7.000 unverändert. UI-Anlage/Bearbeitung/Neuzuordnung/Entfernung und Besitzerlöschung geprüft; Ausnahmen nach Neuladen erhalten. GM-Ansicht visuell geprüft. |
 | 2026-10-19 | Nutzer stellt deutsches Handbuch als lokale Begriffsvorlage bereit: Basiseinrichtungen, Mietlinge, Befehle, Stufe sowie beengt/geräumig/weitläufig in Sprachschlüsseln vereinheitlicht. Individuelle Einmaligkeit besonderer Einrichtungen und Anfangsflächen präzisiert. | Neunzehn Unit-Tests bestanden; erweiterte native T06-Prüfung bestanden (30,3 s): gleicher besonderer Typ wird beim Besitzer abgewiesen, ausdrückliche GM-Wiederholbarkeit erlaubt weitere Einträge innerhalb seines Limits. Die Anfangsflächen sind beengt/geräumig. Kein Handbuchtext im Laufzeitarchiv. |
+| 2026-10-19 | Nutzer begrenzt den aktiven Auftrag auf Stufe 1 bis einschließlich T10. | Stufe-1-Kriterien bleiben unverändert; T11–T14 und der Szenengenerator sind späterer Ausbau, kein Bestandteil der laufenden Abnahme. |
+| 2026-10-19 | T07 abgenommen: native Befehlsdialoge sammeln Optionen ohne eigene Dokumentzahlungen; zentraler Fortschritt, individuelle Zahlungen und automatische Ergebnisse über die GM-Transaktion. Erweiterung, Herstellung/Ernte, Handel, Mietlinge/Verteidiger und übrige native Befehle implementiert. | 21 Unit-Tests und acht native Integrationstests bestanden (2,8 min), zusätzlicher abschließender T07-Bedientest bestanden (36,3 s). Herstellung 10 Tage/50 GP mit Item-Übergabe, Ernte 3 Items, Waren-/Kreaturenhandel samt Erlös, Abbruch ohne Doppelzahlung, normale Erweiterung 25 Tage/500 GP und unmittelbare besondere Erweiterung. Dialogpreis 0 ändert die Abbuchung nicht. Ergebnis-Veto bucht keinen Fortschritt; Wiederholung/Neuladen keine weiteren Items oder Erlöse. NSC-Zuordnung per nativer Drag-and-drop-Oberfläche und Item-Identifier-Voraussetzung bestätigt. Besitzer 900 GP, fremder Charakter 9.000 und Träger 7.000 unverändert; native Dialoge und Bogen visuell geprüft. |

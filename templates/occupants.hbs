@@ -1,0 +1,4 @@
+<p>{{name}}</p><p class="hint">{{localize "SHARED_BASTION.OccupantsHint"}}</p>
+<div class="bastion-dialog-fields">
+{{#each slots}}<label>{{localize ../title}} {{number}}{{formInput ../actorField name=name value=uuid}}</label>{{/each}}
+</div>

@@ -3,6 +3,7 @@ import { BastionError } from "../core/errors.mjs";
 import { assertCanManage, electGM, resolveFacilityOwner } from "../core/ownership.mjs";
 import { strictBatch, assertWriteRuntime } from "../adapters/foundry.mjs";
 import { FACILITY_ACTIONS, validateFacilityPayload } from "./facilities.mjs";
+import { OPERATION_ACTIONS, validateOperationPayload } from "./operations.mjs";
 
 const LEDGER_ID = "SharedBastionLog";
 const QUEUE_ID = "SharedBastionReq";
@@ -25,6 +26,9 @@ export function validateRequest(request) {
   } else if (FACILITY_ACTIONS.has(request.action)) {
     if (!(["addFacility", "setTemplateRules"].includes(request.action) ? actorUuid : itemUuid).test(request.facility ?? "")) throw new BastionError("InvalidRequest");
     validateFacilityPayload(request.action, request.payload);
+  } else if (OPERATION_ACTIONS.has(request.action)) {
+    if (!itemUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
+    validateOperationPayload(request.action, request.payload);
   } else {
     if (!itemUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
     if (request.action === "build") {
@@ -201,8 +205,12 @@ export class CommandBus {
     assertCanManage(user, owner);
     if (FACILITY_ACTIONS.has(request.action)) return this.facilities.plan(request, user, document);
     if (request.action === "advance" && !user.isGM) throw new BastionError("GMOnly");
-    const plan = request.action === "build" ? await this.adapter.planBuild(document, request.payload)
-      : await this.adapter.planProgress(document, request.payload);
+    let plan;
+    if (request.action === "build") plan = await this.adapter.planBuild(document, request.payload);
+    else if (request.action === "order") plan = await this.adapter.operations.plan(document, request.payload, user);
+    else if (request.action === "setOccupants") plan = await this.adapter.operations.occupants(document, request.payload, user);
+    else if (request.action === "cancelOrder") plan = await this.adapter.operations.cancel(document);
+    else plan = await this.adapter.planProgress(document, request.payload);
     const revision = request.revision + 1;
     return { operations: [...plan.operations,
       { action: "update", documentName: "Item", parent: bastion,

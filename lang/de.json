@@ -56,7 +56,12 @@
       "PrerequisiteRequired": "Der Besitzercharakter erfüllt nicht alle Voraussetzungen dieser Einrichtung.",
       "InvalidTemplate": "Diese Einrichtungsvorlage ist nicht zugänglich oder nicht verfügbar.",
       "UntrustedTemplate": "Diese Vorlage kann von Spielern bearbeitet werden. Der GM muss ihre Regeldefinition zuerst schützen.",
-      "DuplicateFacility": "Diesem Charakter gehört diese besondere Einrichtung bereits."
+      "DuplicateFacility": "Diesem Charakter gehört diese besondere Einrichtung bereits.",
+      "OperationSourceUnavailable": "Die benötigte Gegenstands- oder Kreaturenvorlage fehlt oder ist nicht zugänglich.",
+      "FacilityDisabled": "Diese Einrichtung ist derzeit außer Betrieb.",
+      "TradeCapacity": "Dieser Handel überschreitet den verfügbaren Bestand oder die Kapazität.",
+      "OccupantCapacity": "In dieser Einrichtung sind nicht genügend Plätze frei.",
+      "InvalidOrderDuration": "Für diesen Befehl konnte keine gültige Dauer ermittelt werden."
     },
     "Views": "Bastionansichten",
     "ByOwner": "Nach Besitzer",
@@ -131,6 +136,14 @@
       "roomy": "Geräumig",
       "vast": "Weitläufig"
     },
-    "Repeatable": "Mehrfach zulässig, wenn die Einrichtungsbeschreibung es erlaubt"
+    "Repeatable": "Mehrfach zulässig, wenn die Einrichtungsbeschreibung es erlaubt",
+    "OrderCostHint": "Kosten und Dauer werden aus der gewählten Aktion und Vorlage berechnet.",
+    "CancelOrder": "Befehl abbrechen",
+    "CancelOrderHint": "Der laufende Befehl wird beendet. Bereits bezahlte Kosten werden nicht erstattet.",
+    "LastResult": "Zuletzt abgeschlossen",
+    "GoldPieces": "GM",
+    "Hirelings": "Mietlinge",
+    "Defenders": "Bastionsverteidiger",
+    "OccupantsHint": "Ziehe NSC aus dem Akteurverzeichnis oder einem zugänglichen Kompendium in die Plätze. Leere Plätze bleiben unbesetzt."
   }
 }

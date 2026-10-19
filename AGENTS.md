@@ -7,6 +7,8 @@ Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-19.
 
 `shared-bastion` erweitert Foundry VTT V14 mit D&D5e 6.0.x um einen gemeinsamen
 Bastion-Bogen und anschließend eine automatisch erzeugte begehbare Szene.
+Der aktuelle ausdrückliche Arbeitsauftrag endet nach Stufe 1 (T01–T10);
+der Szenengenerator T11–T14 ist zurückgestellt.
 
 Die Anforderungen, nummerierten Tasks, Abhängigkeiten und Abnahmekriterien stehen
 in [PLAN.md](PLAN.md). Das abgeschlossene Umsetzungsinterview ist im
@@ -111,7 +113,7 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: neunzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: einundzwanzig Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
@@ -125,7 +127,8 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   T04 prüft zwei GMs/zwei Spieler, Parallelität, Hook-Abbruch und Ausfall vor
   beziehungsweise nach Speicherung. T05 prüft Ansichten, Besitzerfilter, UI-Bau,
   Dialogabbruch und Live-Aktualisierung mit zwei Spielern. T06 prüft Vorlagen und Regeln, Besitzerwechsel/-löschung
-  sowie weltlokale GM-Regeldefinitionen. Sieben Integrationstests sind bestanden. Szenentests müssen Canvas aktivieren.
+  sowie weltlokale GM-Regeldefinitionen. T07 prüft native Befehlsdialoge, Herstellung/Ernte, Handel, Erweiterung,
+  Mietlinge/Verteidiger und Ergebnisabrechnung. Acht Integrationstests sind bestanden. Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -161,7 +164,7 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T07.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T08.
 - Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
   Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
   öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
@@ -223,8 +226,19 @@ in einer generierten Szene sind noch nicht geprüft.
   nicht übertragener Charaktereinrichtungen. Ein normaler nativer preCreate-Hook
   stellt die geplante Besitzer-Bauentscheidung nach dem Träger-Level-Default wieder
   her; er ist auf ausdrücklich markierte Modul-Erstellungsoperationen begrenzt.
-- Offen sind vollständige Betriebsaktionen, Kalenderkoordination, Transfer und
-  Szenengenerator. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
+- T07 ist mit GM und zwei Spielern abgenommen: native Herstellungs-/Handels-/
+  Erweiterungsdialoge, Ergebnis-Veto, Drag-and-drop-NSC, individuelle Einnahmen
+  und Wiederholung/Neuladen ohne doppelte Verbuchung.
+- Die Betriebsaktionen liegen im eigenen D&D5e-Auftragsadapter. Native
+  OrderUsageDialog-Instanzen sammeln Optionen ohne Item.use oder native
+  Zahlungsnachricht; Kostenfelder sind schreibgeschützt. Der Executor berechnet
+  Kosten erneut aus Systemkonfiguration, CraftCost und zugänglichen geschützten
+  Quellen. Keine Preise oder Dokumentpatches aus Spielerformularen übernehmen.
+- Native advanceTurn-Ergebnisse werden beim Regelbesitzer atomar ausgezahlt
+  beziehungsweise als Items erzeugt, gemeinsam mit zentralem Fortschritt und Beleg.
+  Mietlinge/Verteidiger sind NSC-Referenzen; öffentliche Identität bleibt minimal.
+- Aktuell offen sind Kalenderkoordination, Transfer und die Stufe-1-Abnahme.
+  Der Szenengenerator bleibt späterer Ausbau. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
   Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill
   meldet keine verfügbaren Browser. Eine separate lokale Chromium-Testumgebung

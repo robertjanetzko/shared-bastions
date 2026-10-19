@@ -7,10 +7,12 @@ Ressourcen vom jeweiligen Besitzercharakter beziehen.
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
 und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
 sind vorhanden. Einrichtungsvorlagen, Bearbeitung und individuelle Regeln sind
-implementiert; vollständige Betriebsaktionen, Kalender, Transfer und Szenengenerator
-fehlen noch. T01–T06 aus `PLAN.md`
+implementiert. Betriebsaktionen und Ergebnisabrechnung sind ebenfalls abgenommen;
+Kalender, Transfer und Stufe-1-Abnahme folgen noch. T01–T07 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
+Der aktuelle Entwicklungsauftrag umfasst Stufe 1 bis T10; der Szenengenerator
+ist für einen späteren Ausbau zurückgestellt.
 
 ## Lokal installieren
 
@@ -69,6 +71,37 @@ fehlende Besitzer reparieren. Sichtbare Ausnahmen für Level, Plätze oder weite
 Voraussetzungen benötigen jeweils eine Begründung. Sie bleiben nach Neuladen
 bestehen und umgehen weder Besitzerrechte noch normale Zahlungen. Persönliche
 Level und Platzlimits sieht nur der jeweilige Besitzer beziehungsweise der GM.
+
+## Befehle, Mietlinge und Ergebnisse
+
+Eigene fertige Einrichtungen zeigen ihre verfügbaren Befehle. Der Knopf öffnet
+den nativen D&D5e-Dialog, ohne einen Befehl direkt auf dem Träger auszuführen.
+Kosten und Dauer werden aus der gewählten Aktion beziehungsweise der geschützten
+Vorlage berechnet; beim Bestätigen prüft der GM-Client sie erneut. Herstellen nutzt
+die native `getCraftCost`-Berechnung. Gegenstände und Kreaturen müssen aus für den
+Spieler lesbaren Quellen stammen; zahlungsrelevante Definitionen bleiben vor
+Spieleränderungen geschützt.
+
+Bei einer Basiseinrichtung bucht „Erweitern“ die Kostendifferenz der nächsten
+Fläche ab und startet den Baufortschritt. Dafür vorgesehene besondere Einrichtungen
+werden wie im System unmittelbar erweitert. Laufende Befehle sperren einen neuen
+Start. Schließen des Dialogs verbraucht nichts; der ausdrückliche Abbruch eines
+bereits begonnenen Befehls erstattet bezahlte Kosten nicht.
+
+„Mietlinge“ und „Bastionsverteidiger“ öffnen die nativen Referenzfelder für NSC.
+Ziehe zugängliche NSC aus dem Akteurverzeichnis oder einem Kompendium auf freie
+Plätze; die native Kapazität wird beim Speichern nochmals geprüft. Der gemeinsame
+Bogen erhält nur UUIDs und benötigte Namen/Bilder, keine privaten Charakterwerte.
+Fehlende Referenzen erscheinen als Warnung und lassen sich durch Entfernen oder
+Neuzuordnung reparieren.
+
+Fortschrittsabschlüsse verwenden die native Bastion-Berechnung. Erzeugte Items
+landen direkt im Inventar des jeweiligen Besitzers; Handelserlöse werden ihm
+gutgeschrieben. Der Träger dient nicht als Kasse. Ergebnis, Fortschritt und
+Vorgangsbeleg werden zusammen gespeichert, wodurch Wiederholung und GM-Neuladen
+keine zweite Übergabe auslösen. Rein erzählerische Vorzüge oder Regelwirkungen,
+die das native System nicht als Ergebnis modelliert, werden weiterhin am Tisch
+abgewickelt.
 
 ## Entwickeln und prüfen
 
