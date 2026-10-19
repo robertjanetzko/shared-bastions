@@ -144,6 +144,15 @@
     "GoldPieces": "GP",
     "Hirelings": "Hirelings",
     "Defenders": "Bastion defenders",
-    "OccupantsHint": "Drag NPCs from the actor directory or an accessible compendium into the slots. Empty slots remain unoccupied."
+    "OccupantsHint": "Drag NPCs from the actor directory or an accessible compendium into the slots. Empty slots remain unoccupied.",
+    "AdvanceTurn": "Advance bastion turn",
+    "CalendarMode": "Daily progress through the calendar",
+    "ManualMode": "Progress per bastion turn",
+    "TurnCount": "Bastion turns",
+    "CompletedOrders": "orders completed",
+    "BlockedOrders": "facilities blocked",
+    "RetryProgress": "Retry progress",
+    "CalendarTurnHint": "Elapsed calendar days are processed once. This turn adds no extra days and repairs shut-down facilities according to the system rules.",
+    "ManualTurnHint": "This turn advances all assigned facilities by the configured duration"
   }
 }

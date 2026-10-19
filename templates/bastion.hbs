@@ -17,6 +17,12 @@
     <button type="button" data-action="addFacility" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "SHARED_BASTION.AddFacility"}}</button>
     {{#if isGM}}<button type="button" data-action="configureTemplates" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TemplateRules"}}</button>{{/if}}
   </div>
+  <div class="bastion-turnbar">
+    <div><span class="hint">{{#if calendar.enabled}}{{localize "SHARED_BASTION.CalendarMode"}}{{else}}{{localize "SHARED_BASTION.ManualMode"}} · {{calendar.duration}} {{localize "SHARED_BASTION.Days"}}{{/if}}</span>
+    {{#if turnCount}}<span class="bastion-turn-count">{{localize "SHARED_BASTION.TurnCount"}}: {{turnCount}}</span>{{/if}}
+    {{#if lastTurn}}<span class="hint">{{lastTurn.completed}} {{localize "SHARED_BASTION.CompletedOrders"}} · {{lastTurn.blocked}} {{localize "SHARED_BASTION.BlockedOrders"}}</span>{{/if}}</div>
+    {{#if isGM}}<button type="button" data-action="advanceTurn" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.AdvanceTurn"}}</button>{{#if hasProgressIssues}}{{#if calendar.enabled}}<button type="button" data-action="retryCalendar" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.RetryProgress"}}</button>{{/if}}{{/if}}{{/if}}
+  </div>
   <div class="bastion-body">
     {{#if emptyParticipants}}<p class="bastion-notice">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
     {{#each sections}}
@@ -33,6 +39,7 @@
             <button type="button" class="bastion-item-name" data-action="viewFacility">{{name}}</button>
             <div class="bastion-meta"><span>{{owner}}</span><span>{{typeLabel}}</span><span>{{sizeLabel}}</span></div>
             {{#if missingOwner}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}
+            {{#if progressIssue}}<p class="bastion-warning">{{localize progressIssueLabel}}</p>{{/if}}
             <div class="bastion-operation"><span class="bastion-state">{{stateLabel}}</span><span>{{orderLabel}}</span></div>
             {{#if progress}}<div class="bastion-progress"><progress value="{{progress.value}}" max="{{progress.max}}" aria-label="{{localize 'SHARED_BASTION.Progress'}}"></progress><span>{{progress.value}} / {{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>{{/if}}
             {{#if notes}}<p class="bastion-note">{{notes}}</p>{{/if}}

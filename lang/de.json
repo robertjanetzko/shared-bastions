@@ -144,6 +144,15 @@
     "GoldPieces": "GM",
     "Hirelings": "Mietlinge",
     "Defenders": "Bastionsverteidiger",
-    "OccupantsHint": "Ziehe NSC aus dem Akteurverzeichnis oder einem zugänglichen Kompendium in die Plätze. Leere Plätze bleiben unbesetzt."
+    "OccupantsHint": "Ziehe NSC aus dem Akteurverzeichnis oder einem zugänglichen Kompendium in die Plätze. Leere Plätze bleiben unbesetzt.",
+    "AdvanceTurn": "Bastionszug ausführen",
+    "CalendarMode": "Tagesfortschritt über den Kalender",
+    "ManualMode": "Fortschritt je Bastionszug",
+    "TurnCount": "Bastionszüge",
+    "CompletedOrders": "Befehle abgeschlossen",
+    "BlockedOrders": "Einrichtungen blockiert",
+    "RetryProgress": "Fortschritt erneut prüfen",
+    "CalendarTurnHint": "Bereits vergangene Kalendertage werden einmal verarbeitet. Dieser Zug zählt keine zusätzlichen Tage und setzt abgeschaltete Einrichtungen nach den Systemregeln wieder instand.",
+    "ManualTurnHint": "Dieser Zug verarbeitet alle zugeordneten Einrichtungen um die eingestellte Dauer"
   }
 }

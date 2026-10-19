@@ -3,6 +3,7 @@ import { BastionError } from "../core/errors.mjs";
 import { resolveFacilityOwner, resolveParticipantOwner, assertCanManage } from "../core/ownership.mjs";
 import { validateRequirements, hasException } from "../core/rules.mjs";
 import { OrderAdapter } from "./orders.mjs";
+import { CalendarAdapter } from "./calendar.mjs";
 
 /** All system-specific reads belong here. No system or core files are patched. */
 export class Dnd5eAdapter {
@@ -11,6 +12,7 @@ export class Dnd5eAdapter {
     this.config = config;
     this.resolveUuid = resolveUuid;
     this.operations = new OrderAdapter(this);
+    this.calendar = new CalendarAdapter(this);
   }
 
   compatibility() {
@@ -120,6 +122,7 @@ export class Dnd5eAdapter {
     data._id = id;
     data.flags = { dnd5e: foundry.utils.deepClone(source.flags.dnd5e ?? {}), [MODULE_ID]: { owner, revision: 0, source: source.uuid,
       requirements: validateRequirements(source.flags[MODULE_ID]?.requirements ?? []), repeatable: source.flags[MODULE_ID]?.repeatable === true, exceptions } };
+    data.flags[MODULE_ID].calendarTime = this.game.time.worldTime;
     // Reset operation state rather than importing a template's occupants or completed rewards.
     data.system.building = { built: false, size: data.system.size };
     data.system.progress = { value: 0, max: null, order: "", paid: false };
@@ -233,6 +236,7 @@ export class Dnd5eAdapter {
     return {
       operations,
       updates: {
+        [`flags.${MODULE_ID}.calendarTime`]: this.game.time.worldTime, [`flags.${MODULE_ID}.progressIssue`]: null,
         "system.building.size": payload.size,
         "system.progress": { value: 0, max: size.days, order: "build", paid: true }
       }
@@ -244,7 +248,10 @@ export class Dnd5eAdapter {
     const bastion = this.game.dnd5e?.bastion;
     if (!bastion?.advanceTurn) throw new BastionError("UnsupportedRuntime");
     const result = await bastion.advanceTurn(facility, { duration: payload.days, turn: false, performUpdates: false });
-    return this.operations.settle(facility, owner, result);
+    const plan = await this.operations.settle(facility, owner, result);
+    plan.updates[`flags.${MODULE_ID}.calendarTime`] = this.game.time.worldTime;
+    plan.updates[`flags.${MODULE_ID}.progressIssue`] = null;
+    return plan;
   }
 
   /** Only public runtime diagnostics: never include owner currency, traits, or documents. */

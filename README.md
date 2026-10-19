@@ -7,8 +7,8 @@ Ressourcen vom jeweiligen Besitzercharakter beziehen.
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
 und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
 sind vorhanden. Einrichtungsvorlagen, Bearbeitung und individuelle Regeln sind
-implementiert. Betriebsaktionen und Ergebnisabrechnung sind ebenfalls abgenommen;
-Kalender, Transfer und Stufe-1-Abnahme folgen noch. T01–T07 aus `PLAN.md`
+implementiert. Betriebsaktionen, Ergebnisabrechnung und Kalender sind ebenfalls abgenommen;
+Transfer und Stufe-1-Abnahme folgen noch. T01–T08 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 Der aktuelle Entwicklungsauftrag umfasst Stufe 1 bis T10; der Szenengenerator
@@ -103,6 +103,29 @@ keine zweite Übergabe auslösen. Rein erzählerische Vorzüge oder Regelwirkung
 die das native System nicht als Ergebnis modelliert, werden weiterhin am Tisch
 abgewickelt.
 
+## Bastionzüge und Kalender
+
+Der GM führt „Bastionzug ausführen“ im gemeinsamen Bogen aus. Der Dialog zeigt
+die eingestellte Dauer; es gibt keinen Bereit-Status. Ohne aktivierte automatische
+Kalenderfortschritte zählt ein Zug die in D&D5e eingestellten Tage. Auch der native
+globale Bastionsknopf verarbeitet die gemeinsame Bastion über denselben Ablauf.
+Einrichtungen auf anderen Charakteren behalten ihren nativen Systemablauf.
+
+Ist der automatische D&D5e-Kalender aktiv, treiben Weltzeit-Tageswechsel die
+Einrichtungen voran. Ein zusätzlicher Bastionzug zählt keine Tage doppelt; er
+repariert beispielsweise abgeschaltete Einrichtungen nach den nativen Regeln.
+Das Aktivieren oder Wechseln des Kalenders beginnt am aktuellen Datum und holt
+keine Zeit aus einem vorherigen Kalendermodus nach. Rückwärtsstellen der Uhr
+erstattet nichts; bereits verarbeitete Tage werden auch nach Vorwärtsstellen,
+Neuladen oder GM-Wechsel nicht erneut gezählt.
+
+Fehlen Besitzer oder Ergebnisvorlagen, zeigt der Bogen die betroffenen
+Einrichtungen an. Andere Einrichtungen laufen weiter. Nach der Reparatur kann
+der GM „Fortschritt erneut prüfen“ verwenden; wiederhergestellte Welt-Item-Vorlagen
+lösen die Prüfung auch automatisch aus. Ein fehlgeschlagener Kalendertag bleibt
+für diese Einrichtung offen. Auszahlungen an denselben Besitzer werden summiert
+und gemeinsam mit Fortschritt und Beleg gespeichert.
+
 ## Entwickeln und prüfen
 
 Node.js 24 oder neuer; zum Packen zusätzlich Python 3. `npm ci` installiert
@@ -136,7 +159,8 @@ Der Modulstart und die Statusansicht wurden damit auf Foundry **14.369** /
 D&D5e **6.0.6** bestätigt. T02 prüft zusätzlich einen kostenpflichtigen
 Spieler-Bauauftrag mit privatem Besitzer und zentralem Item, Ablehnungen,
 Wiederholungen und Fortschritt. Die Verwaltungsprüfungen verwenden Foundrys
-offiziellen Modus ohne Canvas. Kalender und Szenen sind noch nicht abgenommen.
+offiziellen Modus ohne Canvas. Der Kalender ist in T08 bestätigt; Szenen gehören
+zum zurückgestellten Ausbau.
 T03 bestätigt zusätzlich Erstellung im Verzeichnis, Wiederöffnen nach Neuladen,
 Teilnehmerrechte und den Umgang mit gelöschten Besitzern. Bei Rechteänderungen
 meldet Foundry 14.369 im Modus ohne Canvas einen eigenen `cycleTokens`-Fehler;

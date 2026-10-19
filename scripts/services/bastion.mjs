@@ -12,6 +12,7 @@ function ownershipPatch(actor, ownership) {
 }
 
 export class BastionRepository {
+  constructor(adapter) { this.adapter = adapter; }
   find() {
     const uuid = game.settings.get(MODULE_ID, "bastionUuid");
     const actor = game.actors.get(uuid?.split(".")[1]);
@@ -84,7 +85,7 @@ export class BastionRepository {
       flags: {
         core: { sheetClass: `${MODULE_ID}.BastionSheet` },
         [MODULE_ID]: { bastion: true, version: DATA_VERSION, participants: input.participants,
-          roster: config.roster, revision: 0 }
+          roster: config.roster, revision: 0, ...this.adapter.calendar.initialState() }
       }
     };
     const operations = [{ action: "create", documentName: "Actor", keepId: true, data: [actor] }];

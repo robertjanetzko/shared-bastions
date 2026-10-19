@@ -107,7 +107,7 @@ export class FacilityService {
       await this.participant(bastion, payload.owner);
       const candidate = document.clone({ [`flags.${MODULE_ID}.owner`]: payload.owner }, { keepId: true });
       await this.adapter.assertRules(candidate, { adding: payload.owner !== document.flags[MODULE_ID].owner });
-      updates = { [`flags.${MODULE_ID}.owner`]: payload.owner };
+      updates = { [`flags.${MODULE_ID}.owner`]: payload.owner, [`flags.${MODULE_ID}.progressIssue`]: null };
     }
     if (action === "setFacilityRules") {
       if (!user.isGM) throw new BastionError("GMOnly");

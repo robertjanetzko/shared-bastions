@@ -44,6 +44,93 @@ test("T01: native startup and the status application render without module error
   } finally { await context.close(); }
 });
 
+test("T08: native turns and calendar days settle the shared bastion once across GM reload and failover",async({browser})=>{
+  const gmContext=await browser.newContext();const playerContext=await browser.newContext();const secondContext=await browser.newContext();
+  let gm=await join(gmContext,"Gamemaster");let fixtures;let second;
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T08 ";const api=game.modules.get("shared-bastion").api;
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture).sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const original={calendar:game.settings.get("dnd5e","calendarConfig").toObject(),bastion:game.settings.get("dnd5e","bastionConfiguration").toObject(),turns:game.settings.get("dnd5e","bastionTurns"),time:game.time.worldTime};
+      await game.settings.set("dnd5e","calendarConfig",{...original.calendar,enabled:false});
+      await game.settings.set("dnd5e","bastionConfiguration",{...original.bastion,enabled:true,button:true,duration:7});
+      const player=await User.create({name:prefix+"Player",role:CONST.USER_ROLES.PLAYER});
+      const second=await User.create({_id:"zzzzzzzzzzzzzzzz",name:prefix+"GM",role:CONST.USER_ROLES.GAMEMASTER},{keepId:true});
+      const flags={"shared-bastion":{integrationFixture:true}};
+      const character=async(name,gold,ownership={default:0})=>Actor.create({name:prefix+name,type:"character",flags,ownership,system:{currency:{gp:gold}},items:[{name:"Class",type:"class",system:{levels:20,identifier:"fighter"}}]});
+      const owner=await character("Owner",1000,{default:0,[player.id]:3});const other=await character("Other",9000);const unrelated=await character("Native Bastion",0);
+      const bastion=await api.repository.create({name:prefix+"Bastion",participants:[owner.uuid,other.uuid]});
+      await bastion.update({"flags.shared-bastion.integrationFixture":true,"system.currency.gp":7000});
+      await bastion.createEmbeddedDocuments("Item",[{name:"Carrier class",type:"class",system:{levels:20,identifier:"fighter"}}]);
+      const room=(name,ownerUuid)=>({name,type:"facility",flags:{"shared-bastion":{owner:ownerUuid,revision:0,calendarTime:game.time.worldTime}},system:{type:{value:"basic",subtype:"bedroom"},building:{built:true,size:"cramped"},size:"cramped"}});
+      const rooms=await bastion.createEmbeddedDocuments("Item",[room("Building A",owner.uuid),room("Building B",other.uuid),room("Sale A1",owner.uuid),room("Sale A2",owner.uuid),room("Missing result",owner.uuid)]);
+      await bastion.updateEmbeddedDocuments("Item",rooms.map((f,index)=>({_id:f.id,"system.progress":{value:0,max:index===4?100: index<2?100:7,order:index<2?"build":index===4?"craft":"trade",paid:true},
+        ...(index===2||index===3?{"system.trade.stock":{max:1000,value:100},"system.trade.profit":20,"system.trade.pending":{operation:"sell",value:40,creatures:[],stocked:false}}:{})})));
+      const [native]=await unrelated.createEmbeddedDocuments("Item",[room("Native room",owner.uuid)]);
+      await native.update({"system.progress":{value:0,max:100,order:"build",paid:true}});
+      const recipe=await Item.create({name:prefix+"Recipe",type:"loot",ownership:{default:2},flags,system:{price:{value:10,denomination:"gp"},quantity:1}});
+      await rooms[4].update({"system.craft.item":recipe.uuid});
+      return {original,bastion:bastion.id,owner:owner.id,other:other.id,unrelated:unrelated.id,native:native.id,rooms:rooms.map(f=>f.id),recipe:recipe.toObject(),player:player.id,playerName:player.name,second:second.id,secondName:second.name};
+    });
+    const player=await join(playerContext,fixtures.playerName);
+    const state=()=>gm.evaluate(data=>{const b=game.actors.get(data.bastion);return {progress:data.rooms.map(id=>b.items.get(id).system.progress.value),
+      native:game.actors.get(data.unrelated).items.get(data.native).system.progress.value,gold:game.actors.get(data.owner).system.currency.gp,
+      other:game.actors.get(data.other).system.currency.gp,carrier:b.system.currency.gp,count:b.flags["shared-bastion"].turnCount??0,
+      issue:b.items.get(data.rooms[4]).flags["shared-bastion"].progressIssue?.code??null,
+      rewards:game.actors.get(data.owner).items.filter(i=>i.flags["shared-bastion"]?.resultFrom).length};},fixtures);
+    expect(await player.evaluate(async()=>{try{await game.modules.get("shared-bastion").api.advanceTurn();return "allowed";}catch(e){return e.code;}})).toBe("GMOnly");
+    await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await gm.locator('.bastion-turnbar [data-action="advanceTurn"]').click();
+    await gm.locator('dialog [data-action="yes"]').click();
+    await expect.poll(state).toMatchObject({progress:[7,7,0,0,7],native:0,gold:1096,count:1,other:9000,carrier:7000});
+    await gm.evaluate(()=>game.dnd5e.bastion.advanceAllBastions());
+    expect(await state()).toMatchObject({progress:[14,14,0,0,14],native:7,gold:1096,count:2});
+    expect(await gm.evaluate(id=>game.messages.some(m=>m.type==="bastionTurn"&&m.speaker.actor===id),fixtures.bastion)).toBe(false);
+    await gm.evaluate(async()=>{const setting=game.settings.get("dnd5e","calendarConfig").toObject();await game.settings.set("dnd5e","calendarConfig",{...setting,enabled:true});});
+    await expect.poll(()=>gm.evaluate(id=>game.actors.get(id).flags["shared-bastion"].calendarMode,fixtures.bastion)).toBe(true);
+    const advance=days=>gm.evaluate(days=>{const d=game.time.calendar.days;return game.time.advance(days*d.hoursPerDay*d.minutesPerHour*d.secondsPerMinute);},days);
+    await advance(3);
+    await expect.poll(state).toMatchObject({progress:[17,17,0,0,17],native:10,gold:1096});
+    // Repeated event, reversed clock and a return to an already processed date add no days.
+    await gm.evaluate(()=>Hooks.callAll("updateWorldTime",game.time.worldTime,86400,{},game.user.id));
+    await advance(-2);await advance(2);
+    await expect.poll(state).toMatchObject({progress:[17,17,0,0,17],gold:1096});
+    await gm.evaluate(async data=>{
+      const b=game.actors.get(data.bastion);await b.items.get(data.rooms[1]).update({"system.disabled":true});
+      await b.items.get(data.rooms[4]).update({"system.progress.max":18});await game.items.get(data.recipe._id).delete();
+    },fixtures);
+    await advance(1);
+    await expect.poll(state).toMatchObject({progress:[18,17,0,0,17],issue:"OperationSourceUnavailable",gold:1096});
+    await gm.evaluate(()=>game.dnd5e.bastion.advanceAllBastions());
+    expect(await state()).toMatchObject({progress:[18,17,0,0,17],count:3,gold:1096});
+    await expect(gm.locator('.bastion-turnbar [data-action="retryCalendar"]')).toBeVisible();
+    await gm.locator('.bastion-sheet .bastion-shell').screenshot({path:"test-results/t08-calendar.png"});
+    await gm.evaluate(data=>Item.create(data,{keepId:true}),fixtures.recipe);
+    await expect.poll(state,{timeout:15000}).toMatchObject({issue:null,rewards:1,progress:[18,17,0,0,0]});
+    await gm.reload();await gm.waitForFunction(()=>game.ready===true);
+    expect(await state()).toMatchObject({gold:1096,rewards:1,progress:[18,17,0,0,0]});
+    second=await join(secondContext,fixtures.secondName);
+    await expect.poll(()=>gm.evaluate(()=>game.modules.get("shared-bastion").api.repository.bus.isExecutor)).toBe(true);
+    await gmContext.close();gm=second;
+    await expect.poll(()=>gm.evaluate(()=>game.modules.get("shared-bastion").api.repository.bus.isExecutor)).toBe(true);
+    await advance(1);
+    await expect.poll(state).toMatchObject({gold:1096,rewards:1,progress:[19,18,0,0,0]});
+    console.log("T08 passed",JSON.stringify(await state()));
+  } finally {
+    await playerContext.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      for(const id of [data.bastion,data.owner,data.other,data.unrelated]) await game.actors.get(id)?.delete();
+      await game.items.get(data.recipe._id)?.delete();
+      await game.settings.set("dnd5e","calendarConfig",data.original.calendar);await game.settings.set("dnd5e","bastionConfiguration",data.original.bastion);
+      await game.settings.set("dnd5e","bastionTurns",data.original.turns);await game.time.advance(data.original.time-game.time.worldTime);
+      await game.users.get(data.player)?.delete();
+      if(game.user.id!==data.second) await game.users.get(data.second)?.delete();
+    },fixtures);
+    await gmContext.close().catch(()=>{});await secondContext.close().catch(()=>{});
+  }
+});
+
 test("T04: a late native server collision rolls back earlier operations in the same batch", async({browser})=>{
   const context=await browser.newContext();
   const gm=await join(context,"Gamemaster");

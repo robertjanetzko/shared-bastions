@@ -6,6 +6,7 @@ import { BastionRepository } from "./services/bastion.mjs";
 import { BastionSheet } from "./applications/bastion-sheet.mjs";
 import { installDirectory } from "./directory.mjs";
 import { FacilityService } from "./services/facilities.mjs";
+import { TurnService } from "./services/turns.mjs";
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bastionUuid", { scope: "world", config: false, type: String, default: "" });
@@ -26,11 +27,13 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   const adapter = new Dnd5eAdapter({ game, config: CONFIG, resolveUuid: uuid => fromUuid(uuid) });
-  const repository = new BastionRepository();
+  const repository = new BastionRepository(adapter);
   const bus = new CommandBus(adapter, repository);
   repository.bus = bus;
   const facilities = new FacilityService(adapter, repository);
   bus.facilities = facilities;
+  const turns = new TurnService(adapter, repository, bus);
+  bus.turns = turns;
   const canWrite = adapter.diagnostics().writeRuntimeSupported;
   if (canWrite) { adapter.install(); bus.install(); repository.install(); }
   installDirectory(repository);
@@ -45,8 +48,11 @@ Hooks.once("ready", () => {
     ownerSummary: (bastion, uuid) => adapter.ownerSummary(bastion, uuid, game.user),
     configureOrder: (item, order) => adapter.operations.configure(item, order, game.user),
     occupantForm: (item, role) => adapter.operations.occupantForm(item, role, game.user),
+    calendarState: () => ({ enabled: adapter.calendar.enabled, duration: adapter.calendar.duration }),
+    advanceTurn: () => turns.turn(),
     request: (action, facility, payload) => bus.request(action, facility, payload)
   });
+  if (canWrite) turns.install();
   if (canWrite) void repository.migrate().then(() => bus.resume()).catch(console.error);
   if (!adapter.compatibility().supported) {
     ui.notifications.error("SHARED_BASTION.Errors.UnsupportedRuntime", { localize: true });

@@ -113,9 +113,9 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 5. Kalender, Zug, Wiederholung und GM-Wechsel prüfen. Bei Teilfehlern müssen
    Ressourcen und Fortschritt ohne doppelte Verbuchung wiederherstellbar sein.
 
-Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
-T04 bestätigt zusätzlich GM-Wechsel und die Transaktionsgrenze. Kalender und
-vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T08.
+Punkte 1–5 sind bestätigt. T04 prüft GM-Wechsel und die Transaktionsgrenze,
+T07 die Betriebsaktionen, T08 native Kalender-/Zugkoordination.
+Nächster Task ist T09 (Transfer).
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -247,3 +247,49 @@ speichern nur UUID/Name/Bild. Der native Item-Identifier stammt aus dem Document
 Mixin (`item.identifier`), nicht ausschließlich aus `system.identifier`.
 Reine Beschreibungs-/Erzählwirkungen bleiben wie im nativen System außerhalb der
 automatischen Ergebnisabrechnung.
+
+## T08: Kalender und Bastionzüge
+
+Bestätigt auf Foundry 14.369 / D&D5e 6.0.6 mit getrennten GM-/Spielerclients:
+Der Bogen führt einen GM-Zug ohne Bereitschaftsmarkierungen aus. Ohne
+Kalenderautomatik zählt die eingestellte Dauer (geprüft: sieben Tage); mit
+Kalenderautomatik zählen ausschließlich die vergangenen Tagesgrenzen. Native
+globale Bastionzüge delegieren den gemeinsamen Aktor an denselben GM-Befehlspfad.
+Ein anderer Charakter mit Facility läuft unverändert durch die native Funktion.
+
+Der System-Singleton bietet keinen Hook zum Ausschluss eines Aktors. Im Adapter
+wird deshalb ausschließlich dessen `advanceAllFacilities`-Instanzmethode delegiert:
+kanonischer Aktor an den eigenen Ablauf, andere Aktoren an die unveränderte
+Originalfunktion. Aufrufe mit `performUpdates:false` liefern für den gemeinsamen
+Aktor keine Updates und keine native Ergebniskarte. Der native Kalender sammelt
+sonst eigene Item-Updates und erzeugt eine Ergebnisnachricht für den physischen
+Elternaktor. Der eigene Weltzeit-Hook übernimmt stattdessen Fortschritt, jeweilige
+Besitzerinventare, summierte Besitzereinnahmen und Beleg in einer Transaktion.
+Keine Systemdateien, Prototypen oder globalen Einzel-Fortschrittsfunktionen ändern.
+Die Brücke ist für diese Builds geprüft; fremde Module, die rohe Sammelupdates
+für diesen Aktor erwarten, sind nicht separat bestätigt.
+
+Tagesdifferenzen stammen aus der tatsächlichen nativen Kalenderklasse. Beim
+Modus-/Kalenderwechsel gilt die aktuelle Zeit als Ausgangspunkt. Jede Einrichtung
+hat eine vorwärts laufende Zeitmarke. Wiederholte Hooks, Uhr-Rücksprung mit Rückkehr
+auf dasselbe Datum und Neuladen zählen keine bereits verbuchten Tage erneut.
+Abgeschaltete Einrichtungen überspringen Kalendertage und werden erst beim Zug
+repariert; der Zug im Kalendermodus fügt keine weiteren Tage hinzu.
+
+Fehlende Besitzer oder Ergebnisvorlagen erhalten einen sichtbaren Fehler und
+behalten ihre offene Zeitmarke; andere Einrichtungen laufen weiter. Derselbe
+fehlerhafte Tag wird ohne erneute GM-Prüfung nicht in einer Schleife angefragt.
+Nach Wiederherstellung der Welt-Item-Vorlage wird der Abschluss einmal nachgeholt.
+Native unveränderte Item-Updates dürfen beim Kalenderwechsel nicht im strikten
+Batch stehen: Foundry entfernt sie im Preflight, was den gesamten Batch zu Recht
+abbrechen würde.
+
+Prüfergebnis: Zwei Verkäufe à 48 GP für denselben Besitzer ergeben zusammen
+96 GP (1.000→1.096), während anderer Besitzer (9.000) und Träger (7.000) unverändert
+bleiben. Drei manuelle/native Züge, automatische Tage, fehlende Herstellungsvorlage,
+Reparatur, Neuladen und Wechsel zum zweiten aktiven GM liefern insgesamt genau
+ein Herstellungs-Item und keine weiteren Verkaufserlöse. Der GM-Bogen ist visuell
+geprüft. Die Verwaltungsprüfung nutzt weiterhin natives noCanvas.
+Die Gesamtsuite mit neun nativen Integrationstests besteht in 3,4 Minuten;
+23 Unit-Tests, Syntax-/Sprachprüfung, Paketierung und native Offline-API-Prüfung
+sind erfolgreich. Das Archiv enthält weder Handbuch noch Entwicklungsdaten.

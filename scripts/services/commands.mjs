@@ -4,6 +4,7 @@ import { assertCanManage, electGM, resolveFacilityOwner } from "../core/ownershi
 import { strictBatch, assertWriteRuntime } from "../adapters/foundry.mjs";
 import { FACILITY_ACTIONS, validateFacilityPayload } from "./facilities.mjs";
 import { OPERATION_ACTIONS, validateOperationPayload } from "./operations.mjs";
+import { TURN_ACTIONS, validateTurnPayload } from "./turns.mjs";
 
 const LEDGER_ID = "SharedBastionLog";
 const QUEUE_ID = "SharedBastionReq";
@@ -23,6 +24,9 @@ export function validateRequest(request) {
       || !Array.isArray(request.payload.participants) || request.payload.participants.length > 100
       || request.payload.participants.some(uuid => !actorUuid.test(uuid))
       || new Set(request.payload.participants).size !== request.payload.participants.length) throw new BastionError("InvalidRequest");
+  } else if (TURN_ACTIONS.has(request.action)) {
+    if (!actorUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
+    validateTurnPayload(request.action, request.payload);
   } else if (FACILITY_ACTIONS.has(request.action)) {
     if (!(["addFacility", "setTemplateRules"].includes(request.action) ? actorUuid : itemUuid).test(request.facility ?? "")) throw new BastionError("InvalidRequest");
     validateFacilityPayload(request.action, request.payload);
@@ -194,6 +198,7 @@ export class CommandBus {
     if (!bastion || (document !== bastion && document?.parent !== bastion)) throw new BastionError("InvalidBastion");
     if (bastion.flags[MODULE_ID].version !== DATA_VERSION) throw new BastionError("UnsupportedDataVersion");
     if ((document.flags[MODULE_ID]?.revision ?? 0) !== request.revision) throw new BastionError("Conflict");
+    if (TURN_ACTIONS.has(request.action)) return this.turns.plan(bastion, request, user);
     if (request.action === "configureBastion") {
       if (!user.isGM) throw new BastionError("GMOnly");
       return this.repository.planConfigure(bastion, request.payload);

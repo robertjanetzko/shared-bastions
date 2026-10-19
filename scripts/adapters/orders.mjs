@@ -134,6 +134,8 @@ export class OrderAdapter {
     const { owner } = await this.adapter.assertRules(facility);
     const { days, gold, updates } = await this.quote(facility, payload, user);
     if (days) updates["system.progress"] = { value: 0, max: days, order: payload.order, paid: true };
+    updates[`flags.${MODULE_ID}.calendarTime`] = this.game.time.worldTime;
+    updates[`flags.${MODULE_ID}.progressIssue`] = null;
     return { operations: this.payment(owner, gold), updates };
   }
 
@@ -200,6 +202,7 @@ export class OrderAdapter {
     if (!facility.system.progress.max) throw new BastionError("InvalidOrder");
     const trade = facility.system.trade;
     const updates = { "system.progress": { value: 0, max: null, order: "", paid: false },
+      [`flags.${MODULE_ID}.calendarTime`]: this.game.time.worldTime, [`flags.${MODULE_ID}.progressIssue`]: null,
       "system.trade.pending.operation": null, "system.trade.pending.creatures": [], "system.trade.pending.value": null,
       "system.trade.pending.stocked": false, "system.craft.item": null };
     if (facility.system.progress.order === "trade" && trade.pending.operation === "sell" && trade.pending.creatures.length) {
@@ -208,15 +211,19 @@ export class OrderAdapter {
     return { operations: [], updates };
   }
 
-  async settle(facility, owner, result) {
-    const operations = [];
-    const items = [];
-    if (result.gold) {
+  credit(owner, gold) {
+    if (gold) {
       const denomination = this.config.DND5E.defaultCurrency;
-      const total = owner.system.currency[denomination] + result.gold;
+      const total = owner.system.currency[denomination] + gold;
       if (!Number.isFinite(total) || total < 0 || total > Number.MAX_SAFE_INTEGER) throw new BastionError("InvalidOrder");
-      operations.push({ action: "update", documentName: "Actor", updates: [{ _id: owner.id, [`system.currency.${denomination}`]: total }] });
+      return [{ action: "update", documentName: "Actor", updates: [{ _id: owner.id, [`system.currency.${denomination}`]: total }] }];
     }
+    return [];
+  }
+
+  async settle(facility, owner, result, { deferGold = false } = {}) {
+    const operations = deferGold ? [] : this.credit(owner, result.gold);
+    const items = [];
     for (const reward of result.items ?? []) {
       const source = await this.source(reward.uuid, this.game.user);
       if (!Number.isSafeInteger(reward.quantity) || reward.quantity < 1) {

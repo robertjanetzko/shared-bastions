@@ -20,7 +20,8 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       addFacility: BastionSheet.addFacility, editFacility: BastionSheet.manageFacility,
       removeFacility: BastionSheet.manageFacility, reassignFacility: BastionSheet.manageFacility,
       setFacilityRules: BastionSheet.manageFacility, configureTemplates: BastionSheet.configureTemplates,
-      issueOrder: BastionSheet.issueOrder, cancelOrder: BastionSheet.cancelOrder, setOccupants: BastionSheet.setOccupants }
+      issueOrder: BastionSheet.issueOrder, cancelOrder: BastionSheet.cancelOrder, setOccupants: BastionSheet.setOccupants,
+      advanceTurn: BastionSheet.advanceTurn, retryCalendar: BastionSheet.retryCalendar }
   };
 
   static PARTS = { bastion: { template: template("bastion"), scrollable: [".bastion-body"] } };
@@ -33,6 +34,21 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
   get api() { return game.modules.get(MODULE_ID).api; }
 
   static async configure() { await configureBastion(this.api.repository, this.actor); }
+
+  static async advanceTurn() {
+    try {
+      const confirmed = await DialogV2.confirm({ window: { title: "SHARED_BASTION.AdvanceTurn" },
+        content: await foundry.applications.handlebars.renderTemplate(template("turn"), {
+          name: this.actor.name, ...this.api.calendarState()
+        }), rejectClose: false });
+      if (confirmed) await this.api.advanceTurn();
+    } catch (error) { reportError(error); }
+  }
+
+  static async retryCalendar() {
+    try { await this.api.request("calendarAdvance", this.actor.uuid, { until: game.time.worldTime, retry: true }); }
+    catch (error) { reportError(error); }
+  }
 
   static async configureTemplates() {
     try { await facilityDialogs.configureTemplates(this.actor, this.api); } catch (error) { reportError(error); }
@@ -163,6 +179,8 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       const own = owned.has(owner?.uuid);
       const rules = own ? await this.api.checkRules(item) : null;
       return { ...data, owner: owner?.name ?? game.i18n.localize("SHARED_BASTION.UnknownOwner"),
+        progressIssue: item.flags[MODULE_ID]?.progressIssue,
+        progressIssueLabel: item.flags[MODULE_ID]?.progressIssue ? `SHARED_BASTION.Errors.${item.flags[MODULE_ID].progressIssue.code}` : null,
         ownerUuid: owner?.uuid ?? "unknown", missingOwner: !owner?.available,
         canAdmin: canWrite && game.user.isGM,
         notes: item.flags[MODULE_ID]?.notes,
@@ -194,6 +212,8 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
         { value: "mine", name: game.i18n.localize("SHARED_BASTION.FilterMine") }, ...roster.map(entry => ({ value: entry.uuid, name: entry.name }))]
         .map(entry => ({ ...entry, selected: entry.value === this.filter })),
       roster, participantCount: roster.length, facilityCount: facilities.length,
+      calendar: this.api.calendarState(), turnCount: state.turnCount ?? 0, lastTurn: state.lastTurn,
+      hasProgressIssues: this.actor.items.some(item => item.type === "facility" && item.flags[MODULE_ID]?.progressIssue),
       canAdd: canWrite && owned.size > 0 && !this.busy.has("add"),
       emptyParticipants: !roster.length
     };

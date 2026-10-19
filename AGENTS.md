@@ -143,8 +143,8 @@ Docker-Container. In der Testwelt `shared-bastion-integration` wurde das Modul
 mit D&D5e **6.0.6** aktiviert; Start und Statusansicht wurden mit Chromium
 erfolgreich geprüft (T01). Der Quellcode wurde auf Commit
 `28f35531021bb07609c79c4cbbb9b7e7c2744bf9` geprüft. Ein kostenpflichtiger
-zentraler Bauauftrag mit privatem Besitzer ist nachgewiesen (T02). Das bestätigt
-noch nicht alle Betriebsaktionen oder die Kalenderintegration. Chromium nutzt
+zentraler Bauauftrag mit privatem Besitzer ist nachgewiesen (T02); weitere
+Betriebsaktionen und Kalender sind in T07/T08 bestätigt. Chromium nutzt
 Softwaregrafik; Sicht und Bewegung
 in einer generierten Szene sind noch nicht geprüft.
 
@@ -164,7 +164,7 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T08.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T09.
 - Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
   Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
   öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
@@ -237,7 +237,21 @@ in einer generierten Szene sind noch nicht geprüft.
 - Native advanceTurn-Ergebnisse werden beim Regelbesitzer atomar ausgezahlt
   beziehungsweise als Items erzeugt, gemeinsam mit zentralem Fortschritt und Beleg.
   Mietlinge/Verteidiger sind NSC-Referenzen; öffentliche Identität bleibt minimal.
-- Aktuell offen sind Kalenderkoordination, Transfer und die Stufe-1-Abnahme.
+- T08 bestätigt native globale Züge, automatische Tageswechsel, individuelle
+  Ergebnisaddition sowie Neuladen und GM-Wechsel ohne Wiederholung. Der Adapter
+  delegiert ausschließlich die kanonische Bastion am Singleton
+  `game.dnd5e.bastion.advanceAllFacilities`; normale Charaktere bleiben nativ.
+  Native reine Sammelaufrufe (`performUpdates:false`) liefern für die gemeinsame
+  Bastion keine Updates/Chatnachricht; der eigene GM-Zeitpfad schreibt atomar.
+  Diese begrenzte Laufzeitbrücke ist auf 14.369 / 6.0.6 geprüft, keine installierte
+  Systemdatei wird verändert. Kalenderkonfiguration und Moduswechsel setzen einen
+  neuen Ausgangszeitpunkt; per Einrichtung gespeicherte Zeitmarken verhindern
+  erneute Verarbeitung, auch nach Rückwärtsstellen der Uhr.
+- Fehlende Fortschrittsreferenzen blockieren nur die betroffene Einrichtung;
+  ihr offener Zeitraum bleibt erhalten. Nach Reparatur erneut prüfen. Beim
+  Kalenderwechsel unveränderte Item-Updates auslassen, da Foundry sie sonst im
+  nativen Preflight entfernt und der strikte Batch absichtlich abbricht.
+- Aktuell offen sind Transfer und die Stufe-1-Abnahme.
   Der Szenengenerator bleibt späterer Ausbau. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
   Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill

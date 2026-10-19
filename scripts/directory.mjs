@@ -29,6 +29,9 @@ export function installDirectory(repository) {
   Hooks.on("userConnected", refresh);
   Hooks.on("updateUser", refresh);
   Hooks.on("updateActor", refresh);
+  Hooks.on("updateSetting", setting => {
+    if (["dnd5e.calendarConfig", "dnd5e.bastionConfiguration"].includes(setting.key)) refresh();
+  });
   for (const event of ["createItem", "updateItem", "deleteItem"]) Hooks.on(event, item => {
     if (item.parent?.flags[MODULE_ID]?.bastion) refresh();
   });
