@@ -1,0 +1,5 @@
+<p>{{name}}</p>
+<label>{{localize "SHARED_BASTION.Size"}}
+  <select name="size">{{#each sizes}}<option value="{{value}}">{{label}} · {{cost}} {{currency}} · {{days}} {{localize "SHARED_BASTION.Days"}}</option>{{/each}}</select>
+</label>
+<p class="hint">{{localize "SHARED_BASTION.BuildHint"}}</p>

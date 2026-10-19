@@ -7,18 +7,38 @@
   {{#unless hasConnection}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.ConnectionRequired"}}</p>
   {{else}}{{#unless hasGM}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.NoGM"}}</p>
   {{else}}{{#unless canWrite}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/unless}}{{/unless}}
+  <nav class="bastion-tabs" aria-label="{{localize 'SHARED_BASTION.Views'}}">
+    <button type="button" data-action="changeView" data-view="owners" aria-pressed="{{ownersView}}" class="{{#if ownersView}}active{{/if}}">{{localize "SHARED_BASTION.ByOwner"}}</button>
+    <button type="button" data-action="changeView" data-view="overview" aria-pressed="{{overviewView}}" class="{{#if overviewView}}active{{/if}}">{{localize "SHARED_BASTION.Overview"}}</button>
+  </nav>
+  <div class="bastion-toolbar">
+    <label>{{localize "SHARED_BASTION.Filter"}} <select name="ownerFilter">{{#each filters}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
+    <span class="hint">{{participantCount}} {{localize "SHARED_BASTION.Participants"}} · {{facilityCount}} {{localize "SHARED_BASTION.Facilities"}}</span>
+  </div>
   <div class="bastion-body">
-    <section aria-label="{{localize 'SHARED_BASTION.Participants'}}">
-      <h2>{{localize "SHARED_BASTION.Participants"}} <span class="bastion-count">{{participantCount}}</span></h2>
-      <div class="bastion-roster">
-        {{#each roster}}<article class="bastion-owner"><img src="{{img}}" alt=""><span>{{name}}</span>{{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}</article>
-        {{else}}<p class="hint">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/each}}
-      </div>
+    {{#if emptyParticipants}}<p class="bastion-notice">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
+    {{#each sections}}
+    <section class="bastion-owner-section" data-owner-uuid="{{uuid}}">
+      <header class="bastion-section-heading">{{#if img}}<img src="{{img}}" alt="">{{/if}}<h2>{{name}}</h2>{{#if uuid}}{{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}{{/if}}</header>
+      {{#each groups}}
+      <section class="bastion-group" data-type="{{type}}">
+        <h3>{{localize label}} <span class="bastion-count">{{facilities.length}}</span></h3>
+        {{#each facilities}}
+        <article class="bastion-facility" data-facility-id="{{id}}">
+          <img class="bastion-facility-image" src="{{img}}" alt="">
+          <div class="bastion-facility-main">
+            <button type="button" class="bastion-item-name" data-action="viewFacility">{{name}}</button>
+            <div class="bastion-meta"><span>{{owner}}</span><span>{{typeLabel}}</span><span>{{sizeLabel}}</span></div>
+            {{#if missingOwner}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}
+            <div class="bastion-operation"><span class="bastion-state">{{stateLabel}}</span><span>{{orderLabel}}</span></div>
+            {{#if progress}}<div class="bastion-progress"><progress value="{{progress.value}}" max="{{progress.max}}" aria-label="{{localize 'SHARED_BASTION.Progress'}}"></progress><span>{{progress.value}} / {{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>{{/if}}
+          </div>
+          {{#if buildable}}<button type="button" class="bastion-build" data-action="buildFacility" title="{{localize buildReason}}" {{#unless canManage}}disabled{{/unless}}><i class="fa-solid fa-hammer" aria-hidden="true"></i> {{localize "SHARED_BASTION.Build"}}</button>{{/if}}
+        </article>
+        {{else}}<p class="bastion-group-empty hint">{{localize "SHARED_BASTION.EmptyGroup"}}</p>{{/each}}
+      </section>
+      {{/each}}
     </section>
-    <section>
-      <h2>{{localize "SHARED_BASTION.Facilities"}}</h2>
-      {{#each facilities}}<article class="bastion-facility"><strong>{{name}}</strong><span>{{owner}}</span>{{#if missingOwner}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}</article>
-      {{else}}<div class="bastion-empty"><i class="fa-regular fa-chess-rook" aria-hidden="true"></i><p>{{localize "SHARED_BASTION.EmptyFacilities"}}</p></div>{{/each}}
-    </section>
+    {{else}}<div class="bastion-empty"><i class="fa-solid fa-chess-rook" aria-hidden="true"></i><p>{{localize "SHARED_BASTION.NoMatches"}}</p></div>{{/each}}
   </div>
 </section>

@@ -123,7 +123,9 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   bestehen mit einem GM und zwei Spielern. T03 prüft den Verzeichniseinstieg,
   persistente Spezialbögen, Teilnehmerrechte und fehlende Besitzer.
   T04 prüft zwei GMs/zwei Spieler, Parallelität, Hook-Abbruch und Ausfall vor
-  beziehungsweise nach Speicherung. Szenentests müssen Canvas aktivieren.
+  beziehungsweise nach Speicherung. T05 prüft Ansichten, Besitzerfilter, UI-Bau,
+  Dialogabbruch und Live-Aktualisierung mit zwei Spielern. Sechs Integrationstests
+  sind bestanden. Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -159,7 +161,13 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T05.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T06.
+- Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
+  Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
+  öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
+  T05 ist mit zwei Spielern abgenommen: Filter, Dialogabbruch, Kosten,
+  Live-Fortschritt und GM-Abmeldung/Rückkehr ohne Neuladen.
+  Ein Bauauftrag im eigenen Abschnitt läuft über denselben geprüften Befehlspfad.
 - Der Bogen wird nur dem markierten Träger über `core.sheetClass` zugeordnet;
   er ist kein wählbarer Standard für normale Charaktere. Spieler bleiben auf
   dem Träger OBSERVER; eigene Charakterbögen und deren Rechte bleiben unverändert.

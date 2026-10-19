@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01–T04 abgenommen; nächster Schritt T05.
+Stand: 2026-10-19 · Status: T01–T05 abgenommen; nächster Schritt T06.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -221,7 +221,11 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
     Anfrage nicht doppelt aus; ohne GM wird nichts gespeichert.
   - Deckt ab: R02–R05.
 
-- [ ] **T05 – Gemeinsame Übersicht und Aktualisierung**
+- [x] **T05 – Gemeinsame Übersicht und Aktualisierung**
+  - Stand: Besitzerabschnitte, Gesamtansicht, Alle/Eigene/Besitzerfilter sowie
+    native Größen-, Bauzustands-, Auftrags- und Fortschrittsanzeigen implementiert.
+    UI-Bauauftrag, Abbruch ohne Kosten, private Charakterrechte und Live-Änderungen
+    mit GM/zwei Spielern bestätigt; alle sechs Integrationstests bestanden.
   - Umfang: Besitzerabschnitte, zusätzlichen Gesamtübersichtsreiter,
     Einrichtungslisten, Grund-/Spezialeinrichtungen, Filter, Aktionszustände
     und Aktualisierung geöffneter Bögen umsetzen. Charakterbögen unverändert lassen.
@@ -363,8 +367,8 @@ Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
 `npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
-ausgeführt. Vierzehn Unit-Tests prüfen Modulgrenzen. Fünf Chromium-Integrationstests
-bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T04 mit getrennten Clients;
+ausgeführt. Vierzehn Unit-Tests prüfen Modulgrenzen. Sechs Chromium-Integrationstests
+bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T05 mit getrennten Clients;
 Kalender, vollständige Betriebsaktionen und Szene bleiben separat offen.
 Der T03-Bedientest prüft zusätzlich Erstellung, Wiederöffnen, Teilnehmerrechte
 und gelöschte Besitzer. Native Einschränkung im Modus ohne Canvas: Foundry
@@ -415,3 +419,4 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | T02 abgenommen: konkrete, serverseitig zugeordnete Spielerbefehle; Kostenplanung über native CurrencyManager-Funktion, Item-Fortschritt über native Bastion-API; private GM-Vorgangsbelege und atomare Mehrdokumentänderungen. | Zwölf Unit-Tests; T01/T02-Integration mit GM und zwei Spielern bestanden (25,1 s). Besitzerlevel 13 gegenüber Trägerlevel 0; Besitzer 1.000→500 GP, Träger 7.000 GP und anderer Besitzer 9.000 GP unverändert. Fremdbesitz, Level 4 und 499 GP abgewiesen; 20 Tage nativer Baufortschritt, doppelte Zustellung und GM-Neuladen ohne Doppelverarbeitung. Verwaltungsprüfung im nativen Modus ohne Canvas; Kalender-/Szenenabnahme offen. |
 | 2026-10-19 | T03 abgenommen: Bastion im Akteurverzeichnis erstellen und Teilnehmer verwalten; Spezialbogen dauerhaft je Aktor zuordnen, öffentliche Identität begrenzen, Besitzerlöschung erkennen und Rechte entziehen. | Nativer GM-/Spieler-Bedientest bestanden (15,7 s), einschließlich Neuladen, unveränderter Charakterbögen, verweigerter Spielerkonfiguration, Rechteentzug und `MissingOwner` nach Löschen. Screenshot geprüft; zwölf Unit-Tests, Syntax-/Sprachprüfung und Paketierung erfolgreich. Foundry-eigener `cycleTokens`-Fehler bei Rechteänderung ohne Canvas dokumentiert. |
 | 2026-10-19 | T04 abgenommen: kanonische Bastion-Registrierung, dauerhafte private GM-Warteschlange, Vorgangsbelege, serialisierte Befehle und Wiederaufnahme nach GM-Ausfall. Native Batch-Vorbereitung gegen teilweise entfernte Operationen abgesichert; Schreibfreigabe auf geprüften Core-Build begrenzt. | Vierzehn Unit-Tests und fünf native Integrationstests bestanden. Zwei GMs/zwei Spieler: gleicher Eintrag erzeugt einen Konflikt, verschiedene Einträge buchen jeweils einmal; fremde Marker/Absender abgewiesen. Hook-Veto bucht nichts; spätere Wiederaufnahme führt abgebrochene Aktion nicht aus. GM-Ausfall vor Commit und nach Commit vor Rückmeldung ohne Doppelbuchung; ohne GM kein Schreibauftrag. Native Rechte verhindern Zugriff eines zum Spieler herabgestuften GM-Modells auf Träger und private Journale. |
+| 2026-10-19 | T05 abgenommen: Besitzerabschnitte und Gesamtansicht, getrennte einfache/besondere Einrichtungen, Alle/Eigene/Besitzerfilter, native Größen-/Bau-/Auftrags-/Fortschrittsanzeige und eigenes Bauen aus dem Bogen. | Sechs native Integrationstests bestanden (1,7 min), vierzehn Unit-Tests und Paketierung erfolgreich. Zwei Spieler sehen dieselben acht zentralen Items bei privaten Charakteren; fremde Bauaktionen gesperrt. Namensänderung und 20-Tage-Baufortschritt erscheinen ohne Neuladen; Dialogabbruch ohne Kosten. GM-Abmeldung sperrt Schreiben, Rückkehr aktiviert es; Ansichten/Filter bleiben nutzbar. GM-Ansicht visuell geprüft. |

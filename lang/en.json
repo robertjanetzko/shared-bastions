@@ -51,6 +51,36 @@
       "InvalidBastion": "This actor is not a shared bastion.",
       "ParticipantHasFacilities": "This character still owns facilities. Reassign them before removing the participant.",
       "CommitFailed": "The bastion action could not be fully saved. Please check the current state."
+    },
+    "Views": "Bastion views",
+    "ByOwner": "By owner",
+    "Overview": "Overview",
+    "Filter": "Show",
+    "FilterAll": "All facilities",
+    "FilterMine": "My facilities",
+    "BasicFacilities": "Basic facilities",
+    "SpecialFacilities": "Special facilities",
+    "UnknownType": "Unknown type",
+    "UnknownSize": "Unknown size",
+    "UnknownOrder": "Unknown order",
+    "NoOrder": "No active order",
+    "Build": "Build",
+    "Days": "days",
+    "Progress": "Progress",
+    "Close": "Close",
+    "Size": "Size",
+    "Type": "Type",
+    "StateLabel": "Building state",
+    "Order": "Order",
+    "EmptyGroup": "No facilities in this section yet.",
+    "NoMatches": "No facilities match this filter.",
+    "BuildHint": "The owner character pays the cost. Construction starts when confirmed.",
+    "State": {
+      "Built": "Built",
+      "Unbuilt": "Unbuilt",
+      "Building": "Under construction",
+      "Enlarging": "Enlarging",
+      "Disabled": "Shut down"
     }
   }
 }

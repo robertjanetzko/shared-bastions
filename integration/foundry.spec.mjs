@@ -389,3 +389,117 @@ test("T04: two GMs, competing owners, durable failover and no-GM read mode", asy
     await gmContext.close().catch(()=>{});
   }
 });
+
+test("T05: owner sections, overview filters and live player actions share the same data", async ({browser})=>{
+  const gmContext=await browser.newContext();
+  const aliceContext=await browser.newContext();
+  const bobContext=await browser.newContext();
+  let gm=await join(gmContext,"Gamemaster");
+  let fixtures;
+  const errors=[];
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T05 ";
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture)
+        .sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      if(game.modules.get("shared-bastion").api.repository.find()) throw new Error("Expected an empty dedicated test world");
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const users=await User.createDocuments(["Alice","Bob"].map(name=>({name:prefix+name,role:CONST.USER_ROLES.PLAYER})));
+      const owners=[];
+      for(const user of users) {
+        const owner=await Actor.create({name:prefix+user.name.split(" ").at(-1)+" Character",type:"character",
+          ownership:{default:0,[user.id]:3},flags:{"shared-bastion":{integrationFixture:true}},system:{currency:{gp:1257}},
+          items:[{name:"Test Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+        await user.update({character:owner.id});owners.push(owner);
+      }
+      const bastion=await game.modules.get("shared-bastion").api.repository.create({name:"The Wayfarers' Bastion",participants:owners.map(a=>a.uuid)});
+      await bastion.setFlag("shared-bastion","integrationFixture",true);
+      const data=owners.flatMap((owner,index)=>[true,true,false,"special"].map((built,i)=>({
+        name:prefix+`${index}-${i}`,type:"facility",img:"icons/svg/castle.svg",
+        flags:{"shared-bastion":{owner:owner.uuid,revision:0}},
+        system:{type:{value:built==="special"?"special":"basic",subtype:built==="special"?"library":"bedroom"},
+          description:{value:"<p>A shared room.</p>"},size:"cramped",order:built==="special"?"research":"",
+          building:{built:Boolean(built),size:"cramped"}}
+      })));
+      const items=await bastion.createEmbeddedDocuments("Item",data);
+      return {bastion:bastion.id,users:users.map(u=>({id:u.id,name:u.name})),owners:owners.map(a=>({id:a.id,uuid:a.uuid})),
+        aliceBuild:items.find(i=>i.name===prefix+"0-2").id,bobBuild:items.find(i=>i.name===prefix+"1-2").id,
+        aliceIds:items.filter(i=>i.flags["shared-bastion"].owner===owners[0].uuid).map(i=>i.id).sort(),
+        bobIds:items.filter(i=>i.flags["shared-bastion"].owner===owners[1].uuid).map(i=>i.id).sort()};
+    });
+    const alice=await join(aliceContext,fixtures.users[0].name,p=>p.on("pageerror",e=>errors.push(e.message)));
+    const bob=await join(bobContext,fixtures.users[1].name,p=>p.on("pageerror",e=>errors.push(e.message)));
+    for(const page of [gm,alice,bob]) await page.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    const rows=page=>page.locator(".bastion-sheet [data-facility-id]");
+    const row=(page,id)=>page.locator(`.bastion-sheet [data-facility-id="${id}"]`);
+    const ids=page=>rows(page).evaluateAll(elements=>elements.map(e=>e.dataset.facilityId).sort());
+    await expect(rows(alice)).toHaveCount(8);await expect(rows(bob)).toHaveCount(8);
+    expect(await ids(alice)).toEqual(await ids(bob));
+    await expect(alice.locator(".bastion-owner-section")).toHaveCount(2);
+    await expect(alice.locator('.bastion-owner-section [data-type="basic"]')).toHaveCount(2);
+    await expect(row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
+    await expect(row(alice,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
+    await expect(row(bob,fixtures.aliceBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(alice.locator(".bastion-sheet")).not.toContainText("1257");
+    await expect.poll(()=>bob.evaluate(id=>game.actors.get(id).testUserPermission(game.user,"OBSERVER"),fixtures.owners[0].id)).toBe(false);
+    // Both tabs and every filter operate on the same central native items.
+    await alice.locator('[data-action="changeView"][data-view="overview"]').click();
+    await expect(alice.locator(".bastion-owner-section")).toHaveCount(1);
+    expect(await ids(alice)).toEqual([...fixtures.aliceIds,...fixtures.bobIds].sort());
+    await alice.locator('[name="ownerFilter"]').selectOption("mine");
+    expect(await ids(alice)).toEqual(fixtures.aliceIds);
+    await alice.locator('[name="ownerFilter"]').selectOption(fixtures.owners[1].uuid);
+    expect(await ids(alice)).toEqual(fixtures.bobIds);
+    await alice.locator('[data-action="changeView"][data-view="owners"]').click();
+    expect(await ids(alice)).toEqual(fixtures.bobIds);
+    await alice.locator('[name="ownerFilter"]').selectOption("all");
+    // The read-only description opens without routing through a private character sheet.
+    await row(alice,fixtures.aliceBuild).locator('[data-action="viewFacility"]').click();
+    await expect(alice.locator("dialog")).toContainText("A shared room.");
+    await alice.locator('dialog .window-header [data-action="close"]').click();
+    // Canceling a build dialog is inert, then a confirmed build updates both clients.
+    await row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]').click();
+    await alice.locator('dialog .window-header [data-action="close"]').click();
+    expect(await gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owners[0].id)).toBe(1257);
+    await row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]').click();
+    await alice.locator('dialog [name="size"]').selectOption("cramped");
+    await alice.locator('dialog [data-action="build"]').click();
+    await expect(row(alice,fixtures.aliceBuild)).toContainText("0 / 20 days");
+    await expect(row(bob,fixtures.aliceBuild)).toContainText("0 / 20 days");
+    expect(await gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owners[0].id)).toBe(757);
+    await gm.evaluate(({bastion,id})=>game.actors.get(bastion).items.get(id).update({name:"Wayfarers' New Bedroom"}),{bastion:fixtures.bastion,id:fixtures.aliceBuild});
+    await expect(row(alice,fixtures.aliceBuild)).toContainText("Wayfarers' New Bedroom");
+    await expect(row(bob,fixtures.aliceBuild)).toContainText("Wayfarers' New Bedroom");
+    await bob.locator('[name="ownerFilter"]').selectOption("mine");
+    expect(await ids(bob)).toEqual(fixtures.bobIds);
+    await gm.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t05-overview-gm.png"});
+    await alice.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t05-overview-player.png"});
+    // Presence changes are reflected without reloading either player's sheet.
+    await gmContext.close();
+    await expect(bob.locator(".bastion-sheet .bastion-notice")).toContainText("No GM");
+    await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(rows(alice)).toHaveCount(8);
+    const recovery=await browser.newContext();
+    try {
+      gm=await join(recovery,"Gamemaster");
+      await expect(bob.locator(".bastion-sheet .bastion-notice")).toHaveCount(0);
+      await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
+      expect(errors).toEqual([]);
+      console.log("T05 passed: identical central items, private owners, tabs/filters, UI build, live update and GM return");
+      await aliceContext.close();await bobContext.close();
+      await gm.evaluate(async data=>{
+        await game.actors.get(data.bastion)?.delete();
+        for(const owner of data.owners) await game.actors.get(owner.id)?.delete();
+        for(const user of data.users) await game.users.get(user.id)?.delete();
+      },fixtures);fixtures=null;
+    } finally {await recovery.close();}
+  } finally {
+    await aliceContext.close().catch(()=>{});await bobContext.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      await game.actors.get(data.bastion)?.delete();for(const owner of data.owners) await game.actors.get(owner.id)?.delete();
+      for(const user of data.users) await game.users.get(user.id)?.delete();
+    },fixtures);
+    await gmContext.close().catch(()=>{});
+  }
+});

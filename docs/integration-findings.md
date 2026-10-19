@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01–T04 sind im jeweils dokumentierten Umfang abgenommen.**
+Laufzeitabnahme. T01–T05 sind im jeweils dokumentierten Umfang abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -114,7 +114,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
 T04 bestätigt zusätzlich GM-Wechsel und die Transaktionsgrenze. Kalender und
-vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T05.
+vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T06.
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -151,5 +151,27 @@ Hook-Veto ohne Teilbuchung und ohne späteren Wiederanlauf, sowie Ausfall des
 Executors vor Commit und nach Commit vor Rückmeldung. Im letzten Fall wird nur
 die vorhandene Antwort erneut zugestellt. Neuladen erzeugt keine zweite Buchung.
 Ein natives, zum Spieler herabgestuftes User-Modell hat keinen Lesezugriff auf
-Träger oder private Journale. Die fünf Integrationstests und vierzehn Unit-Tests
+Träger oder private Journale. Die sechs Integrationstests und vierzehn Unit-Tests
 sind bestanden; der bekannte native Fehler ohne Canvas bleibt separat dokumentiert.
+
+## T05: Gemeinsame Übersicht
+
+Mit zwei Spielern und privaten Besitzercharakteren bestätigt: dieselben acht
+zentralen Items erscheinen in Besitzerabschnitten und Gesamtansicht. Einfache
+und besondere Einrichtungen sind getrennt; Alle/Eigene/Besitzerfilter verwenden
+keine zusätzlichen Kopien. Name, Typ, Größe, Bauzustand, Auftrag und Fortschritt
+stammen aus nativen Facility-Daten. Die Anzeige löst keine fremden Charakterwerte
+auf. Ein Klick öffnet die öffentliche, mit `secrets: false` angereicherte Beschreibung.
+
+Der Bogen ist ein Aktionsdashboard (`tag: section`), kein automatisch einreichendes
+Actor-Formular. So bleibt der native Träger auf OBSERVER, während ausdrücklich
+zulässige Aktionen durch den GM-Befehlspfad laufen. Native DocumentSheet-Formulare
+würden sonst auch die Lese-/Filtersteuerung für Observer vollständig deaktivieren.
+Fremde Bauknöpfe bleiben gesperrt; direkte Fremdbefehle prüft weiterhin der Executor.
+
+Ein abgebrochener Baudialog bucht nichts ab. Bestätigung verwendet die konfigurierte
+Größe und bucht 500 GP ausschließlich vom Besitzer ab; beide Spieler sehen den
+20-Tage-Fortschritt. Native Namensänderungen, GM-Abmeldung und Rückkehr aktualisieren
+geöffnete Bögen ohne Neuladen. Filter bleiben im Lesemodus nutzbar. Die GM-Ansicht
+wurde visuell gegen das installierte D&D5e-Theme geprüft. Vollständige Bearbeitung,
+Regelausnahmen und weitere Betriebsaktionen folgen in T06/T07.

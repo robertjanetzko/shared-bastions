@@ -27,6 +27,11 @@ export function installDirectory(repository) {
     for (const actor of game.actors) if (actor.flags[MODULE_ID]?.bastion && actor.sheet?.rendered) void actor.sheet.render();
   };
   Hooks.on("userConnected", refresh);
+  Hooks.on("updateUser", refresh);
+  Hooks.on("updateActor", refresh);
+  for (const event of ["createItem", "updateItem", "deleteItem"]) Hooks.on(event, item => {
+    if (item.parent?.flags[MODULE_ID]?.bastion) refresh();
+  });
   game.socket.on("disconnect", refresh);
   game.socket.on("connect", refresh);
 }

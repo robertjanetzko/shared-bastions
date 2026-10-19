@@ -33,6 +33,7 @@ Hooks.once("ready", () => {
   game.modules.get(MODULE_ID).api = Object.freeze({
     diagnostics: () => adapter.diagnostics(),
     repository,
+    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions() }),
     request: (action, facility, payload) => bus.request(action, facility, payload)
   });
   if (canWrite) void repository.migrate().then(() => bus.resume()).catch(console.error);

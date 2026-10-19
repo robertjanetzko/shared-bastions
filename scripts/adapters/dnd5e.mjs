@@ -47,6 +47,40 @@ export class Dnd5eAdapter {
     return squares;
   }
 
+  /** Public facility data only; viewing never resolves the private owner document. */
+  facilityView(facility) {
+    const system = facility.system;
+    const config = this.config.DND5E.facilities;
+    const localize = key => this.game.i18n.localize(key);
+    const progress = system.progress;
+    const active = Number.isFinite(progress.max) && progress.max > 0;
+    const state = system.disabled ? "SHARED_BASTION.State.Disabled"
+      : active && progress.order === "build" ? "SHARED_BASTION.State.Building"
+      : active && progress.order === "enlarge" ? "SHARED_BASTION.State.Enlarging"
+      : system.building.built ? "SHARED_BASTION.State.Built" : "SHARED_BASTION.State.Unbuilt";
+    return {
+      id: facility.id, name: facility.name, img: facility.img,
+      type: system.type.value,
+      typeLabel: localize(config.types[system.type.value]?.subtypes?.[system.type.subtype]
+        ?? config.types[system.type.value]?.label ?? "SHARED_BASTION.UnknownType"),
+      sizeLabel: localize(config.sizes[system.size]?.label ?? "SHARED_BASTION.UnknownSize"),
+      stateLabel: localize(state),
+      orderLabel: active ? localize(config.orders[progress.order]?.label ?? "SHARED_BASTION.UnknownOrder")
+        : localize("SHARED_BASTION.NoOrder"),
+      progress: active ? { value: progress.value, max: progress.max,
+        percent: Math.max(0, Math.min(100, Math.round(progress.value / progress.max * 100))) } : null,
+      buildable: system.type.value === "basic" && !system.building.built && !active && !system.disabled,
+      description: system.description?.value ?? ""
+    };
+  }
+
+  buildOptions() {
+    const config = this.config.DND5E;
+    return Object.entries(config.facilities.sizes).map(([value, size]) => ({ value,
+      label: this.game.i18n.localize(size.label), days: size.days, cost: size.value,
+      currency: this.game.i18n.localize(config.currencies[config.defaultCurrency].abbreviation) }));
+  }
+
   /** T02: derive a paid native build order; never accept client-supplied costs. */
   async planBuild(facility, payload) {
     const context = await this.ownerContext(facility);

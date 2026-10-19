@@ -5,8 +5,9 @@ als native Facility-Items auf einem zentralen Aktor leben und ihre Regeln und
 Ressourcen vom jeweiligen Besitzercharakter beziehen.
 
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
-und Bastionerstellung mit Teilnehmerverwaltung sind vorhanden. Die vollständige
-Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T04 aus `PLAN.md`
+und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
+sind vorhanden. Die vollständige
+Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T05 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 
@@ -20,6 +21,14 @@ anzeigen“ die Entwicklungsdiagnose. Bestehende Charakterbögen werden nicht ve
 Der GM erstellt die Bastion über „Bastion erstellen“ im Akteurverzeichnis und
 wählt die Teilnehmercharaktere. Danach öffnen alle Teilnehmer den gemeinsamen
 Aktor aus demselben Verzeichnis. Im Bastion-Bogen verwaltet der GM die Teilnehmer.
+Der Bogen gliedert Einrichtungen nach Besitzer und Typ. Der zusätzliche Reiter
+„Gesamtübersicht“ und die Filter „Alle“, „Eigene“ und einzelne Besitzer zeigen
+dieselben zentralen Items. Name, Typ, Größe, Bauzustand, Auftrag und Fortschritt
+werden gemeinsam aktualisiert. Ein Klick auf den Namen öffnet die öffentliche
+Beschreibung. Eigene unbebaute einfache Räume lassen sich über „Bauen“ starten;
+der Dialog zeigt Größe, Kosten und Dauer. Schließen bricht ohne Abbuchung ab.
+Ohne GM bleiben Ansichten und Filter lesbar, Schreibaktionen sind gesperrt.
+
 Der gemeinsame Aktor enthält nur die benötigte öffentliche Identität der
 Charaktere; ihre eigenen Bögen behalten ihre bisherigen Rechte.
 

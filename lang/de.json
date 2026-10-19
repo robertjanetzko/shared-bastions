@@ -51,6 +51,36 @@
       "InvalidBastion": "Dieser Aktor ist keine gemeinsame Bastion.",
       "ParticipantHasFacilities": "Diesem Charakter gehören noch Einrichtungen. Ordne sie zuerst einem anderen Besitzer zu.",
       "CommitFailed": "Die Bastionaktion konnte nicht vollständig gespeichert werden. Bitte prüfe den aktuellen Stand."
+    },
+    "Views": "Bastionansichten",
+    "ByOwner": "Nach Besitzer",
+    "Overview": "Gesamtübersicht",
+    "Filter": "Anzeigen",
+    "FilterAll": "Alle Einrichtungen",
+    "FilterMine": "Eigene Einrichtungen",
+    "BasicFacilities": "Einfache Einrichtungen",
+    "SpecialFacilities": "Besondere Einrichtungen",
+    "UnknownType": "Unbekannter Typ",
+    "UnknownSize": "Unbekannte Größe",
+    "UnknownOrder": "Unbekannter Auftrag",
+    "NoOrder": "Kein laufender Auftrag",
+    "Build": "Bauen",
+    "Days": "Tage",
+    "Progress": "Fortschritt",
+    "Close": "Schließen",
+    "Size": "Größe",
+    "Type": "Typ",
+    "StateLabel": "Bauzustand",
+    "Order": "Auftrag",
+    "EmptyGroup": "Noch keine Einrichtungen in diesem Abschnitt.",
+    "NoMatches": "Keine Einrichtungen für diesen Filter.",
+    "BuildHint": "Die Kosten werden beim Besitzercharakter abgebucht. Der Bau beginnt nach der Bestätigung.",
+    "State": {
+      "Built": "Fertig",
+      "Unbuilt": "Ungebaut",
+      "Building": "Im Bau",
+      "Enlarging": "Wird erweitert",
+      "Disabled": "Außer Betrieb"
     }
   }
 }
