@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01–T03 sind im jeweils dokumentierten Umfang abgenommen.**
+Laufzeitabnahme. T01–T04 sind im jeweils dokumentierten Umfang abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -23,8 +23,7 @@ und 9.000 GP auf dem fremden Charakter unverändert bleiben. Fremdbesitz,
 Besitzerlevel 4 und unzureichende Mittel (499 GP) werden abgewiesen. Der native
 Fortschritt beendet nach 20 Tagen den Bau auf dem zentralen Item. Doppelte
 Zustellung und Neuladen des GM erzeugen keine zweite Buchung oder Fortschreibung.
-Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Kalender, weitere
-Auftragsarten und GM-Wechsel werden später geprüft.
+Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Kalender und weitere Auftragsarten werden später geprüft; GM-Wechsel siehe T04.
 
 T03: Erstellung im nativen Akteurverzeichnis, Teilnehmerauswahl, gespeicherte
 `core.sheetClass`-Zuordnung und Wiederöffnen nach Neuladen sind mit GM und Spieler
@@ -114,7 +113,43 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
    Ressourcen und Fortschritt ohne doppelte Verbuchung wiederherstellbar sein.
 
 Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
-Kalender, GM-Wechsel und vollständige Teilfehlerabnahme aus Punkt 5 stehen in
-T04/T08 aus. T03 ist ebenfalls bestätigt; als Nächstes folgt T04
-(vollständiger GM-Befehlspfad und Mehr-GM-/Parallelprüfung).
+T04 bestätigt zusätzlich GM-Wechsel und die Transaktionsgrenze. Kalender und
+vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T05.
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
+
+## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
+
+Die kanonische Bastion ist über eine GM-geschützte Welteinstellung gebunden.
+Ein fremder markierter Aktor wird abgewiesen. Zwei private GM-Journale speichern
+serverseitig authentifizierte ursprüngliche Anfragen und endgültige Ergebnisse.
+Alle aktiven GMs beobachten die ursprünglichen nativen Ereignisse; ausschließlich
+der gewählte aktive, verbundene GM speichert. Ein neuer Executor verarbeitet die
+dauerhafte Warteschlange weiter und sendet fehlende Rückmeldungen erneut. Bereits
+initialisierte, fehlende Journale werden nicht neu erzeugt. Native Leserechte
+stehen auch explizit für GMs auf NONE, damit eine spätere Herabstufung keine
+privaten Speicher öffnet; der GM-Rollenbonus ermöglicht den regulären Zugriff.
+
+Die native Batch-API in Foundry 14.369 hat zwei wichtige Eigenschaften:
+
+- Eine serverseitige ID-Kollision am letzten Beleg rollt auch vorangehende
+  Ressourcenänderungen zurück. Praktisch geprüft mit einer späten Kollision.
+- Die clientseitige Vorbereitung (`client/data/client-backend.mjs`,
+  `modifyDocumentBatch`) kann bei einem Hook-Veto ein einzelnes Dokument entfernen
+  und die übrigen Operationen trotzdem versenden. Deshalb überwacht `strictBatch`
+  ausschließlich die eigenen Operationsargumente: Veränderte Identitätsmengen
+  brechen vor dem Versand ab. Native Hooks laufen einmal; kein Core-Ersatz und
+  keine `noHook`-Umgehung. Der Beleg steht zuletzt, seine Existenz bestätigt den Commit.
+
+Dieser versionsabhängige Schutz liegt im Foundry-Adapter. Schreibaktionen sind
+bis zu einer entsprechenden Laufzeitprüfung auf **14.369** begrenzt. Andere
+unterstützte V14-Builds bleiben lesbar.
+
+Der native Vierclient-Test bestätigt konkurrierende Anfragen auf dasselbe Item
+(ein Erfolg/ein Konflikt), parallele verschiedene Items (beide einmal), fehlende
+GM-Präsenz (keine Anfrage gespeichert), fremde Marker/behauptete GM-Absender,
+Hook-Veto ohne Teilbuchung und ohne späteren Wiederanlauf, sowie Ausfall des
+Executors vor Commit und nach Commit vor Rückmeldung. Im letzten Fall wird nur
+die vorhandene Antwort erneut zugestellt. Neuladen erzeugt keine zweite Buchung.
+Ein natives, zum Spieler herabgestuftes User-Modell hat keinen Lesezugriff auf
+Träger oder private Journale. Die fünf Integrationstests und vierzehn Unit-Tests
+sind bestanden; der bekannte native Fehler ohne Canvas bleibt separat dokumentiert.

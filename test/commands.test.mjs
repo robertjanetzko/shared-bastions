@@ -24,3 +24,13 @@ test("progress commands require an explicit bounded integer and cannot carry ext
   const request = { ...command(), action: "advance", payload: { days: 20 } };
   assert.equal(validateRequest(request), request);
 });
+
+test("bastion configuration only accepts bounded names and distinct world-character references", () => {
+  const request={...command(),action:"createBastion",facility:"Actor.SharedBastion001",payload:{name:"Shared",participants:["Actor.alice"]}};
+  assert.equal(validateRequest(request),request);
+  for(const payload of [{name:"",participants:[]},{name:"x".repeat(121),participants:[]},
+    {name:"Shared",participants:["Actor.alice","Actor.alice"]},{name:"Shared",participants:["Compendium.private.alice"]},
+    {name:"Shared",participants:[],ownership:{default:3}}]) {
+    assert.throws(()=>validateRequest({...request,payload}),{code:"InvalidRequest"});
+  }
+});

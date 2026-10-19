@@ -1,8 +1,6 @@
-import { MODULE_ID, DATA_VERSION } from "../constants.mjs";
+import { MODULE_ID, DATA_VERSION, BASTION_ID, BASTION_UUID } from "../constants.mjs";
 import { BastionError } from "../core/errors.mjs";
 import { isBastion, electGM } from "../core/ownership.mjs";
-
-const BASTION_ID = "SharedBastion001";
 
 function ownershipPatch(actor, ownership) {
   const patch = {};
@@ -14,7 +12,18 @@ function ownershipPatch(actor, ownership) {
 }
 
 export class BastionRepository {
-  find() { return game.actors.find(isBastion) ?? null; }
+  find() {
+    const uuid = game.settings.get(MODULE_ID, "bastionUuid");
+    const actor = game.actors.get(uuid?.split(".")[1]);
+    return actor?.uuid === uuid && isBastion(actor) ? actor : null;
+  }
+
+  async migrate() {
+    if (!game.user.isGM || electGM(game.users)?.id !== game.user.id || game.settings.get(MODULE_ID, "bastionUuid")) return;
+    const actor = game.actors.get(BASTION_ID);
+    if (isBastion(actor) && actor.flags.core?.sheetClass === `${MODULE_ID}.BastionSheet`
+      && game.users.get(actor._stats.lastModifiedBy)?.isGM) await game.settings.set(MODULE_ID, "bastionUuid", actor.uuid);
+  }
 
   assertGM() {
     if (!game.user.isGM) throw new BastionError("GMOnly");
@@ -36,10 +45,10 @@ export class BastionRepository {
   async ownership(roster) {
     const ownership = { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE };
     for (const user of game.users) {
-      if (user.isGM) continue;
       for (const entry of roster) {
         const actor = await fromUuid(entry.uuid);
-        if (actor?.testUserPermission(user, "OWNER")) {
+        // Reader membership uses recorded ownership, independent of the GM role override.
+        if (actor?.getUserLevel(user) >= CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) {
           ownership[user.id] = CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER;
           break;
         }
@@ -57,9 +66,16 @@ export class BastionRepository {
 
   async create(input) {
     this.assertGM();
+    const response = await this.bus.request("createBastion", BASTION_UUID, input);
+    return fromUuid(response.uuid);
+  }
+
+  async planCreate(input) {
+    this.assertGM();
     if (this.find()) throw new BastionError("BastionExists");
+    if (game.actors.has(BASTION_ID)) throw new BastionError("BastionIdOccupied");
     const config = await this.configuration(input);
-    const actor = await Actor.create({
+    const actor = {
       _id: BASTION_ID,
       name: config.name,
       type: "character",
@@ -70,12 +86,23 @@ export class BastionRepository {
         [MODULE_ID]: { bastion: true, version: DATA_VERSION, participants: input.participants,
           roster: config.roster, revision: 0 }
       }
-    }, { keepId: true });
-    if (!isBastion(actor)) throw new BastionError("CommitFailed");
-    return actor;
+    };
+    const operations = [{ action: "create", documentName: "Actor", keepId: true, data: [actor] }];
+    const setting = game.settings.get(MODULE_ID, "bastionUuid", { document: true });
+    if (setting?._id) {
+      if (setting.value !== BASTION_UUID) operations.push({ action: "update", documentName: "Setting", updates: [{ _id: setting.id, value: JSON.stringify(BASTION_UUID) }] });
+    } else operations.push({ action: "create", documentName: "Setting", keepId: true,
+      data: [{ _id: "SharedBastionCfg", key: `${MODULE_ID}.bastionUuid`, user: null, value: JSON.stringify(BASTION_UUID) }] });
+    return { operations, revision: 0, uuid: BASTION_UUID };
   }
 
   async configure(actor, input) {
+    this.assertGM();
+    const response = await this.bus.request("configureBastion", actor.uuid, input);
+    return fromUuid(response.uuid);
+  }
+
+  async planConfigure(actor, input) {
     this.assertGM();
     if (!isBastion(actor)) throw new BastionError("InvalidBastion");
     if (actor.flags[MODULE_ID].version !== DATA_VERSION) throw new BastionError("UnsupportedDataVersion");
@@ -83,17 +110,16 @@ export class BastionRepository {
     if (actor.items.some(item => item.type === "facility" && !input.participants.includes(item.flags[MODULE_ID]?.owner))) {
       throw new BastionError("ParticipantHasFacilities");
     }
-    const updated = await actor.update({
+    const revision = (actor.flags[MODULE_ID].revision ?? 0) + 1;
+    const updates = {
+      _id: actor.id,
       name: config.name,
       ...ownershipPatch(actor, config.ownership),
       [`flags.${MODULE_ID}.participants`]: input.participants,
       [`flags.${MODULE_ID}.roster`]: config.roster,
-      [`flags.${MODULE_ID}.revision`]: (actor.flags[MODULE_ID].revision ?? 0) + 1
-    });
-    if (!updated || JSON.stringify(updated.flags[MODULE_ID].participants) !== JSON.stringify(input.participants)) {
-      throw new BastionError("CommitFailed");
-    }
-    return updated;
+      [`flags.${MODULE_ID}.revision`]: revision
+    };
+    return { operations: [{ action: "update", documentName: "Actor", updates: [updates] }], revision, uuid: actor.uuid };
   }
 
   install() {
@@ -119,15 +145,26 @@ export class BastionRepository {
     };
     const schedule = actor => {
       const bastion = this.find();
-      if (!bastion?.flags[MODULE_ID].participants.includes(actor.uuid)) return;
+      if (!bastion || (actor && !bastion.flags[MODULE_ID].participants.includes(actor.uuid))) return;
       clearTimeout(timer);
       // Coalesce native multi-document updates and deletion sequences before resolving references.
-      timer = setTimeout(() => { void refresh().catch(reportError); }, 40);
+      timer = setTimeout(() => { void this.bus.runSystem(refresh).catch(reportError); }, 40);
     };
     Hooks.on("updateActor", (actor, changes) => {
       if ("name" in changes || "img" in changes || "ownership" in changes) schedule(actor);
     });
-    Hooks.on("deleteActor", schedule);
+    Hooks.on("deleteActor", actor => {
+      if (actor.uuid === game.settings.get(MODULE_ID, "bastionUuid")) {
+        void this.bus.runSystem(async () => {
+          if (actor.uuid === game.settings.get(MODULE_ID, "bastionUuid")) await game.settings.set(MODULE_ID, "bastionUuid", "");
+        }).catch(reportError);
+      }
+      schedule(actor);
+    });
+    Hooks.on("createUser", () => schedule());
+    Hooks.on("updateUser", (user, changes) => { if ("role" in changes) schedule(); });
+    Hooks.on("userConnected", () => schedule());
+    queueMicrotask(() => schedule());
   }
 }
 

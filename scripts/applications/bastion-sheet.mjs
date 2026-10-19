@@ -31,6 +31,8 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       name: this.actor.name,
       isGM: game.user.isGM,
       hasGM: Boolean(electGM(game.users)),
+      hasConnection: game.socket.connected,
+      canWrite: game.socket.connected && Boolean(electGM(game.users)) && game.modules.get(MODULE_ID).api.diagnostics().writeRuntimeSupported,
       roster,
       participantCount: roster.length,
       facilities: this.actor.items.filter(item => item.type === "facility").map(item => {

@@ -111,7 +111,7 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: zwölf Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: vierzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
@@ -122,7 +122,8 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   Die Suite nutzt für Stufe 1 den nativen Modus ohne Canvas; T01 und T02
   bestehen mit einem GM und zwei Spielern. T03 prüft den Verzeichniseinstieg,
   persistente Spezialbögen, Teilnehmerrechte und fehlende Besitzer.
-  Szenentests müssen Canvas aktivieren.
+  T04 prüft zwei GMs/zwei Spieler, Parallelität, Hook-Abbruch und Ausfall vor
+  beziehungsweise nach Speicherung. Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -158,7 +159,7 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T04.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T05.
 - Der Bogen wird nur dem markierten Träger über `core.sheetClass` zugeordnet;
   er ist kein wählbarer Standard für normale Charaktere. Spieler bleiben auf
   dem Träger OBSERVER; eigene Charakterbögen und deren Rechte bleiben unverändert.
@@ -169,13 +170,21 @@ in einer generierten Szene sind noch nicht geprüft.
 - Der Befehlstransport verwendet native ChatMessage-Erstellung und deren vom
   Server gelieferten `userId`, nicht eine selbst behauptete Absender-ID.
   Anfragen werden bei Zustellung unveränderlich übernommen; Änderungen an
-  bestehenden Anfragen lösen keine erneute Ausführung aus. T04 muss noch
-  Mehr-GM-Wechsel und parallele Anfragen vervollständigen und prüfen.
+  bestehenden Anfragen lösen keine erneute Ausführung aus. T04 bestätigt
+  parallele Aktionen und GM-Ausfall vor sowie nach der Speicherung.
+- Die kanonische Bastion ist in einer GM-geschützten Welteinstellung registriert;
+  ein selbst gesetztes Markerflag verleiht keine Befehlsrechte. Private GM-Journale
+  speichern authentifizierte Aufträge und endgültige Ergebnisse. Initialisierte,
+  fehlende Journale werden nicht stillschweigend neu angelegt.
 - `foundry.documents.modifyBatch` speichert Kosten, Item-Fortschritt und einen
   eindeutigen Vorgangsbeleg gemeinsam. Belege liegen in einem privaten GM-Journal
   mit stabiler ID. Ein abgebrochener Batch kann ohne Promise-Rejection auflösen;
   den gespeicherten Beleg deshalb zusätzlich prüfen. Die native Kollisionsprüfung
-  für identische Beleg-IDs wurde praktisch bestätigt.
+  für identische Beleg-IDs wurde praktisch bestätigt. Native Preflight-Hooks können
+  einzelne Operationen still entfernen; der Foundry-Adapter schützt deshalb die
+  Identitäten der eigenen Batch-Argumente vor dem Versand. Keine Core-Patches.
+  Schreiben ausschließlich auf dem geprüften Build 14.369 freigeben; andere
+  V14-Builds bleiben bis zum entsprechenden Regressionstest lesbar.
 - Native Aufträge verwenden einen separaten Zahlungsablauf, der Zahlungsaktor
   und Item-Elternaktor gleichsetzt. Er darf für zentrale Items nicht unverändert
   übernommen werden. Der Kalender sammelt Facility-Updates selbst; doppelte
@@ -183,9 +192,9 @@ in einer generierten Szene sind noch nicht geprüft.
 - Einfache Einrichtungen haben ein kostenloses Anfangskontingent, keine harte
   Obergrenze für weitere kostenpflichtige Räume. Systemwerte im Adapter lesen.
 - Details und verlinkte Quellcodebefunde: [Integrationsbefunde](docs/integration-findings.md).
-- Offen zu verifizieren: Besitzerkontext nativer Aufträge, Fortschritt zentraler
-  Einrichtungen, Absenderzuordnung des GM-Transports und Behandlung von Teilfehlern
-  bei Änderungen über mehrere Dokumente. Details stehen in `PLAN.md`.
+- Offen sind vollständige Betriebsaktionen, Kalenderkoordination, Transfer und
+  Szenengenerator. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
+  Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill
   meldet keine verfügbaren Browser. Eine separate lokale Chromium-Testumgebung
   prüft deshalb die isolierte Welt über Playwright; T01 ist damit bestanden.

@@ -94,6 +94,7 @@ export class Dnd5eAdapter {
       system: status.system,
       reviewedSystem: SOURCE_REVIEW.system,
       reviewedCommit: SOURCE_REVIEW.commit,
+      writeRuntimeSupported: status.supported && status.foundry === OWNER_PROOF_RUNTIME.foundry,
       ownerIntegrationAccepted: status.foundry === OWNER_PROOF_RUNTIME.foundry
         && status.system === OWNER_PROOF_RUNTIME.system && status.supported
     };

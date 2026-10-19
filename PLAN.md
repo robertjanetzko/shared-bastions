@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01–T03 abgenommen; nächster Schritt T04.
+Stand: 2026-10-19 · Status: T01–T04 abgenommen; nächster Schritt T05.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -207,7 +207,12 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
     Ersatz für die Besitzercharaktere.
   - Deckt ab: B01–B04, R01, R08.
 
-- [ ] **T04 – GM-Befehle und Besitzerrechte**
+- [x] **T04 – GM-Befehle und Besitzerrechte**
+  - Stand: Authentifizierte native Anfragen, private dauerhafte Warteschlange und
+    Vorgangsbelege, GM-Auswahl, Konfliktprüfung und atomare Speicherung umgesetzt.
+    Zwei GMs und zwei Spieler bestätigen Parallelität, Ausfall vor Speicherung
+    sowie zwischen Speicherung und Rückmeldung. Native Hook-Vetos buchen nichts ab.
+    Schreibpfad bis zur erneuten Prüfung auf Foundry 14.369 begrenzt.
   - Umfang: Aktiven GM bestimmen, erlaubte Befehle validieren, Änderungen
     serialisieren, Wiederholungen erkennen und Ergebnisse zurückmelden.
   - Abhängigkeit: T03.
@@ -358,8 +363,8 @@ Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
 `npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
-ausgeführt. Zwölf Unit-Tests prüfen Modulgrenzen. Zwei Chromium-Integrationstests
-bestätigen Modulstart sowie den T02-Bauauftrag mit GM und zwei Spielern;
+ausgeführt. Vierzehn Unit-Tests prüfen Modulgrenzen. Fünf Chromium-Integrationstests
+bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T04 mit getrennten Clients;
 Kalender, vollständige Betriebsaktionen und Szene bleiben separat offen.
 Der T03-Bedientest prüft zusätzlich Erstellung, Wiederöffnen, Teilnehmerrechte
 und gelöschte Besitzer. Native Einschränkung im Modus ohne Canvas: Foundry
@@ -377,8 +382,9 @@ Die Docker-Testinstallation startet über `npm run dev:up`; Details in
   werden in T07/T08 geprüft.
 - Der Systemadapter ist der wichtigste technische Aufwand. Die native Annahme
   „Item-Elternaktor ist Regelbesitzer“ darf nicht unbemerkt übernommen werden.
-- Der GM-Transport muss in T04 darauf geprüft werden, wie der Absender zuverlässig
-  einer Anfrage zugeordnet wird; eine frei mitgesendete Benutzer-ID genügt nicht.
+- Der GM-Transport bindet Anfragen an den serverseitigen nativen `userId`.
+  Dauerhafte private Warteschlange und Belege sichern GM-Wechsel und Wiederholung.
+  Der atomare Schreibpfad ist ausschließlich auf Foundry 14.369 geprüft und freigegeben.
 - Änderungen an individuellen Charakterressourcen und zentralen Items müssen
   bei Teilfehlern nachvollziehbar bleiben und Wiederholungen sicher behandeln.
 - Möblierte Battlemaps, mehrere Etagen, mehrere gemeinsame Bastionen pro Welt,
@@ -408,3 +414,4 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | T01 abgenommen: Lizenzierung abgeschlossen, Testwelt `shared-bastion-integration` erstellt, Modul aktiviert und ApplicationV2-Statusansicht gerendert. | Native Foundry-Schemaprüfung und Handlebars-Render erfolgreich; Chromium-Test T01 auf Foundry 14.369 / D&D5e 6.0.6 bestanden. Keine JavaScript-Fehler oder fehlerhaften Modulressourcen; Screenshot geprüft. Die Testclients nutzen Softwaregrafik, die Szenenabnahme steht separat aus. |
 | 2026-10-19 | T02 abgenommen: konkrete, serverseitig zugeordnete Spielerbefehle; Kostenplanung über native CurrencyManager-Funktion, Item-Fortschritt über native Bastion-API; private GM-Vorgangsbelege und atomare Mehrdokumentänderungen. | Zwölf Unit-Tests; T01/T02-Integration mit GM und zwei Spielern bestanden (25,1 s). Besitzerlevel 13 gegenüber Trägerlevel 0; Besitzer 1.000→500 GP, Träger 7.000 GP und anderer Besitzer 9.000 GP unverändert. Fremdbesitz, Level 4 und 499 GP abgewiesen; 20 Tage nativer Baufortschritt, doppelte Zustellung und GM-Neuladen ohne Doppelverarbeitung. Verwaltungsprüfung im nativen Modus ohne Canvas; Kalender-/Szenenabnahme offen. |
 | 2026-10-19 | T03 abgenommen: Bastion im Akteurverzeichnis erstellen und Teilnehmer verwalten; Spezialbogen dauerhaft je Aktor zuordnen, öffentliche Identität begrenzen, Besitzerlöschung erkennen und Rechte entziehen. | Nativer GM-/Spieler-Bedientest bestanden (15,7 s), einschließlich Neuladen, unveränderter Charakterbögen, verweigerter Spielerkonfiguration, Rechteentzug und `MissingOwner` nach Löschen. Screenshot geprüft; zwölf Unit-Tests, Syntax-/Sprachprüfung und Paketierung erfolgreich. Foundry-eigener `cycleTokens`-Fehler bei Rechteänderung ohne Canvas dokumentiert. |
+| 2026-10-19 | T04 abgenommen: kanonische Bastion-Registrierung, dauerhafte private GM-Warteschlange, Vorgangsbelege, serialisierte Befehle und Wiederaufnahme nach GM-Ausfall. Native Batch-Vorbereitung gegen teilweise entfernte Operationen abgesichert; Schreibfreigabe auf geprüften Core-Build begrenzt. | Vierzehn Unit-Tests und fünf native Integrationstests bestanden. Zwei GMs/zwei Spieler: gleicher Eintrag erzeugt einen Konflikt, verschiedene Einträge buchen jeweils einmal; fremde Marker/Absender abgewiesen. Hook-Veto bucht nichts; spätere Wiederaufnahme führt abgebrochene Aktion nicht aus. GM-Ausfall vor Commit und nach Commit vor Rückmeldung ohne Doppelbuchung; ohne GM kein Schreibauftrag. Native Rechte verhindern Zugriff eines zum Spieler herabgestuften GM-Modells auf Träger und private Journale. |

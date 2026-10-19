@@ -12,4 +12,5 @@
     <dd>{{#if supported}}{{localize "SHARED_BASTION.Supported"}}{{else}}{{localize "SHARED_BASTION.Unsupported"}}{{/if}}</dd>
   </dl>
   <p class="hint">{{localize "SHARED_BASTION.StatusHint"}}</p>
+  {{#if supported}}{{#unless writeRuntimeSupported}}<p class="bastion-notice">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/if}}
 </section>

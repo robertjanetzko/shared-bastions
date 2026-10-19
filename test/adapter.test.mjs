@@ -64,8 +64,9 @@ test("room areas follow live system configuration and reject missing sizes", () 
 test("public diagnostics expose no private data and identify only the runtime with an owner proof", () => {
   const { adapter, game } = setup();
   const diagnostics = adapter.diagnostics();
-  assert.deepEqual(Object.keys(diagnostics).sort(), ["supported", "foundry", "system", "reviewedSystem", "reviewedCommit", "ownerIntegrationAccepted"].sort());
+  assert.deepEqual(Object.keys(diagnostics).sort(), ["supported", "foundry", "system", "reviewedSystem", "reviewedCommit", "writeRuntimeSupported", "ownerIntegrationAccepted"].sort());
   assert.equal(diagnostics.ownerIntegrationAccepted, true);
   game.version = "14.370";
   assert.equal(adapter.diagnostics().ownerIntegrationAccepted, false);
+  assert.equal(adapter.diagnostics().writeRuntimeSupported, false);
 });

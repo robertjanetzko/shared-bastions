@@ -1,5 +1,7 @@
 export const MODULE_ID = "shared-bastion";
 export const DATA_VERSION = 1;
+export const BASTION_ID = "SharedBastion001";
+export const BASTION_UUID = `Actor.${BASTION_ID}`;
 export const OWNER_PROOF_RUNTIME = Object.freeze({ foundry: "14.369", system: "6.0.6" });
 export const SOURCE_REVIEW = Object.freeze({
   system: "6.0.6",

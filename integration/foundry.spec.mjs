@@ -35,9 +35,32 @@ test("T01: native startup and the status application render without module error
     await expect(page.locator("#shared-bastion-status")).toContainText("14.369");
     await expect(page.locator("#shared-bastion-status")).toContainText("6.0.6");
     await page.locator("#shared-bastion-status").screenshot({ path: "test-results/t01-status.png" });
+    const visibleCommands=await page.evaluate(()=>[...document.querySelectorAll("[data-message-id]")]
+      .filter(element=>game.messages.get(element.dataset.messageId)?.flags["shared-bastion"]?.request&&getComputedStyle(element).display!=="none")
+      .map(element=>element.dataset.messageId));
+    expect(visibleCommands).toEqual([]);
     expect(errors).toEqual([]);
     expect(failures).toEqual([]);
   } finally { await context.close(); }
+});
+
+test("T04: a late native server collision rolls back earlier operations in the same batch", async({browser})=>{
+  const context=await browser.newContext();
+  const gm=await join(context,"Gamemaster");
+  try {
+    const result=await gm.evaluate(async()=>{
+      const actor=await Actor.create({name:"SB Native Batch",type:"character",system:{currency:{gp:1000}}});
+      const journal=await JournalEntry.create({name:"SB Native Batch Receipts",ownership:{default:0}});
+      const receipt={action:"create",documentName:"JournalEntryPage",parent:journal,keepId:true,
+        data:[{_id:"SBReceipt0000001",type:"text",name:"Native transaction proof",text:{content:""}}]};
+      try {
+        await foundry.documents.modifyBatch([receipt,{action:"update",documentName:"Actor",updates:[{_id:actor.id,"system.currency.gp":900}]}]);
+        await foundry.documents.modifyBatch([{action:"update",documentName:"Actor",updates:[{_id:actor.id,"system.currency.gp":800}]},receipt]);
+        return {gold:actor.system.currency.gp,receipts:journal.pages.size};
+      } finally {await actor.delete();await journal.delete();}
+    });
+    expect(result).toEqual({gold:900,receipts:1});
+  } finally {await context.close();}
 });
 
 test("T02: a private owner's player builds a central facility and progress completes once", async ({ browser }) => {
@@ -66,13 +89,15 @@ test("T02: a private owner's player builds a central facility and progress compl
       const central = await Actor.create({ name: prefix + "Bastion", type: "character", ownership: { default: 0, [alice.id]: 2, [bob.id]: 2 },
         flags: { "shared-bastion": { integrationFixture: true, bastion: true, version: 1, participants: [owner.uuid, other.uuid] } },
         system: { currency: { gp: 7000 } } });
+      const previousBastion=game.settings.get("shared-bastion","bastionUuid");
+      await game.settings.set("shared-bastion","bastionUuid",central.uuid);
       const facilities = await central.createEmbeddedDocuments("Item", [true, true, false].map((built, i) => ({
         name: prefix + `Facility ${i}`, type: "facility", flags: { "shared-bastion": { owner: owner.uuid, revision: 0 } },
         system: { type: { value: "basic", subtype: "bedroom" }, size: "cramped", building: { built, size: "cramped" } }
       })));
       const facility=facilities.find(item=>item.name===prefix+"Facility 2");
       if(!facility) throw new Error("Native fixture item was not returned");
-      return { owner: owner.id, other: other.id, central: central.id, facility: facility.uuid, actorIds: [central.id, owner.id, other.id],
+      return { owner: owner.id, other: other.id, central: central.id, facility: facility.uuid, previousBastion, actorIds: [central.id, owner.id, other.id],
         userIds: [alice.id, bob.id], aliceName: alice.name, bobName: bob.name, aliceId: alice.id,
         initial: { ownerLevel: owner.system.details.level, centralLevel: central.system.details.level, built: facility.system.building.built } };
     });
@@ -145,6 +170,7 @@ test("T02: a private owner's player builds a central facility and progress compl
     await aliceContext.close().catch(() => {});
     await bobContext.close().catch(() => {});
     if (fixtures && !gm.isClosed()) await gm.evaluate(async data => {
+      await game.settings.set("shared-bastion","bastionUuid",data.previousBastion);
       for (const id of data.actorIds) await game.actors.get(id)?.delete();
       for (const id of data.userIds) await game.users.get(id)?.delete();
     }, fixtures);
@@ -225,5 +251,141 @@ test("T03: directory creation, private participants and the dedicated sheet pers
       await game.users.get(data.user)?.delete();
     },fixtures);
     await gmContext.close();
+  }
+});
+
+test("T04: two GMs, competing owners, durable failover and no-GM read mode", async ({browser})=>{
+  const contexts=[];
+  const context=async()=>{const c=await browser.newContext();contexts.push(c);return c;};
+  let gmContext=await context();
+  let gm=await join(gmContext,"Gamemaster");
+  let fixtures;
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T04 ";
+      const prior=game.actors.filter(actor=>actor.flags["shared-bastion"]?.integrationFixture)
+        .sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)));
+      for(const actor of prior) await actor.delete();
+      if(game.modules.get("shared-bastion").api.repository.find()) throw new Error("Expected an empty dedicated test world");
+      for(const user of game.users.filter(user=>user.name.startsWith(prefix))) await user.delete();
+      const otherGM=await User.create({name:prefix+"Other GM",role:CONST.USER_ROLES.GAMEMASTER});
+      const alice=await User.create({name:prefix+"Alice",role:CONST.USER_ROLES.PLAYER});
+      const bob=await User.create({name:prefix+"Bob",role:CONST.USER_ROLES.PLAYER});
+      const owner=await Actor.create({name:prefix+"Owner",type:"character",ownership:{default:0,[alice.id]:3,[bob.id]:3},
+        flags:{"shared-bastion":{integrationFixture:true}},system:{currency:{gp:2500}},
+        items:[{name:"Test Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      await alice.update({character:owner.id});await bob.update({character:owner.id});
+      const bastion=await game.modules.get("shared-bastion").api.repository.create({name:prefix+"Bastion",participants:[owner.uuid]});
+      await bastion.setFlag("shared-bastion","integrationFixture",true);
+      const facilities=await bastion.createEmbeddedDocuments("Item",[true,true,false,false,false,false,false,false].map((built,i)=>({
+        name:prefix+`Facility ${i}`,type:"facility",flags:{"shared-bastion":{owner:owner.uuid,revision:0}},
+        system:{type:{value:"basic",subtype:"bedroom"},building:{built,size:"cramped"},size:"cramped"}
+      })));
+      const uuid=i=>facilities.find(f=>f.name===prefix+`Facility ${i}`).uuid;
+      const rogue=await Actor.create({name:prefix+"Rogue",type:"character",ownership:{default:0,[alice.id]:3},
+        flags:{"shared-bastion":{integrationFixture:true,bastion:true,version:1,participants:[owner.uuid]}}});
+      const [rogueFacility]=await rogue.createEmbeddedDocuments("Item",[{name:prefix+"Rogue Facility",type:"facility",
+        flags:{"shared-bastion":{owner:owner.uuid,revision:0}},system:{type:{value:"basic"},building:{built:false}}}]);
+      return {originalGM:game.user.id,otherGM:otherGM.id,otherGMName:otherGM.name,alice:alice.id,aliceName:alice.name,bob:bob.id,bobName:bob.name,
+        owner:owner.id,bastion:bastion.id,rogue:rogue.id,rogueFacility:rogueFacility.uuid,facilities:[uuid(2),uuid(3),uuid(4),uuid(5),uuid(6),uuid(7)]};
+    });
+    const secondContext=await context();
+    const second=await join(secondContext,fixtures.otherGMName);
+    const aliceContext=await context();const alice=await join(aliceContext,fixtures.aliceName);
+    const bobContext=await context();const bob=await join(bobContext,fixtures.bobName);
+    const formerGMAccess=await gm.evaluate(data=>{
+      const former=game.users.get(data.originalGM).clone({role:CONST.USER_ROLES.PLAYER},{keepId:true});
+      return {bastionOwner:game.actors.get(data.bastion).testUserPermission(former,"OWNER"),
+        queueReadable:game.journal.get("SharedBastionReq").testUserPermission(former,"OBSERVER"),
+        receiptsReadable:game.journal.get("SharedBastionLog").testUserPermission(former,"OBSERVER")};
+    },fixtures);
+    expect(formerGMAccess).toEqual({bastionOwner:false,queueReadable:false,receiptsReadable:false});
+    const executor=await alice.evaluate(()=>[...game.users].filter(u=>u.active&&u.isGM).sort((a,b)=>a.id.localeCompare(b.id,"en"))[0].id);
+    const primary=executor===fixtures.originalGM?gm:second;
+    let backup=executor===fixtures.originalGM?second:gm;
+    const primaryContext=executor===fixtures.originalGM?gmContext:secondContext;
+    let backupContext=executor===fixtures.originalGM?secondContext:gmContext;
+    const attempt=(page,uuid,action="build",payload={size:"cramped"})=>page.evaluate(async({uuid,action,payload})=>{
+      try{return {ok:true,result:await game.modules.get("shared-bastion").api.request(action,uuid,payload)};}
+      catch(error){return {ok:false,code:error.code};}
+    },{uuid,action,payload});
+    const competing=await Promise.all([attempt(alice,fixtures.facilities[0]),attempt(bob,fixtures.facilities[0])]);
+    expect(competing.filter(r=>r.ok)).toHaveLength(1);
+    expect(competing.find(r=>!r.ok).code).toBe("Conflict");
+    expect(await gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(2000);
+    const different=await Promise.all([attempt(alice,fixtures.facilities[1]),attempt(bob,fixtures.facilities[2])]);
+    expect(different.every(r=>r.ok)).toBe(true);
+    expect(await gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(1000);
+    const executors=await gm.evaluate(data=>[...game.journal.get("SharedBastionLog").pages]
+      .filter(page=>data.facilities.includes(page.flags["shared-bastion"]?.receipt?.request?.facility)&&page.flags["shared-bastion"]?.receipt?.response?.ok)
+      .map(page=>page._stats.lastModifiedBy),fixtures);
+    expect(executors).toEqual([executor,executor,executor]);
+    expect((await attempt(alice,fixtures.rogueFacility)).code).toBe("InvalidBastion");
+    // A forged author must not turn a player request into a GM-only progress command.
+    await alice.evaluate(async data=>ChatMessage.create({author:data.gm,content:"T04 sender test",whisper:[data.gm,game.user.id],
+      flags:{"shared-bastion":{request:{v:1,nonce:foundry.utils.randomID(),action:"advance",facility:data.facility,revision:1,payload:{days:20}}}}
+    }),{gm:executor,facility:fixtures.facilities[0]});
+    expect((await attempt(alice,fixtures.facilities[0],"advance",{days:20})).code).toBe("GMOnly");
+    expect(await gm.evaluate(async uuid=>(await fromUuid(uuid)).system.building.built,fixtures.facilities[0])).toBe(false);
+    await primary.evaluate(uuid=>{globalThis.sbT04Veto=Hooks.on("preUpdateItem",item=>item.uuid===uuid?false:undefined);},fixtures.facilities[4]);
+    expect((await attempt(alice,fixtures.facilities[4])).code).toBe("CommitFailed");
+    expect(await primary.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(1000);
+    await primary.evaluate(()=>Hooks.off("preUpdateItem",globalThis.sbT04Veto));
+    await primary.evaluate(uuid=>{
+      const message=game.messages.find(message=>message.flags["shared-bastion"]?.request?.facility===uuid);
+      Hooks.callAll("createChatMessage",message,{},message.author.id);
+    },fixtures.facilities[4]);
+    await primary.evaluate(()=>{
+      const bus=game.modules.get("shared-bastion").api.repository.bus;
+      const execute=bus.execute.bind(bus);
+      bus.execute=async(...args)=>{globalThis.sbT04Accepted=true;await new Promise(resolve=>{globalThis.sbT04Release=resolve;});return execute(...args);};
+    });
+    const pending=attempt(alice,fixtures.facilities[3]);
+    await primary.waitForFunction(()=>globalThis.sbT04Accepted===true);
+    await primaryContext.close();
+    const failover=await pending;
+    expect(failover.ok).toBe(true);
+    expect(await backup.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(500);
+    await backup.reload();await backup.waitForFunction(()=>globalThis.game?.ready===true);
+    expect(await backup.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(500);
+    expect(await backup.evaluate(async uuid=>(await fromUuid(uuid)).system.progress.max,fixtures.facilities[4])).toBe(null);
+    const returningContext=await context();
+    const returning=await join(returningContext,executor===fixtures.originalGM?"Gamemaster":fixtures.otherGMName);
+    const secondExecutor=await alice.evaluate(()=>[...game.users].filter(u=>u.active&&u.isGM).sort((a,b)=>a.id.localeCompare(b.id,"en"))[0].id);
+    const returningId=await returning.evaluate(()=>game.user.id);
+    const finishing=returningId===secondExecutor?returning:backup;
+    const finishingContext=returningId===secondExecutor?returningContext:backupContext;
+    const survivor=returningId===secondExecutor?backup:returning;
+    const survivorContext=returningId===secondExecutor?backupContext:returningContext;
+    await finishing.evaluate(uuid=>{
+      const bus=game.modules.get("shared-bastion").api.repository.bus;
+      const reply=bus.reply.bind(bus);
+      bus.reply=async(id,response)=>{
+        if(response.ok&&response.uuid===uuid){globalThis.sbT04Committed=true;await new Promise(resolve=>{globalThis.sbT04ReplyRelease=resolve;});}
+        return reply(id,response);
+      };
+    },fixtures.facilities[5]);
+    const awaitingAcknowledgment=attempt(alice,fixtures.facilities[5]);
+    await finishing.waitForFunction(()=>globalThis.sbT04Committed===true);
+    await finishingContext.close();
+    expect((await awaitingAcknowledgment).ok).toBe(true);
+    backup=survivor;backupContext=survivorContext;
+    expect(await backup.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owner)).toBe(0);
+    await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await backupContext.close();
+    await expect.poll(()=>alice.evaluate(()=>[...game.users].filter(u=>u.active&&u.isGM).length)).toBe(0);
+    const before=await alice.evaluate(()=>game.messages.size);
+    expect((await attempt(alice,fixtures.facilities[3])).code).toBe("NoGM");
+    expect(await alice.evaluate(()=>game.messages.size)).toBe(before);
+    await expect(alice.locator(".bastion-sheet")).toContainText("No GM is connected");
+    gmContext=await context();gm=await join(gmContext,"Gamemaster");
+    console.log("T04 passed",JSON.stringify({executor,competing:competing.map(r=>r.ok?"ok":r.code),different:different.map(r=>r.ok),failover:failover.ok,acknowledgmentRecovery:true,finalGold:0}));
+  } finally {
+    for(const c of contexts.filter(c=>c!==gmContext)) await c.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      for(const id of [data.bastion,data.rogue,data.owner]) await game.actors.get(id)?.delete();
+      for(const id of [data.otherGM,data.alice,data.bob]) await game.users.get(id)?.delete();
+    },fixtures);
+    await gmContext.close().catch(()=>{});
   }
 });

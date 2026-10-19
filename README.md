@@ -6,7 +6,7 @@ Ressourcen vom jeweiligen Besitzercharakter beziehen.
 
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
 und Bastionerstellung mit Teilnehmerverwaltung sind vorhanden. Die vollständige
-Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T03 aus `PLAN.md`
+Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T04 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 
@@ -26,6 +26,9 @@ Charaktere; ihre eigenen Bögen behalten ihre bisherigen Rechte.
 Zielbereich: Foundry ab **14.367 innerhalb V14**, D&D5e **6.0.x**. Der offizielle
 Systemquellcode **6.0.6**, Commit `28f35531021bb07609c79c4cbbb9b7e7c2744bf9`, wurde
 geprüft. Bestätigte Laufzeitprüfungen gelten derzeit für 14.369 / 6.0.6.
+Schreiben ist auf Foundry **14.369** begrenzt, weil dessen native
+Transaktionsvorbereitung eigens geprüft und abgesichert ist. Andere V14-Builds
+bleiben bis zur erneuten Integrationsprüfung im Lesemodus.
 
 ## Entwickeln und prüfen
 
@@ -66,6 +69,13 @@ Teilnehmerrechte und den Umgang mit gelöschten Besitzern. Bei Rechteänderungen
 meldet Foundry 14.369 im Modus ohne Canvas einen eigenen `cycleTokens`-Fehler;
 die gespeicherten Berechtigungen wurden trotzdem korrekt geprüft. Die native
 Prüfung mit aktivem Canvas folgt bei der Stufe-1-Abnahme.
+
+T04 bestätigt mit zwei GMs und zwei Spielern parallele Aktionen, sichtbare
+Versionskonflikte und Wiederaufnahme nach GM-Ausfall ohne doppelte Abbuchung.
+Aufträge und Ergebnisse liegen in zwei privaten GM-Journalen. Diese nicht
+löschen oder Spielern freigeben: Bei fehlenden initialisierten Speichern werden
+Schreibaktionen gesperrt, damit alte Aufträge nicht erneut ausgeführt werden.
+Native Hook-Abbrüche führen zu keiner Teilbuchung.
 
 ## Isolierte Docker-Testumgebung
 

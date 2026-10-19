@@ -1,4 +1,5 @@
 /* Use the installed system's theme tokens and fonts. No copied artwork or fonts. */
+.shared-bastion-command-message { display: none !important; }
 .shared-bastion .window-content {
   background: var(--dnd5e-background-parchment, var(--dnd5e-color-parchment, #f1ebe8));
   color: var(--color-text-primary, #191813);

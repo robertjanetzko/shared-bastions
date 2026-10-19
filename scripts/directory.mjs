@@ -15,6 +15,7 @@ export function installDirectory(repository) {
     const label = document.createElement("span");
     label.textContent = game.i18n.localize(repository.find() ? "SHARED_BASTION.OpenBastion" : "SHARED_BASTION.Create");
     button.append(icon, label);
+    button.disabled = !repository.find() && !game.modules.get(MODULE_ID).api.diagnostics().writeRuntimeSupported;
     button.addEventListener("click", () => {
       const actor = repository.find();
       if (actor) void actor.sheet.render({ force: true });
@@ -26,4 +27,6 @@ export function installDirectory(repository) {
     for (const actor of game.actors) if (actor.flags[MODULE_ID]?.bastion && actor.sheet?.rendered) void actor.sheet.render();
   };
   Hooks.on("userConnected", refresh);
+  game.socket.on("disconnect", refresh);
+  game.socket.on("connect", refresh);
 }
