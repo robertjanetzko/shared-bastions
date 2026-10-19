@@ -265,6 +265,101 @@ test("T02: a private owner's player builds a central facility and progress compl
   }
 });
 
+test("T09: reviewed transfers keep backups, preserve progress and resume without active duplicates",async({browser})=>{
+  const gmContext=await browser.newContext();const playerContext=await browser.newContext();
+  const gm=await join(gmContext,"Gamemaster");let fixtures;
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T09 ";const api=game.modules.get("shared-bastion").api;
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture).sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const flags={"shared-bastion":{integrationFixture:true}};
+      const player=await User.create({name:prefix+"Player",role:CONST.USER_ROLES.PLAYER});
+      const owner=await Actor.create({name:prefix+"Owner",type:"character",flags,ownership:{default:0,[player.id]:3},system:{currency:{gp:1000}},items:[{name:"Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      const other=await Actor.create({name:prefix+"Other",type:"character",flags,ownership:{default:0},system:{currency:{gp:9000}},items:[{name:"Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      const npc=await Actor.create({name:prefix+"Hireling",type:"npc",flags,ownership:{default:2}});
+      const recipe=await Item.create({name:prefix+"Recipe",type:"loot",flags,ownership:{default:2},system:{price:{value:10,denomination:"gp"},quantity:1}});
+      const create=(actor,name,subtype,order)=>actor.createEmbeddedDocuments("Item",[{name:prefix+name,type:"facility",system:{type:{value:subtype==="bedroom"?"basic":"special",subtype},size:"cramped",order,building:{built:true,size:"cramped"}}}]).then(items=>items[0]);
+      const workshop=await create(owner,"Workshop","workshop","craft");const bedroom=await create(owner,"Bedroom","bedroom","");const garden=await create(other,"Garden","garden","harvest");
+      const [privateRecipe]=await owner.createEmbeddedDocuments("Item",[{name:prefix+"Private Recipe",type:"loot",system:{price:{value:10,denomination:"gp"},quantity:1}}]);
+      await workshop.update({"system.progress":{value:3,max:10,order:"craft",paid:true},"system.craft":{item:privateRecipe.uuid,quantity:1},"system.hirelings":{max:1,value:[npc.uuid]},"system.description.value":`@UUID[${bedroom.uuid}]{Bedroom}`});
+      await bedroom.update({"system.building.built":false,"system.progress":{value:5,max:20,order:"build",paid:true}});
+      await garden.update({"system.progress":{value:2,max:7,order:"harvest",paid:true},"system.craft":{item:recipe.uuid,quantity:2}});
+      const bastion=await api.repository.create({name:prefix+"Bastion",participants:[owner.uuid,other.uuid]});await bastion.setFlag("shared-bastion","integrationFixture",true);
+      return {bastion:bastion.id,owner:owner.id,other:other.id,npc:npc.id,recipe:recipe.id,player:player.id,playerName:player.name,sourceUuids:[workshop.uuid,bedroom.uuid,garden.uuid]};
+    });
+    const player=await join(playerContext,fixtures.playerName);
+    const preview=()=>gm.evaluate(()=>game.modules.get("shared-bastion").api.transferPreview());
+    const payload=preview=>preview.sources.map(({uuid,digest})=>({uuid,digest}));
+    const attempt=(action,data)=>gm.evaluate(async({action,data})=>{try{await game.modules.get("shared-bastion").api.request(action,game.modules.get("shared-bastion").api.repository.find().uuid,data);return "ok";}catch(e){return e.code;}},{action,data});
+    const counts=()=>gm.evaluate(data=>{const b=game.actors.get(data.bastion);return {sources:[data.owner,data.other].map(id=>game.actors.get(id).itemTypes.facility.length),
+      pending:b.itemTypes.facility.filter(i=>i.flags["shared-bastion"]?.transferPending).length,active:b.itemTypes.facility.filter(i=>!i.flags["shared-bastion"]?.transferPending).length,
+      gold:[data.owner,data.other].map(id=>game.actors.get(id).system.currency.gp)};},fixtures);
+    let review=await preview();expect(review.sources).toHaveLength(3);
+    await gm.evaluate(async uuid=>(await fromUuid(uuid)).update({name:"Changed since review"}),fixtures.sourceUuids[0]);
+    expect(await attempt("stageTransfer",{sources:payload(review)})).toBe("TransferChanged");expect(await counts()).toMatchObject({sources:[2,1],pending:0,active:0});
+    review=await preview();
+    await gm.evaluate(()=>{globalThis.sbTransferVeto=Hooks.on("preCreateItem",item=>{if(item.parent===game.modules.get("shared-bastion").api.repository.find())return false;});});
+    expect(await attempt("stageTransfer",{sources:payload(review)})).toBe("CommitFailed");
+    await gm.evaluate(()=>Hooks.off("preCreateItem",globalThis.sbTransferVeto));
+    expect((await preview()).pending).toHaveLength(0);expect(await counts()).toMatchObject({sources:[2,1],pending:0});
+    expect(await attempt("stageTransfer",{sources:payload(await preview())})).toBe("ok");
+    let pending=(await preview()).pending;expect(pending).toHaveLength(3);expect(pending.every(p=>p.ready)).toBe(true);
+    expect(await counts()).toMatchObject({sources:[2,1],pending:3,active:0,gold:[1000,9000]});
+    expect(await player.evaluate(async records=>{try{await game.modules.get("shared-bastion").api.request("finishTransfer",game.modules.get("shared-bastion").api.repository.find().uuid,{records});return "allowed";}catch(e){return e.code;}},pending.map(p=>p.id))).toBe("GMOnly");
+    expect(await player.evaluate(()=>game.journal.get("SharedBastionLog")?.testUserPermission(game.user,"OBSERVER")??false)).toBe(false);
+    await gm.evaluate(()=>game.modules.get("shared-bastion").api.advanceTurn());
+    expect((await preview()).pending.every(p=>p.ready)).toBe(true);
+    await gm.evaluate(async uuid=>(await fromUuid(uuid)).update({"system.progress.value":4}),fixtures.sourceUuids[0]);
+    expect(await attempt("finishTransfer",{records:pending.map(p=>p.id)})).toBe("TransferChanged");
+    expect(await counts()).toMatchObject({sources:[2,1],pending:3,active:0});
+    expect(await attempt("discardTransfer",{records:pending.map(p=>p.id)})).toBe("ok");
+    expect(await counts()).toMatchObject({sources:[2,1],pending:0,active:0});
+    expect(await attempt("stageTransfer",{sources:payload(await preview())})).toBe("ok");
+    pending=(await preview()).pending;
+    await gm.evaluate(()=>{globalThis.sbTransferVeto=Hooks.on("preDeleteItem",item=>{if(item.parent?.name.startsWith("SB T09 ")&&!item.parent.flags["shared-bastion"]?.bastion)return false;});});
+    expect(await attempt("finishTransfer",{records:pending.map(p=>p.id)})).toBe("CommitFailed");
+    await gm.evaluate(()=>Hooks.off("preDeleteItem",globalThis.sbTransferVeto));
+    expect(await counts()).toMatchObject({sources:[2,1],pending:3,active:0});
+    await gm.reload();await gm.waitForFunction(()=>game.ready===true);
+    expect((await preview()).pending.every(p=>p.ready)).toBe(true);
+    await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await gm.locator('[data-action="transferFacilities"]').click();
+    await expect(gm.locator('dialog [data-action="finish"]')).toBeVisible();
+    await gm.locator('dialog').screenshot({path:"test-results/t09-transfer.png"});
+    await gm.locator('dialog [data-action="finish"]').click();
+    await expect.poll(counts).toMatchObject({sources:[0,0],pending:0,active:3,gold:[1000,9000]});
+    const transferred=await gm.evaluate(data=>{
+      const b=game.actors.get(data.bastion);const find=uuid=>b.itemTypes.facility.find(i=>i.flags["shared-bastion"].source===uuid);
+      const [workshop,bedroom,garden]=data.sourceUuids.map(find);
+      const records=game.journal.get("SharedBastionLog").pages.filter(p=>{const r=p.flags["shared-bastion"]?.transfer;return r?.bastion===b.uuid&&r.bastionCreated===b._stats.createdTime;}).map(p=>p.flags["shared-bastion"].transfer);
+      return {progress:[workshop,bedroom,garden].map(i=>({...i.system.progress})),built:bedroom.system.building.built,
+        hirelings:workshop.system.hirelings.value,link:workshop.system.description.value,target:bedroom.uuid,
+        backups:records.length,done:records.filter(r=>r.status==="done").length,backupProgress:records.filter(r=>r.status==="done").map(r=>r.source.system.progress.value).sort()};
+    },fixtures);
+    expect(transferred.progress.map(p=>p.value)).toEqual([4,5,2]);expect(transferred.progress.every(p=>p.paid)).toBe(true);
+    expect(transferred.built).toBe(false);expect(transferred.hirelings).toEqual([`Actor.${fixtures.npc}`]);expect(transferred.link).toContain(transferred.target);
+    expect(transferred).toMatchObject({backups:6,done:3,backupProgress:[2,4,5]});
+    expect(await attempt("finishTransfer",{records:pending.map(p=>p.id)})).toBe("ok");expect(await counts()).toMatchObject({active:3,pending:0,sources:[0,0]});
+    await gm.evaluate(()=>game.modules.get("shared-bastion").api.advanceTurn());
+    expect(await gm.evaluate(data=>[data.owner,data.other].map(id=>game.actors.get(id).items.filter(i=>i.flags["shared-bastion"]?.resultFrom).map(i=>i.system.quantity)),fixtures)).toEqual([[1],[2]]);
+    expect((await preview()).sources).toHaveLength(0);
+    await gm.evaluate(async data=>{
+      const [room]=await game.actors.get(data.other).createEmbeddedDocuments("Item",[{name:"SB T09 Additional room",type:"facility",system:{type:{value:"basic",subtype:"bedroom"},size:"cramped"}}]);
+      await room.update({"system.building.built":false,"system.progress":{value:1,max:20,order:"build",paid:true}});
+    },fixtures);
+    await gm.locator('[data-action="transferFacilities"]').click();
+    await expect(gm.locator('dialog [name="source-0"]')).toBeChecked();
+    await gm.locator('dialog [data-action="stage"]').click();
+    await expect.poll(counts).toMatchObject({sources:[0,0],pending:0,active:4,gold:[1000,9000]});
+    console.log("T09 passed",JSON.stringify({transferred,counts:await counts()}));
+  }finally{
+    await playerContext.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{for(const id of [data.bastion,data.owner,data.other,data.npc])await game.actors.get(id)?.delete();await game.items.get(data.recipe)?.delete();await game.users.get(data.player)?.delete();},fixtures);
+    await gmContext.close();
+  }
+});
+
 test("T03: directory creation, private participants and the dedicated sheet persist", async ({ browser }) => {
   const gmContext=await browser.newContext();
   const playerContext=await browser.newContext();

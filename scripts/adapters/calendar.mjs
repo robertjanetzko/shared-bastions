@@ -42,6 +42,7 @@ export class CalendarAdapter {
     return bastion.items.some(item => {
       if (item.type !== "facility") return false;
       const flags = item.flags[MODULE_ID] ?? {};
+      if (flags.transferPending) return false;
       const cursor = flags.calendarTime ?? bastion.flags[MODULE_ID].calendarTime;
       if (!this.days(cursor, until)) return false;
       return retry || !flags.progressIssue || this.days(flags.progressIssue.until, until) > 0;

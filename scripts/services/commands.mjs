@@ -5,6 +5,7 @@ import { strictBatch, assertWriteRuntime } from "../adapters/foundry.mjs";
 import { FACILITY_ACTIONS, validateFacilityPayload } from "./facilities.mjs";
 import { OPERATION_ACTIONS, validateOperationPayload } from "./operations.mjs";
 import { TURN_ACTIONS, validateTurnPayload } from "./turns.mjs";
+import { TRANSFER_ACTIONS, validateTransferPayload } from "../core/transfer.mjs";
 
 const LEDGER_ID = "SharedBastionLog";
 const QUEUE_ID = "SharedBastionReq";
@@ -24,6 +25,9 @@ export function validateRequest(request) {
       || !Array.isArray(request.payload.participants) || request.payload.participants.length > 100
       || request.payload.participants.some(uuid => !actorUuid.test(uuid))
       || new Set(request.payload.participants).size !== request.payload.participants.length) throw new BastionError("InvalidRequest");
+  } else if (TRANSFER_ACTIONS.has(request.action)) {
+    if (!actorUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
+    validateTransferPayload(request.action, request.payload);
   } else if (TURN_ACTIONS.has(request.action)) {
     if (!actorUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
     validateTurnPayload(request.action, request.payload);
@@ -199,6 +203,8 @@ export class CommandBus {
     if (bastion.flags[MODULE_ID].version !== DATA_VERSION) throw new BastionError("UnsupportedDataVersion");
     if ((document.flags[MODULE_ID]?.revision ?? 0) !== request.revision) throw new BastionError("Conflict");
     if (TURN_ACTIONS.has(request.action)) return this.turns.plan(bastion, request, user);
+    if (TRANSFER_ACTIONS.has(request.action)) return this.transfers.plan(bastion, request, user);
+    if (document.flags[MODULE_ID]?.transferPending) throw new BastionError("TransferPending");
     if (request.action === "configureBastion") {
       if (!user.isGM) throw new BastionError("GMOnly");
       return this.repository.planConfigure(bastion, request.payload);

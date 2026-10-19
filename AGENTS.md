@@ -1,7 +1,7 @@
 # AGENTS.md – Shared Bastion
 
 Dieses Dokument gilt für das gesamte Projekt. Es ist ein lebendes
-Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-19.
+Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-20.
 
 ## Projektziel und verbindliche Grundlage
 
@@ -164,7 +164,7 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T09.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T10.
 - Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
   Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
   öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
@@ -251,7 +251,23 @@ in einer generierten Szene sind noch nicht geprüft.
   ihr offener Zeitraum bleibt erhalten. Nach Reparatur erneut prüfen. Beim
   Kalenderwechsel unveränderte Item-Updates auslassen, da Foundry sie sonst im
   nativen Preflight entfernt und der strikte Batch absichtlich abbricht.
-- Aktuell offen sind Transfer und die Stufe-1-Abnahme.
+- T09 ist abgenommen: zweiphasiger GM-Transfer mit Vorschau und SHA-256-Prüfung,
+  vollständigen Item-Sicherungen im privaten Vorgangsbeleg-Journal und inaktiven
+  Kopien auf der Bastion. Erst nach tatsächlichem Rücklesen und Vergleich werden
+  Quellen entfernt und Kopien aktiviert; beides samt Abschlussstatus atomar.
+  Vorbereitete Kopien zählen weder für Regeln noch für Fortschritt. Geänderte
+  Quellen/Kopien verhindern den Abschluss, Fehler lassen sich fortsetzen oder
+  vorbereitete Kopien unter Erhalt der Quellen verwerfen. UUID-Zuordnung bleibt
+  in der Sicherung; interne Facility-Verweise werden umgeschrieben, externe
+  Makros/andere Dokumente bleiben zur ausdrücklichen GM-Pflege.
+- Transferdatensätze enthalten UUID und native Erstellungszeit des Bastion-Aktors,
+  damit eine später neu erstellte Bastion mit derselben festen ID keine alten
+  Übernahmen übernimmt. Vollständige Sicherungen niemals öffentlich speichern.
+- Bereits bezahlte native Herstellungsaufträge können auf Items im Inventar ihres
+  tatsächlichen Besitzers verweisen. Nur bei der Ergebnisabrechnung ist diese
+  eigene Inventarreferenz zusätzlich erlaubt; neue Spieleraufträge benötigen
+  weiterhin geschützte Welt-/Kompendiumvorlagen, fremde Inventare sind gesperrt.
+- Aktuell offen ist die abschließende Stufe-1-Abnahme.
   Der Szenengenerator bleibt späterer Ausbau. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
   Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill

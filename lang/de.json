@@ -61,7 +61,10 @@
       "FacilityDisabled": "Diese Einrichtung ist derzeit außer Betrieb.",
       "TradeCapacity": "Dieser Handel überschreitet den verfügbaren Bestand oder die Kapazität.",
       "OccupantCapacity": "In dieser Einrichtung sind nicht genügend Plätze frei.",
-      "InvalidOrderDuration": "Für diesen Befehl konnte keine gültige Dauer ermittelt werden."
+      "InvalidOrderDuration": "Für diesen Befehl konnte keine gültige Dauer ermittelt werden.",
+      "TransferPending": "Diese Einrichtung wird gerade übertragen und ist noch nicht aktiv. Der GM kann die Übernahme abschließen.",
+      "TransferChanged": "Quelle oder Kopie hat sich geändert oder fehlt. Originale bleiben erhalten. Übernahme prüfen oder vorbereitete Kopien verwerfen und neu beginnen.",
+      "TransferExists": "Für diese Einrichtung ist bereits eine Übernahme gespeichert. Bitte die vorbereitete Übernahme fortsetzen."
     },
     "Views": "Bastionansichten",
     "ByOwner": "Nach Besitzer",
@@ -153,6 +156,15 @@
     "BlockedOrders": "Einrichtungen blockiert",
     "RetryProgress": "Fortschritt erneut prüfen",
     "CalendarTurnHint": "Bereits vergangene Kalendertage werden einmal verarbeitet. Dieser Zug zählt keine zusätzlichen Tage und setzt abgeschaltete Einrichtungen nach den Systemregeln wieder instand.",
-    "ManualTurnHint": "Dieser Zug verarbeitet alle zugeordneten Einrichtungen um die eingestellte Dauer"
+    "ManualTurnHint": "Dieser Zug verarbeitet alle zugeordneten Einrichtungen um die eingestellte Dauer",
+    "TransferTitle": "Einrichtungen übertragen",
+    "TransferStart": "Auswahl übertragen",
+    "TransferResume": "Geprüfte Übernahmen abschließen",
+    "TransferDiscard": "Vorbereitete Kopien verwerfen",
+    "TransferDiscardHint": "Die vorbereiteten Kopien werden entfernt. Die Originale bleiben auf den Charakteren und die Sicherungen im privaten GM-Journal erhalten.",
+    "TransferHint": "Die ausgewählten Einrichtungen samt laufenden Befehlen und Personal werden öffentlich Teil der gemeinsamen Bastion. Zuerst werden vollständige Sicherungen im privaten GM-Journal und inaktive Kopien angelegt. Erst nach Prüfung werden die Originale entfernt. Währenddessen die Quellen nicht bearbeiten. Externe Makros oder Verweise außerhalb der übertragenen Einrichtungen werden nicht automatisch geändert.",
+    "TransferEmpty": "Keine weiteren Einrichtungen auf den Teilnehmercharakteren.",
+    "TransferPendingTitle": "Vorbereitete Übernahmen",
+    "TransferVerified": "Kopie und Quelle geprüft"
   }
 }

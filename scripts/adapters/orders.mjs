@@ -48,12 +48,15 @@ export class OrderAdapter {
         uuid: facility.system[role].value[index] ?? "" })) };
   }
 
-  async source(uuid, user, { actor = false, protectedDefinition = true } = {}) {
+  async source(uuid, user, { actor = false, protectedDefinition = true, resultOwner = null } = {}) {
     const source = await this.adapter.resolveUuid(uuid);
     const access = source?.pack ? this.game.packs.get(source.pack) : source;
-    if (!source || source.parent || (actor ? source.type !== "npc" : !source.system?.price || source.system?.quantity === undefined)
+    // A transferred, already paid native order may refer to its owner's inventory.
+    // This exception applies only to settlement, never to new player order quotes.
+    const ownedResult = Boolean(resultOwner && source?.parent === resultOwner && !actor);
+    if (!source || (source.parent && !ownedResult) || (actor ? source.type !== "npc" : !source.system?.price || source.system?.quantity === undefined)
       || !access?.testUserPermission(user, "OBSERVER")) throw new BastionError("OperationSourceUnavailable");
-    if (protectedDefinition && [...this.game.users].some(candidate => !candidate.isGM && access.testUserPermission(candidate, "OWNER"))) {
+    if (protectedDefinition && !ownedResult && [...this.game.users].some(candidate => !candidate.isGM && access.testUserPermission(candidate, "OWNER"))) {
       throw new BastionError("UntrustedTemplate");
     }
     return source;
@@ -225,7 +228,7 @@ export class OrderAdapter {
     const operations = deferGold ? [] : this.credit(owner, result.gold);
     const items = [];
     for (const reward of result.items ?? []) {
-      const source = await this.source(reward.uuid, this.game.user);
+      const source = await this.source(reward.uuid, this.game.user, { resultOwner: owner });
       if (!Number.isSafeInteger(reward.quantity) || reward.quantity < 1) {
         throw new BastionError("OperationSourceUnavailable");
       }

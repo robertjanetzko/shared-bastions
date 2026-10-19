@@ -4,6 +4,7 @@ import { BastionError } from "../core/errors.mjs";
 import { configureBastion } from "./setup.mjs";
 import { reportError } from "../services/bastion.mjs";
 import * as facilityDialogs from "./facility-dialogs.mjs";
+import { transferFacilities } from "./transfer.mjs";
 
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const template = name => `modules/shared-bastion/templates/${name}.hbs`;
@@ -21,7 +22,7 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       removeFacility: BastionSheet.manageFacility, reassignFacility: BastionSheet.manageFacility,
       setFacilityRules: BastionSheet.manageFacility, configureTemplates: BastionSheet.configureTemplates,
       issueOrder: BastionSheet.issueOrder, cancelOrder: BastionSheet.cancelOrder, setOccupants: BastionSheet.setOccupants,
-      advanceTurn: BastionSheet.advanceTurn, retryCalendar: BastionSheet.retryCalendar }
+      advanceTurn: BastionSheet.advanceTurn, retryCalendar: BastionSheet.retryCalendar, transferFacilities }
   };
 
   static PARTS = { bastion: { template: template("bastion"), scrollable: [".bastion-body"] } };
@@ -173,7 +174,7 @@ export class BastionSheet extends HandlebarsApplicationMixin(foundry.application
       return entry.available && actor?.uuid === entry.uuid && actor.testUserPermission(game.user, "OWNER");
     }).map(entry => entry.uuid));
     if (!["all", "mine", ...roster.map(entry => entry.uuid)].includes(this.filter)) this.filter = "all";
-    const facilities = (await Promise.all(this.actor.items.filter(item => item.type === "facility").map(async item => {
+    const facilities = (await Promise.all(this.actor.items.filter(item => item.type === "facility" && !item.flags[MODULE_ID]?.transferPending).map(async item => {
       const owner = roster.find(entry => entry.uuid === item.flags[MODULE_ID]?.owner);
       const data = this.api.presentation.facility(item);
       const own = owned.has(owner?.uuid);

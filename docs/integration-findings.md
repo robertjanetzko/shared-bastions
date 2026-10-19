@@ -115,7 +115,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–5 sind bestätigt. T04 prüft GM-Wechsel und die Transaktionsgrenze,
 T07 die Betriebsaktionen, T08 native Kalender-/Zugkoordination.
-Nächster Task ist T09 (Transfer).
+Nächster Task ist T10 (Stufe-1-Abnahme).
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -293,3 +293,43 @@ geprüft. Die Verwaltungsprüfung nutzt weiterhin natives noCanvas.
 Die Gesamtsuite mit neun nativen Integrationstests besteht in 3,4 Minuten;
 23 Unit-Tests, Syntax-/Sprachprüfung, Paketierung und native Offline-API-Prüfung
 sind erfolgreich. Das Archiv enthält weder Handbuch noch Entwicklungsdaten.
+
+## T09: Bestehende Einrichtungen übertragen
+
+Die native Prüfung besteht mit GM-/Spielerclients; T09 und die T07-Regression
+zusammen in 57,8 Sekunden, dazu 27 Unit-Tests. Der GM-Dialog zeigt Quell-Items,
+Besitzer und Fortschritt. Der erste atomare Batch legt vollständige Sicherungen
+im privaten Belegjournal und inaktive Facility-Kopien auf der Bastion an. Der
+zweite liest die Dokumente zurück, vergleicht SHA-256-Digests und entfernt erst
+dann Quellen; Aktivierung der Kopien, Transferstatus und Beleg werden zusammen
+gespeichert. Native Item-IDs werden ausdrücklich beibehalten; die vorhandene
+gezielte Bauzustand-Brücke verhindert den Default vom physischen Trägerlevel.
+
+Sicherungen enthalten Ausgangs-Item, normalisierte geplante Kopie und UUID-Map.
+Der Vergleich der Kopie ignoriert nur ihre native ID und Dokumentstatistik.
+Quellen werden einschließlich Statistik geprüft, damit eine Änderung seit der
+Vorschau zum Stopp führt. UUID- und Erstellungszeitbindung verhindert, dass eine
+neu erstellte Bastion bei gleicher fester ID alte Übernahmen übernimmt.
+Interne Beschreibungslinks und Facility-/Effektverweise werden umgeschrieben;
+externe Dokumente oder Makros sind keine impliziten Transferziele.
+
+Geprüft: drei Quellen mit 4/10 Herstellung, 5/20 Bau und 2/7 Ernte; Fortschritt,
+`paid`, ungebauter Bauzustand und Mietlinge bleiben erhalten. Ein Herstellungsziel
+im privaten Besitzerinventar wird nur bei der Ergebnisabrechnung zusätzlich
+zugelassen; fremde Inventare und solche Quellen für neue Spieleraufträge bleiben
+gesperrt. Nach sieben weiteren Tagen erhalten die richtigen Besitzer ein und
+zwei Ergebnis-Items, ohne erneute Zahlung. Guthaben bleiben bei 1.000/9.000 GP.
+
+Erstellungs-Veto hinterlässt weder Sicherung noch Kopie. Lösch-Veto lässt alle
+Quellen und inaktiven Kopien bestehen; kein teilweiser Abschluss. Geänderte Quelle
+stoppt den Abschluss. Kopien verwerfen, neu vorbereiten, GM-Neuladen und Abschluss
+über den tatsächlichen Dialog funktionieren. Wiederholter Abschluss erzeugt
+keine aktiven Duplikate; der normale Start mit automatischem Abschluss ist an
+einem vierten Raum bestätigt. Spieler können weder abschließen noch die privaten
+Sicherungen lesen. Der Transferdialog ist visuell geprüft.
+
+Während der kurzen Übernahme Quellen nicht parallel nativ bearbeiten. Änderungen
+vor dem Abschluss werden erkannt; andere Module/native Clients nehmen nicht an
+unserer GM-Warteschlange teil. Die vollständige Quellsicherung bleibt für eine
+gegebenenfalls manuelle Wiederherstellung erhalten. Vorbereitete Kopien sind
+für eigene Aktionen, Limits und Kalenderfortschritt gesperrt.

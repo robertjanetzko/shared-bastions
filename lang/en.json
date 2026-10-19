@@ -61,7 +61,10 @@
       "FacilityDisabled": "This facility is currently shut down.",
       "TradeCapacity": "This trade exceeds the available stock or capacity.",
       "OccupantCapacity": "This facility does not have enough spaces.",
-      "InvalidOrderDuration": "A valid duration could not be determined for this order."
+      "InvalidOrderDuration": "A valid duration could not be determined for this order.",
+      "TransferPending": "This facility is being transferred and is not active yet. The GM can finish the transfer.",
+      "TransferChanged": "A source or copy changed or is missing. Originals are preserved. Review the transfer, or discard pending copies and start again.",
+      "TransferExists": "A transfer already exists for this facility. Please resume the pending transfer."
     },
     "Views": "Bastion views",
     "ByOwner": "By owner",
@@ -153,6 +156,15 @@
     "BlockedOrders": "facilities blocked",
     "RetryProgress": "Retry progress",
     "CalendarTurnHint": "Elapsed calendar days are processed once. This turn adds no extra days and repairs shut-down facilities according to the system rules.",
-    "ManualTurnHint": "This turn advances all assigned facilities by the configured duration"
+    "ManualTurnHint": "This turn advances all assigned facilities by the configured duration",
+    "TransferTitle": "Transfer facilities",
+    "TransferStart": "Transfer selected",
+    "TransferResume": "Finish verified transfers",
+    "TransferDiscard": "Discard pending copies",
+    "TransferDiscardHint": "Pending copies will be removed. Originals remain on their characters and backups remain in the private GM journal.",
+    "TransferHint": "Selected facilities, including ongoing orders and occupants, become public in the shared bastion. Full backups in the private GM journal and inactive copies are created first. Originals are removed only after verification. Do not edit the sources during transfer. External macros or links outside the transferred facilities are not changed automatically.",
+    "TransferEmpty": "No additional facilities on participant characters.",
+    "TransferPendingTitle": "Pending transfers",
+    "TransferVerified": "Copy and source verified"
   }
 }

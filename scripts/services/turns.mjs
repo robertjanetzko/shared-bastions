@@ -31,6 +31,7 @@ export class TurnService {
     let blocked = 0;
     for (const facility of bastion.items.filter(item => item.type === "facility")) {
       const state = facility.flags[MODULE_ID] ?? {};
+      if (state.transferPending) continue;
       const cursor = state.calendarTime ?? flags.calendarTime;
       const days = clock.enabled ? baseline ? 0 : clock.days(cursor, until) : manual ? clock.duration : 0;
       const failedToday = state.progressIssue && !clock.days(state.progressIssue.until, until);

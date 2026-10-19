@@ -37,7 +37,7 @@ export class Dnd5eAdapter {
     const facilities = this.config.DND5E?.facilities;
     if (!facilities?.advancement || !facilities?.sizes) throw new BastionError("UnsupportedRuntime");
     const central = [...bastion.items].filter(item => item.type === "facility"
-      && item.flags?.[MODULE_ID]?.owner === owner.uuid);
+      && item.flags?.[MODULE_ID]?.owner === owner.uuid && !item.flags?.[MODULE_ID]?.transferPending);
     const personal = [...owner.items].filter(item => item.type === "facility");
     // Existing facilities still on the owner count until the transfer is verified.
     const existing = [...central, ...personal];

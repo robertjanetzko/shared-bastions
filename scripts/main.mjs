@@ -7,6 +7,7 @@ import { BastionSheet } from "./applications/bastion-sheet.mjs";
 import { installDirectory } from "./directory.mjs";
 import { FacilityService } from "./services/facilities.mjs";
 import { TurnService } from "./services/turns.mjs";
+import { TransferService } from "./services/transfer.mjs";
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bastionUuid", { scope: "world", config: false, type: String, default: "" });
@@ -34,6 +35,8 @@ Hooks.once("ready", () => {
   bus.facilities = facilities;
   const turns = new TurnService(adapter, repository, bus);
   bus.turns = turns;
+  const transfers = new TransferService(adapter, repository, bus);
+  bus.transfers = transfers;
   const canWrite = adapter.diagnostics().writeRuntimeSupported;
   if (canWrite) { adapter.install(); bus.install(); repository.install(); }
   installDirectory(repository);
@@ -50,6 +53,8 @@ Hooks.once("ready", () => {
     occupantForm: (item, role) => adapter.operations.occupantForm(item, role, game.user),
     calendarState: () => ({ enabled: adapter.calendar.enabled, duration: adapter.calendar.duration }),
     advanceTurn: () => turns.turn(),
+    transferPreview: () => transfers.preview(),
+    transfer: sources => transfers.transfer(sources),
     request: (action, facility, payload) => bus.request(action, facility, payload)
   });
   if (canWrite) turns.install();

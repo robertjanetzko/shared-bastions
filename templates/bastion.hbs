@@ -16,6 +16,7 @@
     <span class="hint">{{participantCount}} {{localize "SHARED_BASTION.Participants"}} · {{facilityCount}} {{localize "SHARED_BASTION.Facilities"}}</span>
     <button type="button" data-action="addFacility" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "SHARED_BASTION.AddFacility"}}</button>
     {{#if isGM}}<button type="button" data-action="configureTemplates" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TemplateRules"}}</button>{{/if}}
+    {{#if isGM}}<button type="button" data-action="transferFacilities" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TransferTitle"}}</button>{{/if}}
   </div>
   <div class="bastion-turnbar">
     <div><span class="hint">{{#if calendar.enabled}}{{localize "SHARED_BASTION.CalendarMode"}}{{else}}{{localize "SHARED_BASTION.ManualMode"}} · {{calendar.duration}} {{localize "SHARED_BASTION.Days"}}{{/if}}</span>

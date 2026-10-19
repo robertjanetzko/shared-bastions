@@ -1,0 +1,7 @@
+<p>{{name}}</p>
+<p class="hint">{{localize "SHARED_BASTION.TransferHint"}}</p>
+{{#if hasSources}}<table class="shared-bastion-transfer"><thead><tr><th></th><th>{{localize "SHARED_BASTION.Facilities"}}</th><th>{{localize "SHARED_BASTION.Owner"}}</th><th>{{localize "SHARED_BASTION.Progress"}}</th></tr></thead>
+<tbody>{{#each sources}}<tr><td><input type="checkbox" name="source-{{@index}}" checked aria-label="{{name}}"></td><td>{{name}}</td><td>{{owner}}</td><td>{{#if progress}}{{progress.value}} / {{progress.max}}{{else}}—{{/if}}</td></tr>{{/each}}</tbody></table>
+{{else}}<p>{{localize "SHARED_BASTION.TransferEmpty"}}</p>{{/if}}
+{{#if hasPending}}<h3>{{localize "SHARED_BASTION.TransferPendingTitle"}}</h3>
+{{#each pending}}<p><strong>{{name}}</strong> · {{#if ready}}{{localize "SHARED_BASTION.TransferVerified"}}{{else}}{{localize "SHARED_BASTION.Errors.TransferChanged"}}{{/if}}<br><small>{{source}} → {{target}}</small></p>{{/each}}{{/if}}

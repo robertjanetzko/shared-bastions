@@ -7,8 +7,8 @@ Ressourcen vom jeweiligen Besitzercharakter beziehen.
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
 und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
 sind vorhanden. Einrichtungsvorlagen, Bearbeitung und individuelle Regeln sind
-implementiert. Betriebsaktionen, Ergebnisabrechnung und Kalender sind ebenfalls abgenommen;
-Transfer und Stufe-1-Abnahme folgen noch. T01–T08 aus `PLAN.md`
+implementiert. Betriebsaktionen, Ergebnisabrechnung, Kalender und Transfer sind abgenommen;
+die Stufe-1-Abnahme folgt noch. T01–T09 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 Der aktuelle Entwicklungsauftrag umfasst Stufe 1 bis T10; der Szenengenerator
@@ -125,6 +125,31 @@ der GM „Fortschritt erneut prüfen“ verwenden; wiederhergestellte Welt-Item-
 lösen die Prüfung auch automatisch aus. Ein fehlgeschlagener Kalendertag bleibt
 für diese Einrichtung offen. Auszahlungen an denselben Besitzer werden summiert
 und gemeinsam mit Fortschritt und Beleg gespeichert.
+
+## Bestehende Einrichtungen übertragen
+
+Der GM öffnet „Einrichtungen übertragen“ im Bastion-Bogen. Die Vorschau zeigt
+Einrichtungen aller Teilnehmercharaktere mit Besitzer und laufendem Fortschritt.
+Die Auswahl wird öffentlich Teil der gemeinsamen Bastion; andere Charakterdaten
+bleiben privat. Ein Durchgang unterstützt bis zu 100 Einrichtungen.
+
+„Auswahl übertragen“ sichert zuerst die vollständigen Quell-Items im privaten
+GM-Journal „Gemeinsame Bastion – Vorgangsbelege“ und legt inaktive Kopien an.
+Nach Vergleich der gespeicherten Kopien mit der Planung werden die Quellen
+entfernt und die Kopien aktiviert. Laufende und bezahlte Befehle, Personal,
+Bauzustand und native Daten bleiben erhalten. Innerhalb derselben Auswahl werden
+Facility-UUIDs etwa in Beschreibungslinks und Effektursprüngen zugeordnet.
+Externe Makros und Links in anderen Dokumenten muss der GM bei Bedarf anpassen;
+die Zuordnung steht in den privaten Sicherungsdaten.
+
+Während der Übernahme die Quellen nicht bearbeiten oder über einen nativen
+Bastionzug fortschreiben. Änderungen verhindern den Abschluss. Nach Abbruch
+oder Neuladen zeigt derselbe Dialog vorbereitete Übernahmen: „Geprüfte Übernahmen
+abschließen“ setzt sie fort; „Vorbereitete Kopien verwerfen“ entfernt nur die
+Kopien, während Quellen und Sicherungen bleiben. Danach lässt sich eine neue
+Vorschau erstellen. Die privaten GM-Journale enthalten die Sicherungen als
+Dokument-Flags und können über Foundrys nativen JSON-Export gesichert werden.
+Eine abgeschlossene Übernahme erneut abzuschließen erzeugt keine Duplikate.
 
 ## Entwickeln und prüfen
 

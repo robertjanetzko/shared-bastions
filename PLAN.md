@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: T01–T08 abgenommen; nächster Schritt T09.
+Stand: 2026-10-20 · Status: T01–T09 abgenommen; nächster Schritt T10.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -283,7 +283,12 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
     Neuladen oder GM-Wechsel erzeugt keine Wiederholung abgeschlossener Ereignisse.
   - Deckt ab: R05–R07, R11.
 
-- [ ] **T09 – Bestehende Einrichtungen übertragen**
+- [x] **T09 – Bestehende Einrichtungen übertragen**
+  - Stand: GM-Vorschau, private vollständige Sicherung und inaktive Kopie;
+    Quellen erst nach Vergleich der tatsächlich gespeicherten Kopie entfernen.
+    Zwei native Transaktionen mit fortsetzbarem Status; geänderte Quellen stoppen
+    den Abschluss, vorbereitete Kopien lassen sich verwerfen. Fortschritt,
+    Personal, bezahlte Aufträge und interne UUID-Verweise praktisch bestätigt.
   - Umfang: Einmaligen GM-Transfer mit Vorschau, Sicherung der Ausgangsdaten,
     Referenzzuordnung und Wiederaufnahme nach Fehlern implementieren.
   - Abhängigkeit: T06–T08.
@@ -384,9 +389,9 @@ Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
 `npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
-ausgeführt. 23 Unit-Tests prüfen Modulgrenzen. Neun Chromium-Integrationstests
-bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T08 mit getrennten Clients;
-Transfer bleibt separat offen; die Szene ist zurückgestellt.
+ausgeführt. 27 Unit-Tests prüfen Modulgrenzen. Zehn Chromium-Integrationstests
+bestätigen Modulstart, native Transaktionsabbrüche sowie T02–T09 mit getrennten Clients;
+die abschließende Stufe-1-Abnahme bleibt offen; die Szene ist zurückgestellt.
 Der T03-Bedientest prüft zusätzlich Erstellung, Wiederöffnen, Teilnehmerrechte
 und gelöschte Besitzer. Native Einschränkung im Modus ohne Canvas: Foundry
 14.369 ruft bei Actor-Berechtigungsänderungen `canvas.tokens.cycleTokens` auf,
@@ -400,7 +405,7 @@ Die Docker-Testinstallation startet über `npm run dev:up`; Details in
 - Vollständige Systemkompatibilität ist noch nicht praktisch nachgewiesen.
   T02 bestätigt einen kostenpflichtigen zentralen Bauauftrag mit individuellem
   Besitzer und nativer Fortschrittsberechnung. Weitere Aufträge und Kalender
-  sind in T07/T08 bestätigt; Transfer und Stufe-1-Abnahme bleiben offen.
+  sind in T07/T08 bestätigt; T09 bestätigt den Transfer, die Stufe-1-Abnahme bleibt offen.
 - Der Systemadapter ist der wichtigste technische Aufwand. Die native Annahme
   „Item-Elternaktor ist Regelbesitzer“ darf nicht unbemerkt übernommen werden.
 - Der GM-Transport bindet Anfragen an den serverseitigen nativen `userId`.
@@ -442,3 +447,4 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | Nutzer begrenzt den aktiven Auftrag auf Stufe 1 bis einschließlich T10. | Stufe-1-Kriterien bleiben unverändert; T11–T14 und der Szenengenerator sind späterer Ausbau, kein Bestandteil der laufenden Abnahme. |
 | 2026-10-19 | T07 abgenommen: native Befehlsdialoge sammeln Optionen ohne eigene Dokumentzahlungen; zentraler Fortschritt, individuelle Zahlungen und automatische Ergebnisse über die GM-Transaktion. Erweiterung, Herstellung/Ernte, Handel, Mietlinge/Verteidiger und übrige native Befehle implementiert. | 21 Unit-Tests und acht native Integrationstests bestanden (2,8 min), zusätzlicher abschließender T07-Bedientest bestanden (36,3 s). Herstellung 10 Tage/50 GP mit Item-Übergabe, Ernte 3 Items, Waren-/Kreaturenhandel samt Erlös, Abbruch ohne Doppelzahlung, normale Erweiterung 25 Tage/500 GP und unmittelbare besondere Erweiterung. Dialogpreis 0 ändert die Abbuchung nicht. Ergebnis-Veto bucht keinen Fortschritt; Wiederholung/Neuladen keine weiteren Items oder Erlöse. NSC-Zuordnung per nativer Drag-and-drop-Oberfläche und Item-Identifier-Voraussetzung bestätigt. Besitzer 900 GP, fremder Charakter 9.000 und Träger 7.000 unverändert; native Dialoge und Bogen visuell geprüft. |
 | 2026-10-19 | T08 abgenommen: GM-Zug ohne Bereitschaftssperre, native globale Züge und automatische Tageswechsel über einen Besitzerpfad koordiniert. Zeitmarken je Einrichtung, sichtbare Einzelfehler mit Wiederaufnahme und summierte Besitzereinnahmen. | 23 Unit-Tests und neun native Integrationstests bestanden (3,4 min), T08 separat zusätzlich bestanden (30,1 s); Syntax-/Sprachprüfung, native Offline-API-Prüfung und Paketierung erfolgreich. Zwei Verkäufe à 48 GP ergeben 1.096 Besitzergold; anderer Besitzer 9.000 und Träger 7.000 unverändert. Kalenderwechsel, wiederholte Hooks, Uhr-Rücksprung, fehlende Ergebnisvorlage/Reparatur, Neuladen und zweiter GM erzeugen insgesamt ein Herstellungs-Item. Unbeteiligte Charakterbastion bleibt nativ. Bogen visuell geprüft; Handbuch und Entwicklungsdaten fehlen im Archiv. |
+| 2026-10-20 | T09 abgenommen: zweiphasiger Transfer mit Vorschau, privaten Sicherungen, inaktiven Kopien und tatsächlichem Quellen-/Kopienvergleich vor Entfernung. Übernahmedatensätze gelten nur für die konkrete Bastion-Erstellung; Wiederaufnahme und Verwerfen sind möglich. | 27 Unit-Tests; native T09- und T07-Prüfung zusammen bestanden (57,8 s). Drei Einrichtungen mit Fortschritt 4/10, 5/20 und 2/7 behalten bezahlte Aufträge, Bauzustand, Mietlinge und interne UUID-Links. Private Besitzer-Inventarvorlage schließt nach Transfer korrekt ab. Änderungen seit Vorschau, Erstellungs- und Löschveto hinterlassen keine Teilübernahme; GM-Neuladen und Wiederholung erzeugen keine aktiven Duplikate. Weiterer Raum über den GM-Dialog übernommen; Guthaben 1.000/9.000 unverändert. Transferdialog visuell geprüft; Syntax-/Sprachprüfung erfolgreich. |
