@@ -85,7 +85,7 @@ export class Dnd5eAdapter {
     return {
       id: facility.id, name: facility.name, img: facility.img,
       type: system.type.value,
-      typeLabel: localize(config.types[system.type.value]?.subtypes?.[system.type.subtype]
+      typeLabel: this.label("FacilityTypes", system.type.subtype, config.types[system.type.value]?.subtypes?.[system.type.subtype]
         ?? config.types[system.type.value]?.label ?? "SHARED_BASTION.UnknownType"),
       sizeLabel: this.label("SizeNames", system.size, "SHARED_BASTION.UnknownSize"),
       stateLabel: localize(state),

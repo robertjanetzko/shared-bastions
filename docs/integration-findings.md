@@ -1,7 +1,8 @@
 # Integrationsbefunde
 
-Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01–T07 sind im jeweils dokumentierten Umfang abgenommen.**
+Stand: 2026-10-20. **Quellcodebefunde und lokale Unit-Tests sind keine
+Laufzeitabnahme. T01–T10 sind durch die dokumentierten nativen Prüfungen
+auf Foundry 14.369 / D&D5e 6.0.6 abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -23,7 +24,8 @@ und 9.000 GP auf dem fremden Charakter unverändert bleiben. Fremdbesitz,
 Besitzerlevel 4 und unzureichende Mittel (499 GP) werden abgewiesen. Der native
 Fortschritt beendet nach 20 Tagen den Bau auf dem zentralen Item. Doppelte
 Zustellung und Neuladen des GM erzeugen keine zweite Buchung oder Fortschreibung.
-Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Kalender und weitere Auftragsarten werden später geprüft; GM-Wechsel siehe T04.
+Die Suite nutzt dafür den offiziellen Modus ohne Canvas. Weitere Auftragsarten
+siehe T07, Kalender siehe T08, GM-Wechsel siehe T04.
 
 T03: Erstellung im nativen Akteurverzeichnis, Teilnehmerauswahl, gespeicherte
 `core.sheetClass`-Zuordnung und Wiederöffnen nach Neuladen sind mit GM und Spieler
@@ -37,7 +39,8 @@ Foundry 14.369 hat dabei einen bestätigten Fehler im Modus ohne Canvas:
 `Actor._onUpdate` ruft nach Berechtigungsänderungen bei Spielern ungeschützt
 `canvas.tokens.cycleTokens` auf. Die Tokenebene existiert in diesem Modus nicht.
 Die Berechtigung wird dennoch gespeichert; der T03-Test prüft dies ausdrücklich.
-Der Kern wird nicht angepasst. Mit aktivem Canvas in T10 erneut prüfen.
+Der Kern wird nicht angepasst. T10 bestätigt den Rechteentzug mit aktivem Canvas
+ohne diesen Fehler.
 
 - [Facility-Datenmodell](https://github.com/foundryvtt/dnd5e/blob/28f35531021bb07609c79c4cbbb9b7e7c2744bf9/module/data/item/facility.mjs):
   Native Felder für Bau, Größe, Level, Aufträge, Personal, Verteidiger, Handel
@@ -65,7 +68,7 @@ Der Kern wird nicht angepasst. Mit aktivem Canvas in T10 erneut prüfen.
   `advanceTurn(facility, { duration, performUpdates: false, turn })` berechnet
   native Updates und Ergebnisse ohne unmittelbares Speichern. Der Standardwert
   für `duration` ist sieben Tage. Kalenderbetrieb und Zug unterscheiden sich;
-  der spätere Adapter muss Werte ausdrücklich übergeben.
+  der Adapter übergibt Werte deshalb ausdrücklich.
 - [Kalenderverarbeitung](https://github.com/foundryvtt/dnd5e/blob/28f35531021bb07609c79c4cbbb9b7e7c2744bf9/module/data/calendar/calendar-data.mjs):
   Der Kalender sammelt Facility-Updates selbst und speichert sie später. Ein
   zusätzlicher eigener Kalenderhook würde ohne Koordination doppelt verarbeiten.
@@ -82,7 +85,8 @@ zusätzlichen Charakterrechte vergeben und keine privaten Daten gespiegelt.
 Der Systemadapter ermittelt Level und individuelle Einrichtungskontingente.
 Noch auf dem Charakter vorhandene Einrichtungen zählen mit. Öffentliche
 Diagnosedaten enthalten keine Charakterdaten. Die begrenzte Schreib-API akzeptiert
-konkrete Bauaufträge und einen GM-Fortschrittsschritt; keine freien Dokumentpatches.
+konkrete Verwaltungs-/Bau-/Befehlsaktionen, GM-Fortschritt und Transfer;
+keine freien Dokumentpatches.
 
 Die serverseitige Absenderzuordnung stammt aus dem nativen `createChatMessage`-
 Hook. Die ursprüngliche Anfrage wird bei Zustellung kopiert; spätere Bearbeitung
@@ -115,7 +119,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–5 sind bestätigt. T04 prüft GM-Wechsel und die Transaktionsgrenze,
 T07 die Betriebsaktionen, T08 native Kalender-/Zugkoordination.
-Nächster Task ist T10 (Stufe-1-Abnahme).
+T10 schließt die Stufe-1-Abnahme ab. T11–T14 sind zurückgestellt.
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -333,3 +337,29 @@ vor dem Abschluss werden erkannt; andere Module/native Clients nehmen nicht an
 unserer GM-Warteschlange teil. Die vollständige Quellsicherung bleibt für eine
 gegebenenfalls manuelle Wiederherstellung erhalten. Vorbereitete Kopien sind
 für eigene Aktionen, Limits und Kalenderfortschritt gesperrt.
+
+## T10: Stufe-1-Abnahme und Auslieferung
+
+Version **0.1.0** ist nach Neustart der isolierten Foundry-Installation geladen;
+der Starttest prüft die tatsächlichen Modul-/Kompatibilitätsmetadaten gegen das
+Manifest. Alle **elf nativen Integrationstests bestehen in 4,5 Minuten**, dazu
+**27 Unit-Tests**, native Schema-/Vorlagenprüfung und Syntax-/Sprachprüfung mit
+36 ES-Modulen und 196 DE/EN-Schlüsseln. Die 35 nativen Einrichtungstypen erhalten
+deutsche Bezeichnungen aus der lokalen Begriffsvorlage; Regeltexte bleiben außen vor.
+
+T10 öffnet den deutschen Bogen durch einen echten Klick im Akteurverzeichnis.
+Der Spieler bleibt OBSERVER am Träger und OWNER nur auf seinem privaten Charakter;
+sein Standardbogen bleibt bestehen. Native direkte Actor-/Item-Updates werden
+verweigert. Ein normaler verknüpfter Charaktertoken bewegt sich auf einer eigenen
+kleinen Testszene. Nach Entfernung des Teilnehmers verliert er die Leserechte;
+mit aktivem Canvas tritt dabei kein `cycleTokens`-Fehler auf. Ein zweiter Spieler
+liest die Einrichtung gleichzeitig. Der deutsche Bogen ist visuell geprüft.
+
+Der vorherige noCanvas-Befund bleibt als Foundry-Grenze dokumentiert. Die Testszene
+ist keine Implementierung oder Abnahme eines Szenengenerators. Die Zuordnung
+aller Stufe-1-Kriterien steht in [stage1-acceptance.md](stage1-acceptance.md).
+
+`dist/shared-bastion-0.1.0.zip` enthält 42 Dateien unter `shared-bastion/`. Jede
+verpackte Datei wurde byteweise mit der geprüften Quelle verglichen; Manifest
+und Installationsstruktur sind gültig. Handbuch, Foundry-Distribution, Secrets,
+Interview- und Testdaten sind ausgeschlossen. Keine Veröffentlichung durchgeführt.

@@ -2,6 +2,7 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { OWNER_PROOF_RUNTIME } from "../scripts/constants.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const json = async file => JSON.parse(await readFile(path.join(root, file), "utf8"));
@@ -9,7 +10,7 @@ const manifest = await json("module.json");
 const pkg = await json("package.json");
 const fail = message => { throw new Error(message); };
 if (manifest.id !== pkg.name || manifest.version !== pkg.version) fail("Manifest/package identity mismatch");
-if (manifest.compatibility.verified) fail("Do not claim runtime verification before acceptance");
+if (manifest.compatibility.verified && manifest.compatibility.verified !== OWNER_PROOF_RUNTIME.foundry) fail("Verified build must match the documented native runtime proof");
 const files = [];
 async function walk(directory) {
   for (const entry of await readdir(path.join(root, directory), { withFileTypes: true })) {

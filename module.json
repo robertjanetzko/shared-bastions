@@ -1,9 +1,9 @@
 {
   "id": "shared-bastion",
   "title": "Shared Bastion",
-  "description": "Development foundation for shared native D&D5e facilities. Runtime owner integration is not yet accepted.",
-  "version": "0.1.0-dev.1",
-  "compatibility": { "minimum": "14.367", "maximum": "14" },
+  "description": "Shared D&D5e bastion sheet with individually owned native facilities, orders, calendar progress and verified transfer.",
+  "version": "0.1.0",
+  "compatibility": { "minimum": "14.367", "maximum": "14", "verified": "14.369" },
   "relationships": {
     "systems": [{
       "id": "dnd5e",

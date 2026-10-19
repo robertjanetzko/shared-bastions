@@ -1,25 +1,26 @@
 # Shared Bastion
 
-Gemeinsame Bastion für Foundry VTT V14 und D&D5e 6.0.x. Die Einrichtungen sollen
-als native Facility-Items auf einem zentralen Aktor leben und ihre Regeln und
-Ressourcen vom jeweiligen Besitzercharakter beziehen.
+Gemeinsamer Bastion-Bogen für Foundry VTT V14 und D&D5e 6.0.x. Native
+Facility-Items liegen auf einem zentralen Aktor; Regeln, Zahlungen und Ergebnisse
+gelten individuell für den jeweiligen Besitzercharakter. Spieler verwalten ihre
+Einrichtungen ohne zusätzliche Leserechte auf fremde Charaktere.
 
-**Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
-und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
-sind vorhanden. Einrichtungsvorlagen, Bearbeitung und individuelle Regeln sind
-implementiert. Betriebsaktionen, Ergebnisabrechnung, Kalender und Transfer sind abgenommen;
-die Stufe-1-Abnahme folgt noch. T01–T09 aus `PLAN.md`
-im Quellprojekt sind abgenommen. Der dortige
-HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
-Der aktuelle Entwicklungsauftrag umfasst Stufe 1 bis T10; der Szenengenerator
-ist für einen späteren Ausbau zurückgestellt.
+**Version 0.1.0 – Stufe 1:** Besitzerabschnitte und Gesamtübersicht,
+Einrichtungsverwaltung, individuelle Regeln mit begründeten GM-Ausnahmen,
+native Befehle und Personal, Kalenderfortschritt und geprüfter Transfer.
+Praktisch geprüft auf **Foundry 14.369 / D&D5e 6.0.6**.
+Der Szenengenerator bleibt späterer Ausbau. Die frühere HTML-Simulation im
+Quellprojekt ist kein Bestandteil des installierten Moduls.
 
 ## Lokal installieren
 
-Den Projektordner als `Data/modules/shared-bastion` in eine **Testinstallation**
-kopieren oder dort verlinken. Foundry neu starten und das Modul in einer
-D&D5e-Testwelt aktivieren. Unter den Moduleinstellungen öffnet „Modulstatus
-anzeigen“ die Entwicklungsdiagnose. Bestehende Charakterbögen werden nicht verändert.
+`dist/shared-bastion-0.1.0.zip` nach `Data/modules/` entpacken. Danach muss die Datei
+unter `Data/modules/shared-bastion/module.json` liegen. Alternativ den Projektordner
+dort als `shared-bastion` kopieren oder verlinken. Foundry neu starten und das Modul
+in einer D&D5e-Welt aktivieren. Unter den Moduleinstellungen zeigt „Modulstatus
+anzeigen“ Zielbereich und geprüfte Laufzeit an. Bestehende Charakterbögen werden
+nicht verändert. Das fertige Archiv benötigt weder Node.js noch npm auf den
+Spielerrechnern; es wird in der Foundry-Installation geladen.
 
 Der GM erstellt die Bastion über „Bastion erstellen“ im Akteurverzeichnis und
 wählt die Teilnehmercharaktere. Danach öffnen alle Teilnehmer den gemeinsamen
@@ -54,6 +55,12 @@ mit. Die kostenlosen Anfangsräume und besonderen Plätze kommen aus D&D5e. Die 
 Anfangsräume sind beengt und geräumig. Besondere Einrichtungen sind je Besitzer
 grundsätzlich einmalig; der GM kann Wiederholbarkeit festlegen, wenn ihre
 Beschreibung es erlaubt.
+
+Ist der Katalog leer, erstellt der GM im Gegenstandsverzeichnis eine eigene
+Vorlage vom nativen Typ „Facility“ beziehungsweise „Einrichtung“ und trägt ihre
+Daten ein. Die beteiligten Spieler benötigen Leserechte (Beobachter), dürfen die
+Definition jedoch nicht bearbeiten. Alternativ ein vorhandenes lesbares
+Item-Kompendium verwenden. Eine zusätzliche Regelsammlung ist keine Voraussetzung.
 
 Der GM kann unter „Vorlagenregeln“ Level, Auftragsart, Kapazitäten und zusätzliche
 Voraussetzungen für künftig hinzugefügte Einrichtungen festlegen. Diese Einstellungen
@@ -189,8 +196,9 @@ zum zurückgestellten Ausbau.
 T03 bestätigt zusätzlich Erstellung im Verzeichnis, Wiederöffnen nach Neuladen,
 Teilnehmerrechte und den Umgang mit gelöschten Besitzern. Bei Rechteänderungen
 meldet Foundry 14.369 im Modus ohne Canvas einen eigenen `cycleTokens`-Fehler;
-die gespeicherten Berechtigungen wurden trotzdem korrekt geprüft. Die native
-Prüfung mit aktivem Canvas folgt bei der Stufe-1-Abnahme.
+die gespeicherten Berechtigungen wurden trotzdem korrekt geprüft. T10 bestätigt
+den Rechteentzug mit aktivem Canvas ohne diesen Fehler, außerdem einen normalen
+verknüpften Charaktertoken, direkten nativen Schreibschutz und den deutschen Bogen.
 
 T04 bestätigt mit zwei GMs und zwei Spielern parallele Aktionen, sichtbare
 Versionskonflikte und Wiederaufnahme nach GM-Ausfall ohne doppelte Abbuchung.
@@ -198,6 +206,12 @@ Aufträge und Ergebnisse liegen in zwei privaten GM-Journalen. Diese nicht
 löschen oder Spielern freigeben: Bei fehlenden initialisierten Speichern werden
 Schreibaktionen gesperrt, damit alte Aufträge nicht erneut ausgeführt werden.
 Native Hook-Abbrüche führen zu keiner Teilbuchung.
+
+Die Abnahme umfasst 27 Unit-Tests und elf native Integrationstests mit getrennten
+Clients. Das Modul ist ohne erzeugte Szene verwendbar. Im Quellprojekt enthält
+`docs/stage1-acceptance.md` die Zuordnung der Abnahmekriterien zu den Prüfungen.
+Eine eigene Testszene prüft normales Canvas-Verhalten; ein Szenengenerator wird
+damit nicht als implementiert ausgewiesen.
 
 ## Isolierte Docker-Testumgebung
 

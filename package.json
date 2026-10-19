@@ -1,6 +1,6 @@
 {
   "name": "shared-bastion",
-  "version": "0.1.0-dev.1",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Shared native D&D5e facilities for Foundry VTT 14",

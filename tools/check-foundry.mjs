@@ -18,7 +18,9 @@ const module = new common.packages.BaseModule({
 if (!module.validate()) throw new Error("Foundry rejected the module schema");
 const release = { ...metadata.release, version: `${metadata.release.generation}.${metadata.release.build}` };
 const status = common.packages.BaseModule.testAvailability(module, { release });
-if (status !== common.CONST.PACKAGE_AVAILABILITY_CODES.UNKNOWN) {
+const expectedStatus = manifest.compatibility.verified === release.version
+  ? common.CONST.PACKAGE_AVAILABILITY_CODES.VERIFIED : common.CONST.PACKAGE_AVAILABILITY_CODES.UNKNOWN;
+if (status !== expectedStatus) {
   throw new Error(`Unexpected native availability code: ${status}`);
 }
 const system = [...module.relationships.systems];

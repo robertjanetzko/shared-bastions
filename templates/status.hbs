@@ -3,13 +3,15 @@
     <i class="fa-solid fa-chess-rook" aria-hidden="true"></i>
     <h1>{{localize "SHARED_BASTION.Title"}}</h1>
   </header>
-  <p class="bastion-notice">{{localize "SHARED_BASTION.FoundationNotice"}}</p>
+  <p class="bastion-notice">{{localize "SHARED_BASTION.StageOneNotice"}}</p>
   <dl>
     <dt>Foundry VTT</dt><dd>{{foundry}}</dd>
     <dt>D&amp;D5e</dt><dd>{{system}}</dd>
     <dt>{{localize "SHARED_BASTION.ReviewedSystem"}}</dt><dd>{{reviewedSystem}}</dd>
     <dt>{{localize "SHARED_BASTION.Compatibility"}}</dt>
     <dd>{{#if supported}}{{localize "SHARED_BASTION.Supported"}}{{else}}{{localize "SHARED_BASTION.Unsupported"}}{{/if}}</dd>
+    <dt>{{localize "SHARED_BASTION.RuntimeAcceptance"}}</dt>
+    <dd>{{#if ownerIntegrationAccepted}}{{localize "SHARED_BASTION.RuntimeVerified"}}{{else}}{{localize "SHARED_BASTION.RuntimeUnverified"}}{{/if}}</dd>
   </dl>
   <p class="hint">{{localize "SHARED_BASTION.StatusHint"}}</p>
   {{#if supported}}{{#unless writeRuntimeSupported}}<p class="bastion-notice">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/if}}

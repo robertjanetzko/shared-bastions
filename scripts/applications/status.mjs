@@ -1,6 +1,6 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/** T01 diagnostics only. The management sheet follows the T02 runtime proof. */
+/** Runtime diagnostics; the bastion itself is opened from the Actor directory. */
 export class BastionStatus extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "shared-bastion-status",

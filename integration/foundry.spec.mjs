@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
-async function join(context, name, observe = () => {}) {
+const expectedModule=JSON.parse(readFileSync(new URL("../module.json",import.meta.url),"utf8"));
+
+async function join(context, name, observe = () => {}, { withCanvas = false, language = null } = {}) {
   const page = await context.newPage();
   observe(page);
   page.on("pageerror", error => console.log(`Client ${name} error: ${error.message}`));
@@ -10,9 +13,12 @@ async function join(context, name, observe = () => {}) {
   await page.locator('[name="userId"]').selectOption({ label: name });
   await page.locator('button[name="join"]').click();
   await page.waitForURL("**/game", { timeout: 30000 });
-  // Stage 1 tests use Foundry's supported no-canvas mode; scene acceptance is separate.
+  // Most administration tests use noCanvas; T10 additionally checks a normal canvas client.
   await page.waitForFunction(() => globalThis.game?.settings?.settings?.has("core.noCanvas"), {}, { timeout: 60000 });
-  await page.evaluate(() => game.settings.set("core", "noCanvas", true));
+  await page.evaluate(async({withCanvas,language}) => {
+    await game.settings.set("core", "noCanvas", !withCanvas);
+    if(language) await game.settings.set("core","language",language);
+  },{withCanvas,language});
   await page.reload();
   await page.waitForFunction(() => globalThis.game?.ready === true, {}, { timeout: 60000 });
   console.log(`Client ready: ${name}`);
@@ -20,6 +26,68 @@ async function join(context, name, observe = () => {}) {
   if (world !== "shared-bastion-integration") throw new Error("Integration tests only run in the dedicated shared-bastion-integration world");
   return page;
 }
+
+test("T10: German sheet, native observer permissions and roster removal work with an active canvas",async({browser})=>{
+  const gmContext=await browser.newContext();const aliceContext=await browser.newContext();const bobContext=await browser.newContext();
+  const gm=await join(gmContext,"Gamemaster");let fixtures;
+  try{
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T10 ";const flags={"shared-bastion":{integrationFixture:true}};
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture).sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      for(const scene of game.scenes.filter(s=>s.flags["shared-bastion"]?.integrationFixture)) await scene.delete();
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const alice=await User.create({name:prefix+"Alice",role:CONST.USER_ROLES.PLAYER});const bob=await User.create({name:prefix+"Bob",role:CONST.USER_ROLES.PLAYER});
+      const character=(name,user,level,gold)=>Actor.create({name,type:"character",flags,ownership:{default:0,[user.id]:3},system:{currency:{gp:gold}},items:[{name:"Class",type:"class",system:{levels:level,identifier:"fighter"}}]});
+      const owner=await character("Alriks privater Charakter",alice,5,1000);const other=await character("Belas privater Charakter",bob,13,9000);
+      await alice.update({character:owner.id});await bob.update({character:other.id});
+      const bastion=await game.modules.get("shared-bastion").api.repository.create({name:"Die gemeinsame Bastion",participants:[owner.uuid,other.uuid]});await bastion.setFlag("shared-bastion","integrationFixture",true);
+      const [facility]=await bastion.createEmbeddedDocuments("Item",[{name:"Alriks Schlafzimmer",type:"facility",flags:{"shared-bastion":{owner:owner.uuid,revision:0}},system:{type:{value:"basic",subtype:"bedroom"},size:"cramped",building:{built:true,size:"cramped"}}}]);
+      const previousScene=game.scenes.active?.id;const paused=game.paused;
+      const scene=await Scene.create({name:prefix+"Native canvas check",flags,width:1000,height:800,padding:0,grid:{size:100},tokenVision:true,environment:{globalLight:{enabled:true}}});
+      const [token]=await scene.createEmbeddedDocuments("Token",[{name:owner.name,actorId:owner.id,actorLink:true,x:100,y:100,texture:{src:owner.img},sight:{enabled:true}}]);
+      await scene.activate();game.togglePause(false,true);
+      return {alice:alice.id,bob:bob.id,aliceName:alice.name,bobName:bob.name,owner:owner.id,other:other.id,bastion:bastion.id,facility:facility.uuid,
+        scene:scene.id,token:token.id,previousScene,paused,ownerSheet:owner.sheet.constructor.name};
+    });
+    const errors=[];
+    const alice=await join(aliceContext,fixtures.aliceName,page=>page.on("pageerror",e=>errors.push(e.message)),{withCanvas:true,language:"de"});
+    await alice.waitForFunction(data=>canvas.ready&&canvas.scene?.id===data.scene&&Boolean(canvas.tokens.get(data.token)),fixtures,{timeout:60000});
+    errors.length=0;
+    const bob=await join(bobContext,fixtures.bobName);
+    await alice.evaluate(async()=>{await ui.sidebar.changeTab("actors","primary");ui.sidebar.expand();await ui.actors.render({force:true});});
+    await alice.locator(`[data-entry-id="${fixtures.bastion}"] .entry-name`).click();
+    await expect(alice.locator('.bastion-sheet')).toContainText("Nach Besitzer");
+    await expect(alice.locator('.bastion-sheet')).toContainText("Gesamtübersicht");
+    await expect(alice.locator('.bastion-sheet')).toContainText("Beengt");
+    await expect(alice.locator('.bastion-meta').first()).toContainText("Schlafzimmer");
+    await alice.locator('.bastion-sheet .bastion-shell').screenshot({path:"test-results/t10-de-canvas.png"});
+    expect(await alice.evaluate(data=>({observer:game.actors.get(data.bastion).testUserPermission(game.user,"OBSERVER"),
+      owner:game.actors.get(data.bastion).testUserPermission(game.user,"OWNER"),foreign:game.actors.get(data.other).testUserPermission(game.user,"OBSERVER"),
+      canvas:canvas.initialized,sheet:game.actors.get(data.owner).sheet.constructor.name}),fixtures)).toEqual({observer:true,owner:false,foreign:false,canvas:true,sheet:fixtures.ownerSheet});
+    await alice.evaluate(async data=>{
+      try{await game.actors.get(data.bastion).update({name:"Unauthorized"});}catch{}
+      try{await (await fromUuid(data.facility)).update({name:"Unauthorized"});}catch{}
+      await canvas.scene.tokens.get(data.token).update({x:200,y:100});
+    },fixtures);
+    expect(await gm.evaluate(async data=>({name:game.actors.get(data.bastion).name,item:(await fromUuid(data.facility)).name,
+      x:game.scenes.get(data.scene).tokens.get(data.token).x}),fixtures)).toEqual({name:"Die gemeinsame Bastion",item:"Alriks Schlafzimmer",x:200});
+    await bob.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await expect(bob.locator('.bastion-sheet')).toContainText("Alriks Schlafzimmer");
+    await alice.evaluate(uuid=>game.modules.get("shared-bastion").api.request("removeFacility",uuid,{}),fixtures.facility);
+    await gm.evaluate(data=>game.modules.get("shared-bastion").api.repository.configure(game.actors.get(data.bastion),{name:"Die gemeinsame Bastion",participants:[`Actor.${data.other}`]}),fixtures);
+    await expect.poll(()=>alice.evaluate(id=>game.actors.get(id).testUserPermission(game.user,"OBSERVER"),fixtures.bastion)).toBe(false);
+    expect(errors).toEqual([]);
+    console.log("T10 passed: active canvas, linked token, native observer writes denied, private actors, German sheet and permission revocation without cycleTokens error");
+  }finally{
+    await aliceContext.close().catch(()=>{});await bobContext.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      if(data.previousScene&&game.scenes.has(data.previousScene))await game.scenes.get(data.previousScene).activate();
+      await game.scenes.get(data.scene)?.delete();for(const id of [data.bastion,data.owner,data.other])await game.actors.get(id)?.delete();
+      for(const id of [data.alice,data.bob])await game.users.get(id)?.delete();game.togglePause(data.paused,true);
+    },fixtures);
+    await gmContext.close();
+  }
+});
 
 test("T01: native startup and the status application render without module errors", async ({ browser }) => {
   const context = await browser.newContext();
@@ -31,6 +99,8 @@ test("T01: native startup and the status application render without module error
       page.on("response", response => { if (response.url().includes("/modules/shared-bastion/") && response.status() >= 400) failures.push(response.url()); });
     });
     await expect.poll(() => page.evaluate(() => game.modules.get("shared-bastion")?.api?.diagnostics().supported)).toBe(true);
+    expect(await page.evaluate(()=>({version:game.modules.get("shared-bastion").version,verified:game.modules.get("shared-bastion").compatibility.verified})))
+      .toEqual({version:expectedModule.version,verified:expectedModule.compatibility.verified});
     await page.evaluate(() => new (game.settings.menus.get("shared-bastion.status").type)().render({ force: true }));
     await expect(page.locator("#shared-bastion-status")).toContainText("14.369");
     await expect(page.locator("#shared-bastion-status")).toContainText("6.0.6");

@@ -113,9 +113,9 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: einundzwanzig Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: 27 Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
-- `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
+- `npm run build`: installierbares Modularchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
   Manifest-/Versionsprüfung und Handlebars-Render ohne Weltstart.
 - `npm run test:browser:install`: Chromium für die lokale Integrationssuite laden.
@@ -128,7 +128,12 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   beziehungsweise nach Speicherung. T05 prüft Ansichten, Besitzerfilter, UI-Bau,
   Dialogabbruch und Live-Aktualisierung mit zwei Spielern. T06 prüft Vorlagen und Regeln, Besitzerwechsel/-löschung
   sowie weltlokale GM-Regeldefinitionen. T07 prüft native Befehlsdialoge, Herstellung/Ernte, Handel, Erweiterung,
-  Mietlinge/Verteidiger und Ergebnisabrechnung. Acht Integrationstests sind bestanden. Szenentests müssen Canvas aktivieren.
+  Mietlinge/Verteidiger und Ergebnisabrechnung. T08 prüft Kalender/Züge und GM-Wechsel;
+  T09 den zweiphasigen Transfer. T10 prüft zusätzlich einen aktiven Canvas-Client,
+  normalen verknüpften Token, direkten nativen Schreibschutz, deutschen Bogen und
+  Rechteentzug ohne `cycleTokens`-Fehler. Alle elf nativen Integrationstests sind
+  auf Version 0.1.0 bestanden (4,5 Minuten).
+  Szenengenerator-Tests gehören zum späteren Ausbau.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -144,9 +149,10 @@ mit D&D5e **6.0.6** aktiviert; Start und Statusansicht wurden mit Chromium
 erfolgreich geprüft (T01). Der Quellcode wurde auf Commit
 `28f35531021bb07609c79c4cbbb9b7e7c2744bf9` geprüft. Ein kostenpflichtiger
 zentraler Bauauftrag mit privatem Besitzer ist nachgewiesen (T02); weitere
-Betriebsaktionen und Kalender sind in T07/T08 bestätigt. Chromium nutzt
-Softwaregrafik; Sicht und Bewegung
-in einer generierten Szene sind noch nicht geprüft.
+Betriebsaktionen und Kalender sind in T07/T08 bestätigt, Transfer in T09.
+T10 ergänzt einen aktiven Canvas-Client und normale Tokenbewegung. Chromium nutzt
+Softwaregrafik; Sicht und Bewegung in einer generierten Szene gehören zum
+zurückgestellten Ausbau.
 
 ## Aktueller Stand
 
@@ -156,15 +162,15 @@ in einer generierten Szene sind noch nicht geprüft.
   den exportierten interaktiven Prototyp v1.
 - T01 ist umgesetzt und abgenommen: Manifest, ES-Module,
   Systemabhängigkeit, Styles, Statusvorlage, Sprachdateien, Prüf- und Paketbefehle
-  sowie Docker-Testumgebung sind vorhanden. Die Einrichtungsverwaltung ist noch
-  nicht vollständig umgesetzt.
+  sowie Docker-Testumgebung sind vorhanden. Die Einrichtungsverwaltung ist
+  als Stufe 1 vollständig umgesetzt.
 - T02 ist abgenommen: Eigener Spieler-Bauauftrag ohne GM-Klick, individuelle
   Voraussetzungen/Kosten, zentraler nativer Fortschritt und Wiederholungsschutz
   mit drei Clients praktisch bestätigt.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T10.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte.
 - Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
   Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
   öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
@@ -179,7 +185,8 @@ in einer generierten Szene sind noch nicht geprüft.
 - Foundry 14.369 hat im Modus ohne Canvas einen bestätigten Kernfehler:
   `Actor._onUpdate` ruft bei Berechtigungsänderungen für Spieler ungeschützt
   `canvas.tokens.cycleTokens` auf. Die Berechtigungen ändern sich trotzdem
-  korrekt. Keine Kerndateien verändern; mit aktivem Canvas in T10 nachprüfen.
+  korrekt. T10 bestätigt mit aktivem Canvas den Rechteentzug ohne diesen Fehler.
+  Keine Kerndateien verändern.
 - Der Befehlstransport verwendet native ChatMessage-Erstellung und deren vom
   Server gelieferten `userId`, nicht eine selbst behauptete Absender-ID.
   Anfragen werden bei Zustellung unveränderlich übernommen; Änderungen an
@@ -267,9 +274,16 @@ in einer generierten Szene sind noch nicht geprüft.
   tatsächlichen Besitzers verweisen. Nur bei der Ergebnisabrechnung ist diese
   eigene Inventarreferenz zusätzlich erlaubt; neue Spieleraufträge benötigen
   weiterhin geschützte Welt-/Kompendiumvorlagen, fremde Inventare sind gesperrt.
-- Aktuell offen ist die abschließende Stufe-1-Abnahme.
-  Der Szenengenerator bleibt späterer Ausbau. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
-  Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.
+- T10 und Stufe 1 sind abgenommen. Version 0.1.0 ist die Stufe-1-Auslieferung;
+  `dist/shared-bastion-0.1.0.zip` enthält 42 geprüfte Quelldateien. 27 Unit-Tests,
+  elf native Integrationstests, Schema-/Vorlagenprüfung und Paket-Audit bestanden.
+  Deutsch und Englisch umfassen 196 Schlüssel; die Namen der 35 nativen
+  Einrichtungstypen folgen im Deutschen der lokalen Handbuch-Begriffsvorlage.
+  Abnahme und Zuordnung aller Kriterien
+  stehen in [Stufe-1-Abnahme](docs/stage1-acceptance.md). Der aktive Auftrag endet
+  bei T10; T11–T14 bleiben späterer Ausbau und werden nicht als umgesetzt geführt.
+  Bau-/Fortschrittspfad, Absenderzuordnung, Parallelität und Transaktionsabbrüche
+  sind bestätigt. Details stehen in `PLAN.md`.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill
   meldet keine verfügbaren Browser. Eine separate lokale Chromium-Testumgebung
   prüft deshalb die isolierte Welt über Playwright; T01 ist damit bestanden.
