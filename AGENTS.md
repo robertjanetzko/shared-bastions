@@ -111,7 +111,7 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: vierzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: siebzehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
@@ -124,8 +124,8 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   persistente Spezialbögen, Teilnehmerrechte und fehlende Besitzer.
   T04 prüft zwei GMs/zwei Spieler, Parallelität, Hook-Abbruch und Ausfall vor
   beziehungsweise nach Speicherung. T05 prüft Ansichten, Besitzerfilter, UI-Bau,
-  Dialogabbruch und Live-Aktualisierung mit zwei Spielern. Sechs Integrationstests
-  sind bestanden. Szenentests müssen Canvas aktivieren.
+  Dialogabbruch und Live-Aktualisierung mit zwei Spielern. T06 prüft Vorlagen und Regeln, Besitzerwechsel/-löschung
+  sowie weltlokale GM-Regeldefinitionen. Sieben Integrationstests sind bestanden. Szenentests müssen Canvas aktivieren.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
   Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
@@ -161,10 +161,12 @@ in einer generierten Szene sind noch nicht geprüft.
 - T03 ist abgenommen: GM-Erstellung über das Akteurverzeichnis, eigener Bogen,
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
-  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T06.
+  Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte. Nächster Task: T07.
 - Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
   Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
   öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
+  Persönliche Level/Plätze werden nur nach Besitzerprüfung lokal dem jeweiligen
+  Spieler und dem GM angezeigt, niemals im öffentlichen Roster gespeichert.
   T05 ist mit zwei Spielern abgenommen: Filter, Dialogabbruch, Kosten,
   Live-Fortschritt und GM-Abmeldung/Rückkehr ohne Neuladen.
   Ein Bauauftrag im eigenen Abschnitt läuft über denselben geprüften Befehlspfad.
@@ -200,6 +202,21 @@ in einer generierten Szene sind noch nicht geprüft.
 - Einfache Einrichtungen haben ein kostenloses Anfangskontingent, keine harte
   Obergrenze für weitere kostenpflichtige Räume. Systemwerte im Adapter lesen.
 - Details und verlinkte Quellcodebefunde: [Integrationsbefunde](docs/integration-findings.md).
+- T06 ist abgenommen: Einrichtungsvorlagen hinzufügen, eigene Namen/Notizen/
+  Entfernung, GM-Besitzerreparatur und individuelle Bedingungen sind mit drei
+  nativen Clients bestätigt. Level- und Voraussetzungsausnahmen bleiben nach
+  Neuladen sichtbar; Kosten und Besitzerrechte gelten weiterhin.
+- Vorlagenregeln liegen als weltlokale, GM-geschützte Einstellung vor; die
+  ursprünglichen Items und Kompendien bleiben unverändert. Native Facility-Daten
+  enthalten nur den Mindestlevel, keine strukturierten übrigen Voraussetzungen.
+  Der GM ergänzt diese als Werkzeug-/Waffenübung, Item-Kennzeichen, zauberwirkende
+  Klasse oder ausdrückliche Freigabebedingung. Keine Regelsammlung mitliefern und
+  keine Voraussetzungen still aus Fließtext erraten.
+- Spielereditierbare Vorlagen werden nicht als GM-Regeldefinition ausgeführt.
+  Normale neue Einrichtungen verwenden den Besitzerkontext einschließlich noch
+  nicht übertragener Charaktereinrichtungen. Ein normaler nativer preCreate-Hook
+  stellt die geplante Besitzer-Bauentscheidung nach dem Träger-Level-Default wieder
+  her; er ist auf ausdrücklich markierte Modul-Erstellungsoperationen begrenzt.
 - Offen sind vollständige Betriebsaktionen, Kalenderkoordination, Transfer und
   Szenengenerator. Der konkrete Bau-/Fortschrittspfad sowie Absenderzuordnung,
   Parallelität und Transaktionsabbrüche sind bestätigt. Details stehen in `PLAN.md`.

@@ -6,8 +6,9 @@ Ressourcen vom jeweiligen Besitzercharakter beziehen.
 
 **Entwicklungsstand:** Modulgerüst, erster praktischer Besitzer-/Auftragsnachweis
 und Bastionerstellung mit Teilnehmerverwaltung sowie die gemeinsame Übersicht
-sind vorhanden. Die vollständige
-Einrichtungsverwaltung und der Szenengenerator fehlen noch. T01–T05 aus `PLAN.md`
+sind vorhanden. Einrichtungsvorlagen, Bearbeitung und individuelle Regeln sind
+implementiert; vollständige Betriebsaktionen, Kalender, Transfer und Szenengenerator
+fehlen noch. T01–T06 aus `PLAN.md`
 im Quellprojekt sind abgenommen. Der dortige
 HTML-Prototyp `docs/implementation-visual.html` ist eine lokale Simulation.
 
@@ -38,6 +39,33 @@ geprüft. Bestätigte Laufzeitprüfungen gelten derzeit für 14.369 / 6.0.6.
 Schreiben ist auf Foundry **14.369** begrenzt, weil dessen native
 Transaktionsvorbereitung eigens geprüft und abgesichert ist. Andere V14-Builds
 bleiben bis zur erneuten Integrationsprüfung im Lesemodus.
+
+## Einrichtungen und Regeln
+
+Über „Einrichtung hinzufügen“ wählst du einen eigenen Teilnehmercharakter und
+vorhandene Facility-Vorlagen. Der Katalog verwendet Welt-Items und zugängliche
+Item-Kompendien; das Modul liefert keine Regeltexte. Die Quellen müssen lesbar
+und ihre Definitionen vor Spielerbearbeitung geschützt sein. Neue Einrichtungen
+übernehmen weder laufende Aufträge noch Personal oder bereits erzeugte Ergebnisse
+von der Vorlage. Vorhandene Einrichtungen auf dem Besitzer zählen bis zum Transfer
+mit. Die kostenlosen Anfangsräume und besonderen Plätze kommen aus D&D5e.
+
+Der GM kann unter „Vorlagenregeln“ Level, Auftragsart, Kapazitäten und zusätzliche
+Voraussetzungen für künftig hinzugefügte Einrichtungen festlegen. Diese Einstellungen
+liegen nur in der Welt; sie verändern keine Quelldateien oder Kompendien. D&D5e
+6.0.6 speichert bei Facilities nur den Mindestlevel als strukturierte Voraussetzung.
+Weitere Bedingungen aus der verwendeten Vorlage müssen deshalb hier eingetragen
+werden; der Modulcode wertet keine Regelprosa automatisch aus. Unterstützt sind
+Werkzeug-/Waffenübung, vorhandene Item-Kennzeichen und eine zauberwirkende Klasse.
+Eine Freigabebedingung deckt Fälle ab, die das native Modell nicht abbildet.
+
+Spieler bearbeiten eigene Namen und öffentliche Notizen. Entfernen beendet den
+Eintrag einschließlich laufender Aufträge, ohne Kostenerstattung. Der GM ändert
+Besitzer und Regeln über die jeweiligen Knöpfe am Eintrag; damit lassen sich auch
+fehlende Besitzer reparieren. Sichtbare Ausnahmen für Level, Plätze oder weitere
+Voraussetzungen benötigen jeweils eine Begründung. Sie bleiben nach Neuladen
+bestehen und umgehen weder Besitzerrechte noch normale Zahlungen. Persönliche
+Level und Platzlimits sieht nur der jeweilige Besitzer beziehungsweise der GM.
 
 ## Entwickeln und prüfen
 

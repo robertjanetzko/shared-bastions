@@ -50,7 +50,12 @@
       "BastionIdOccupied": "Die reservierte Bastionkennung ist bereits belegt. Der GM muss den bestehenden Aktor prüfen.",
       "InvalidBastion": "Dieser Aktor ist keine gemeinsame Bastion.",
       "ParticipantHasFacilities": "Diesem Charakter gehören noch Einrichtungen. Ordne sie zuerst einem anderen Besitzer zu.",
-      "CommitFailed": "Die Bastionaktion konnte nicht vollständig gespeichert werden. Bitte prüfe den aktuellen Stand."
+      "CommitFailed": "Die Bastionaktion konnte nicht vollständig gespeichert werden. Bitte prüfe den aktuellen Stand.",
+      "InvalidRules": "Die Regelbedingungen oder Ausnahmen sind ungültig.",
+      "FacilityLimit": "Der Besitzercharakter hat sein Limit besonderer Einrichtungen erreicht.",
+      "PrerequisiteRequired": "Der Besitzercharakter erfüllt nicht alle Voraussetzungen dieser Einrichtung.",
+      "InvalidTemplate": "Diese Einrichtungsvorlage ist nicht zugänglich oder nicht verfügbar.",
+      "UntrustedTemplate": "Diese Vorlage kann von Spielern bearbeitet werden. Der GM muss ihre Regeldefinition zuerst schützen."
     },
     "Views": "Bastionansichten",
     "ByOwner": "Nach Besitzer",
@@ -81,6 +86,31 @@
       "Building": "Im Bau",
       "Enlarging": "Wird erweitert",
       "Disabled": "Außer Betrieb"
-    }
+    },
+    "WorldItems": "Welt-Items",
+    "Owner": "Besitzercharakter",
+    "Template": "Vorlage",
+    "AddFacility": "Einrichtung hinzufügen",
+    "EditFacility": "Bearbeiten",
+    "RemoveFacility": "Entfernen",
+    "ReassignFacility": "Besitzer ändern",
+    "FacilityRules": "Einrichtungsregeln",
+    "Notes": "Notizen",
+    "MinimumLevel": "Mindestlevel",
+    "HirelingCapacity": "Personalplätze",
+    "DefenderCapacity": "Verteidigerplätze",
+    "Requirements": "Zusätzliche Voraussetzungen",
+    "RequirementsHint": "Eine Bedingung je Zeile: tool:smith für Werkzeugübung, weapon:mar für Waffenübung, item:kennzeichen für ein vorhandenes Item, spellcasting für eine zauberwirkende Klasse. approval:kennzeichen verlangt eine begründete GM-Freigabe. Nicht erfasste Voraussetzungen aus der Vorlage hier ergänzen.",
+    "Exceptions": "GM-Regelausnahmen",
+    "ExceptionLevel": "Ausnahme: Level",
+    "ExceptionLimit": "Ausnahme: Einrichtungslimit",
+    "ExceptionRequirements": "Ausnahme: Voraussetzungen",
+    "ExceptionHint": "Begründung je gewünschter Ausnahme. Leere Felder bedeuten keine Ausnahme. Besitzerrechte und Kosten gelten weiterhin.",
+    "NoTemplates": "Keine zugänglichen Facility-Vorlagen gefunden. Der GM kann vorhandene Welt-Items zum Lesen freigeben oder passende Kompendien zugänglich machen. Spieler dürfen deren Regeldefinitionen nicht bearbeiten.",
+    "RemoveHint": "Diese Einrichtung wird entfernt. Laufende Aufträge enden; bereits bezahlte Kosten werden nicht erstattet.",
+    "TemplateRules": "Vorlagenregeln",
+    "TemplateRulesHint": "Ergänze Voraussetzungen und Regelwerte für neue Einrichtungen aus dieser Vorlage. Die Regeldefinition bleibt in dieser Welt; das ursprüngliche Item oder Kompendium wird nicht verändert. Bestehende Einrichtungen behalten ihre bisherigen Regeln.",
+    "CharacterLevel": "Level",
+    "FreeBasicAllowance": "kostenloses Anfangskontingent"
   }
 }

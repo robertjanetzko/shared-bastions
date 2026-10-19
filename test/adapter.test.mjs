@@ -70,3 +70,27 @@ test("public diagnostics expose no private data and identify only the runtime wi
   assert.equal(adapter.diagnostics().ownerIntegrationAccepted, false);
   assert.equal(adapter.diagnostics().writeRuntimeSupported, false);
 });
+
+test("scoped exceptions do not bypass unrelated prerequisites or other owners' limits",async()=>{
+  const {adapter,facility,owner,config}=setup();
+  facility.system.level=17;
+  await assert.rejects(adapter.assertRules(facility),{code:"LevelRequired"});
+  facility.flags["shared-bastion"].exceptions=[{scope:"level",reason:"Table decision"}];
+  facility.flags["shared-bastion"].requirements=["tool:smith"];
+  await assert.rejects(adapter.assertRules(facility),{code:"PrerequisiteRequired"});
+  owner.system.tools={smith:{value:1}};
+  await adapter.assertRules(facility);
+  config.DND5E.facilities.advancement.special={5:1};
+  await assert.rejects(adapter.assertRules(facility),{code:"FacilityLimit"});
+  facility.flags["shared-bastion"].exceptions.push({scope:"limit",reason:"Personal exception"});
+  await adapter.assertRules(facility);
+  facility.flags["shared-bastion"].requirements=["__proto__.isGM"];
+  await assert.rejects(adapter.assertRules(facility),{code:"InvalidRules"});
+});
+
+test("owner summaries refuse foreign access before consulting private rule values",async()=>{
+  const {adapter,owner,bastion}=setup();
+  owner.testUserPermission=()=>false;
+  Object.defineProperty(owner,"system",{get(){throw new Error("Private rule values must not be read");}});
+  await assert.rejects(adapter.ownerSummary(bastion,owner.uuid,{active:true,isGM:false}),{code:"NotOwner"});
+});

@@ -50,7 +50,12 @@
       "BastionIdOccupied": "The reserved bastion ID is already in use. The GM must check the existing actor.",
       "InvalidBastion": "This actor is not a shared bastion.",
       "ParticipantHasFacilities": "This character still owns facilities. Reassign them before removing the participant.",
-      "CommitFailed": "The bastion action could not be fully saved. Please check the current state."
+      "CommitFailed": "The bastion action could not be fully saved. Please check the current state.",
+      "InvalidRules": "The rule conditions or exceptions are invalid.",
+      "FacilityLimit": "The owner character has reached their special facility limit.",
+      "PrerequisiteRequired": "The owner character does not meet all prerequisites for this facility.",
+      "InvalidTemplate": "This facility template is unavailable or inaccessible.",
+      "UntrustedTemplate": "Players can edit this template. The GM must protect its rule definition first."
     },
     "Views": "Bastion views",
     "ByOwner": "By owner",
@@ -81,6 +86,31 @@
       "Building": "Under construction",
       "Enlarging": "Enlarging",
       "Disabled": "Shut down"
-    }
+    },
+    "WorldItems": "World items",
+    "Owner": "Owner character",
+    "Template": "Template",
+    "AddFacility": "Add facility",
+    "EditFacility": "Edit",
+    "RemoveFacility": "Remove",
+    "ReassignFacility": "Change owner",
+    "FacilityRules": "Facility rules",
+    "Notes": "Notes",
+    "MinimumLevel": "Minimum level",
+    "HirelingCapacity": "Hireling capacity",
+    "DefenderCapacity": "Defender capacity",
+    "Requirements": "Additional prerequisites",
+    "RequirementsHint": "One condition per line: tool:smith for tool proficiency, weapon:mar for weapon proficiency, item:identifier for an owned item, spellcasting for a spellcasting class. approval:identifier requires a reasoned GM approval. Add any template prerequisites not modeled by the system here.",
+    "Exceptions": "GM rule exceptions",
+    "ExceptionLevel": "Level exception",
+    "ExceptionLimit": "Facility limit exception",
+    "ExceptionRequirements": "Prerequisite exception",
+    "ExceptionHint": "Provide a reason for each exception. Empty fields grant no exception. Ownership and costs still apply.",
+    "NoTemplates": "No accessible facility templates found. The GM can grant read access to existing world items or appropriate compendiums. Players must not be able to edit their rule definitions.",
+    "RemoveHint": "This facility will be removed. Active orders end; previously paid costs are not refunded.",
+    "TemplateRules": "Template rules",
+    "TemplateRulesHint": "Define prerequisites and rule values for new facilities from this template. The definition stays in this world; the original item or compendium is unchanged. Existing facilities keep their current rules.",
+    "CharacterLevel": "Level",
+    "FreeBasicAllowance": "initial free allowance"
   }
 }

@@ -11,9 +11,13 @@ export function isBastion(actor) {
 export async function resolveFacilityOwner(facility, resolveUuid) {
   const bastion = facility?.parent;
   if (facility?.type !== "facility" || !isBastion(bastion)) throw new BastionError("InvalidFacility");
+  return resolveParticipantOwner(bastion, facility.flags?.[MODULE_ID]?.owner, resolveUuid);
+}
+
+export async function resolveParticipantOwner(bastion, uuid, resolveUuid) {
+  if (!isBastion(bastion)) throw new BastionError("InvalidFacility");
   const state = bastion.flags[MODULE_ID];
   if (state.version !== DATA_VERSION) throw new BastionError("UnsupportedDataVersion");
-  const uuid = facility.flags?.[MODULE_ID]?.owner;
   if (!actorUuid.test(uuid ?? "") || !Array.isArray(state.participants) || !state.participants.includes(uuid)) {
     throw new BastionError("MissingOwner");
   }

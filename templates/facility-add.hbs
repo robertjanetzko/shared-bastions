@@ -1,0 +1,9 @@
+<div class="bastion-dialog-fields">
+<label>{{localize "SHARED_BASTION.Owner"}}<select name="owner">{{#each owners}}<option value="{{uuid}}">{{name}}</option>{{/each}}</select></label>
+<label>{{localize "SHARED_BASTION.Template"}}<select name="template">{{#each catalog}}<option value="{{uuid}}">{{name}} · {{origin}}</option>{{/each}}</select></label>
+{{#unless catalog.length}}<p class="notification warning">{{localize "SHARED_BASTION.NoTemplates"}}</p>{{/unless}}
+{{#if isGM}}<fieldset><legend>{{localize "SHARED_BASTION.Exceptions"}}</legend><p class="hint">{{localize "SHARED_BASTION.ExceptionHint"}}</p>
+<label>{{localize "SHARED_BASTION.ExceptionLevel"}}<input name="exception-level" maxlength="500"></label>
+<label>{{localize "SHARED_BASTION.ExceptionLimit"}}<input name="exception-limit" maxlength="500"></label>
+<label>{{localize "SHARED_BASTION.ExceptionRequirements"}}<input name="exception-requirements" maxlength="500"></label></fieldset>{{/if}}
+</div>

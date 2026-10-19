@@ -1,0 +1,14 @@
+<div class="bastion-dialog-fields">
+<p>{{name}}</p>
+<label>{{localize "SHARED_BASTION.MinimumLevel"}}<input name="level" type="number" min="1" max="20" step="1" value="{{level}}" required></label>
+<label>{{localize "SHARED_BASTION.Order"}}<select name="order">{{#each orders}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+<label>{{localize "SHARED_BASTION.HirelingCapacity"}}<input name="hirelings" type="number" min="0" max="1000" step="1" value="{{hirelings}}" required></label>
+<label>{{localize "SHARED_BASTION.DefenderCapacity"}}<input name="defenders" type="number" min="0" max="1000" step="1" value="{{defenders}}" required></label>
+<label>{{localize "SHARED_BASTION.Requirements"}}<textarea name="requirements" rows="3">{{requirements}}</textarea></label>
+<p class="hint">{{localize "SHARED_BASTION.RequirementsHint"}}</p>
+{{#unless template}}<fieldset><legend>{{localize "SHARED_BASTION.Exceptions"}}</legend><p class="hint">{{localize "SHARED_BASTION.ExceptionHint"}}</p>
+<label>{{localize "SHARED_BASTION.ExceptionLevel"}}<input name="exception-level" maxlength="500" value="{{exceptionReasons.level}}"></label>
+<label>{{localize "SHARED_BASTION.ExceptionLimit"}}<input name="exception-limit" maxlength="500" value="{{exceptionReasons.limit}}"></label>
+<label>{{localize "SHARED_BASTION.ExceptionRequirements"}}<input name="exception-requirements" maxlength="500" value="{{exceptionReasons.requirements}}"></label>
+</fieldset>{{/unless}}
+</div>

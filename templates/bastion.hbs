@@ -14,12 +14,15 @@
   <div class="bastion-toolbar">
     <label>{{localize "SHARED_BASTION.Filter"}} <select name="ownerFilter">{{#each filters}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     <span class="hint">{{participantCount}} {{localize "SHARED_BASTION.Participants"}} · {{facilityCount}} {{localize "SHARED_BASTION.Facilities"}}</span>
+    <button type="button" data-action="addFacility" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "SHARED_BASTION.AddFacility"}}</button>
+    {{#if isGM}}<button type="button" data-action="configureTemplates" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TemplateRules"}}</button>{{/if}}
   </div>
   <div class="bastion-body">
     {{#if emptyParticipants}}<p class="bastion-notice">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
     {{#each sections}}
     <section class="bastion-owner-section" data-owner-uuid="{{uuid}}">
       <header class="bastion-section-heading">{{#if img}}<img src="{{img}}" alt="">{{/if}}<h2>{{name}}</h2>{{#if uuid}}{{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}{{/if}}</header>
+      {{#if summary}}<p class="bastion-owner-summary hint">{{localize "SHARED_BASTION.CharacterLevel"}} {{summary.level}} · {{summary.special.count}} / {{summary.special.limit}} {{localize "SHARED_BASTION.SpecialFacilities"}} · {{summary.basic.count}} {{localize "SHARED_BASTION.BasicFacilities"}} ({{localize "SHARED_BASTION.FreeBasicAllowance"}}: {{summary.basic.free}})</p>{{/if}}
       {{#each groups}}
       <section class="bastion-group" data-type="{{type}}">
         <h3>{{localize label}} <span class="bastion-count">{{facilities.length}}</span></h3>
@@ -32,8 +35,14 @@
             {{#if missingOwner}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}
             <div class="bastion-operation"><span class="bastion-state">{{stateLabel}}</span><span>{{orderLabel}}</span></div>
             {{#if progress}}<div class="bastion-progress"><progress value="{{progress.value}}" max="{{progress.max}}" aria-label="{{localize 'SHARED_BASTION.Progress'}}"></progress><span>{{progress.value}} / {{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>{{/if}}
+            {{#if notes}}<p class="bastion-note">{{notes}}</p>{{/if}}
+            {{#if exceptions.length}}<ul class="bastion-exceptions">{{#each exceptions}}<li>{{localize label}}: {{reason}}</li>{{/each}}</ul>{{/if}}
           </div>
-          {{#if buildable}}<button type="button" class="bastion-build" data-action="buildFacility" title="{{localize buildReason}}" {{#unless canManage}}disabled{{/unless}}><i class="fa-solid fa-hammer" aria-hidden="true"></i> {{localize "SHARED_BASTION.Build"}}</button>{{/if}}
+          <div class="bastion-facility-actions">
+            {{#if buildable}}<button type="button" class="bastion-build" data-action="buildFacility" title="{{localize buildReason}}" {{#unless canBuild}}disabled{{/unless}}><i class="fa-solid fa-hammer" aria-hidden="true"></i> {{localize "SHARED_BASTION.Build"}}</button>{{/if}}
+            {{#if canManage}}<button type="button" data-action="editFacility">{{localize "SHARED_BASTION.EditFacility"}}</button><button type="button" data-action="removeFacility">{{localize "SHARED_BASTION.RemoveFacility"}}</button>{{/if}}
+            {{#if @root.isGM}}<div class="bastion-admin-actions"><button type="button" data-action="reassignFacility" title="{{localize 'SHARED_BASTION.ReassignFacility'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-user-pen" aria-hidden="true"></i></button><button type="button" data-action="setFacilityRules" title="{{localize 'SHARED_BASTION.FacilityRules'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div>{{/if}}
+          </div>
         </article>
         {{else}}<p class="bastion-group-empty hint">{{localize "SHARED_BASTION.EmptyGroup"}}</p>{{/each}}
       </section>

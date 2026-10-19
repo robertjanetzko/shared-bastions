@@ -34,3 +34,14 @@ test("bastion configuration only accepts bounded names and distinct world-charac
     assert.throws(()=>validateRequest({...request,payload}),{code:"InvalidRequest"});
   }
 });
+
+test("facility commands reject rule patches, client currency and unreasoned exceptions",()=>{
+  const add={...command(),action:"addFacility",facility:"Actor.central",payload:{owner:"Actor.alice",template:"Item.template",exceptions:[]}};
+  assert.equal(validateRequest(add),add);
+  for(const payload of [{...add.payload,gold:0},{...add.payload,exceptions:[{scope:"level",reason:""}]},
+    {...add.payload,exceptions:[{scope:"level",reason:"Table"},{scope:"level",reason:"Again"}]},
+    {...add.payload,template:"Actor.private.Item.secret"}]) assert.throws(()=>validateRequest({...add,payload}));
+  const edit={...command(),action:"editFacility",payload:{name:"My Room",notes:"Note"}};
+  assert.equal(validateRequest(edit),edit);
+  assert.throws(()=>validateRequest({...edit,payload:{...edit.payload,level:1}}),{code:"InvalidRequest"});
+});

@@ -72,3 +72,12 @@
 .shared-bastion .bastion-build { flex: 0 0 auto; width: auto; }
 .bastion-preview { display: grid; grid-template-columns: auto 1fr; gap: .5rem 1rem; }
 .bastion-preview dd { margin: 0; }
+.bastion-dialog-fields { display: grid; gap: .75rem; }
+.bastion-dialog-fields label { display: grid; gap: .25rem; }
+.bastion-dialog-fields fieldset { display: grid; gap: .5rem; }
+.shared-bastion .bastion-facility-actions { display: flex; flex-direction: column; align-items: stretch; gap: .3rem; max-width: 140px; }
+.shared-bastion .bastion-facility-actions button { width: auto; margin: 0; font-size: .75rem; }
+.shared-bastion .bastion-admin-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.shared-bastion .bastion-admin-actions button { flex: 1; min-width: 40px; }
+.shared-bastion .bastion-exceptions { margin: .5rem 0 0; padding-inline-start: 1rem; color: var(--dnd5e-color-gold); font-size: .8rem; }
+.shared-bastion .bastion-note { font-size: .8rem; white-space: pre-wrap; margin: .4rem 0; }

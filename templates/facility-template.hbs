@@ -1,0 +1,3 @@
+<p>{{localize "SHARED_BASTION.TemplateRulesHint"}}</p>
+<label>{{localize "SHARED_BASTION.Template"}}<select name="template">{{#each catalog}}<option value="{{uuid}}">{{name}} · {{origin}}</option>{{/each}}</select></label>
+{{#unless catalog.length}}<p>{{localize "SHARED_BASTION.NoTemplates"}}</p>{{/unless}}

@@ -1,7 +1,7 @@
 # Integrationsbefunde
 
 Stand: 2026-10-19. **Quellcodebefunde und lokale Unit-Tests sind keine
-Laufzeitabnahme. T01–T05 sind im jeweils dokumentierten Umfang abgenommen.**
+Laufzeitabnahme. T01–T06 sind im jeweils dokumentierten Umfang abgenommen.**
 
 ## Nachvollziehbare Quellenbasis
 
@@ -43,8 +43,9 @@ Der Kern wird nicht angepasst. Mit aktivem Canvas in T10 erneut prüfen.
   Native Felder für Bau, Größe, Level, Aufträge, Personal, Verteidiger, Handel
   und Fortschritt sind vorhanden. `_preCreate` bestimmt freie einfache
   Einrichtungen anhand des physischen Elternaktors. Der zentrale Träger darf
-  deshalb nicht ungeprüft als Besitzer dienen. Dieser Eingriff muss vor dem
-  späteren Anlegen zentraler Items im Adapter geklärt werden.
+  deshalb nicht ungeprüft als Besitzer dienen. Der Adapter stellt bei
+  ausdrücklich markierten Erstellungsoperationen die vorab berechnete Besitzer-
+  Bauentscheidung in einem nativen `preCreateItem`-Hook wieder her.
 - [Systemkonfiguration](https://github.com/foundryvtt/dnd5e/blob/28f35531021bb07609c79c4cbbb9b7e7c2744bf9/module/config.mjs):
   `CONFIG.DND5E.facilities` liefert Größenflächen und Fortschrittstabellen.
   Einfache Einrichtungen haben ein Kontingent kostenloser Räume; dieses ist
@@ -114,7 +115,7 @@ des Systems. Bilder, Schriftdateien und Regeltexte werden nicht mitgeliefert.
 
 Punkte 1–4 und der explizite Fortschritt mit Wiederholung/Neuladen sind bestätigt.
 T04 bestätigt zusätzlich GM-Wechsel und die Transaktionsgrenze. Kalender und
-vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T06.
+vollständige Betriebsaktionen bleiben T07/T08; nächster Task ist T07.
 Der Szenengenerator folgt weiterhin erst der Stufe-1-Abnahme.
 
 ## T04: Authentifizierung, Ausfall und atomare Schreibgrenze
@@ -151,7 +152,7 @@ Hook-Veto ohne Teilbuchung und ohne späteren Wiederanlauf, sowie Ausfall des
 Executors vor Commit und nach Commit vor Rückmeldung. Im letzten Fall wird nur
 die vorhandene Antwort erneut zugestellt. Neuladen erzeugt keine zweite Buchung.
 Ein natives, zum Spieler herabgestuftes User-Modell hat keinen Lesezugriff auf
-Träger oder private Journale. Die sechs Integrationstests und vierzehn Unit-Tests
+Träger oder private Journale. Die sieben Integrationstests und siebzehn Unit-Tests
 sind bestanden; der bekannte native Fehler ohne Canvas bleibt separat dokumentiert.
 
 ## T05: Gemeinsame Übersicht
@@ -175,3 +176,36 @@ Größe und bucht 500 GP ausschließlich vom Besitzer ab; beide Spieler sehen de
 geöffnete Bögen ohne Neuladen. Filter bleiben im Lesemodus nutzbar. Die GM-Ansicht
 wurde visuell gegen das installierte D&D5e-Theme geprüft. Vollständige Bearbeitung,
 Regelausnahmen und weitere Betriebsaktionen folgen in T06/T07.
+
+## T06: Vorlagen, individuelle Regeln und Besitzerreparatur
+
+Der native T06-Test auf 14.369/6.0.6 und die vollständige Gesamtsuite mit sieben
+Integrationstests sind bestanden. Level-5- und Level-13-Charaktere haben verschiedene native Limits.
+Die Einrichtungen zählen auch noch vorhandene private Charaktereinrichtungen mit.
+Ein neuer zentraler Raum bleibt trotz Trägerlevel 20 ungebaut, wenn das kostenlose
+Besitzerkontingent bereits auf dem Charakter verbraucht ist. Das bestätigt den
+gezielten normalen `preCreateItem`-Hook ohne Änderung installierter Dateien.
+
+Welt-Items und ein eigens in der Testwelt angelegtes natives Kompendium wurden
+verwendet. Die Quelle blieb nach Übernahme unverändert; der Testpack wird am Ende
+entfernt. Der frei mitgelieferte Systeminhalt bot im Test keinen Facility-Eintrag;
+daraus wird keine verfügbare Regelsammlung als Voraussetzung abgeleitet.
+Spielereditierbare Quellen werden abgewiesen, ebenso fremde Besitzerzuordnungen,
+fehlender Level, fehlende Werkzeugübung und überschrittene besondere Plätze.
+
+Die GM-Vorlagenregelpflege im Bogen schreibt eine weltlokale Einstellung mit
+Vorgangsbeleg und Revision atomar. Zusätzliche Voraussetzungen sind keine native
+Facility-API: das Datenmodell hat nur `level`. Der GM ergänzt deshalb Bedingungen
+als Werkzeug-/Waffenübung, Item-Identifier, zauberwirkende Klasse oder ausdrückliche
+Freigabe. Der Code parst keine Regeltexte. Bestehende Einrichtungen behalten ihre
+eigenen Regeln, wenn sich eine Vorlagendefinition später ändert.
+
+Eigene Namen und Notizen wurden über die Oberfläche bearbeitet; die GM-Zuordnung
+und die bestätigte Entfernung ebenfalls. Regelpatches durch Spieler scheitern.
+Eine Levelausnahme hebt eine fehlende Werkzeugbedingung nicht auf. Eine zusätzliche
+begründete Voraussetzungsausnahme erlaubt den Auftrag, aber 499 GP reichen weiterhin
+nicht für einen 500-GP-Bau. Nach Aufstockung sinkt ausschließlich das Besitzergold
+4.000→3.500; 9.000 GP des anderen Charakters und 7.000 GP des Trägers bleiben gleich.
+Ausnahmen bleiben nach Neuladen sichtbar. Ein gelöschter Besitzer lässt sich durch
+GM-Neuzuordnung reparieren. Persönliche Level/Plätze werden nur dem Besitzer/GM
+angezeigt; die Zusammenfassungs-API prüft Rechte vor dem Lesen privater Regelwerte.

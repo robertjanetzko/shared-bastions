@@ -5,10 +5,12 @@ import { CommandBus } from "./services/commands.mjs";
 import { BastionRepository } from "./services/bastion.mjs";
 import { BastionSheet } from "./applications/bastion-sheet.mjs";
 import { installDirectory } from "./directory.mjs";
+import { FacilityService } from "./services/facilities.mjs";
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bastionUuid", { scope: "world", config: false, type: String, default: "" });
   game.settings.register(MODULE_ID, "commandStoreVersion", { scope: "world", config: false, type: Number, default: 0 });
+  game.settings.register(MODULE_ID, "templateRules", { scope: "world", config: false, type: Object, default: {} });
   foundry.applications.apps.DocumentSheetConfig.registerSheet(Actor, MODULE_ID, BastionSheet, {
     types: ["character"], makeDefault: false, canBeDefault: false, canConfigure: false, label: "SHARED_BASTION.Title"
   });
@@ -27,13 +29,19 @@ Hooks.once("ready", () => {
   const repository = new BastionRepository();
   const bus = new CommandBus(adapter, repository);
   repository.bus = bus;
+  const facilities = new FacilityService(adapter, repository);
+  bus.facilities = facilities;
   const canWrite = adapter.diagnostics().writeRuntimeSupported;
-  if (canWrite) { bus.install(); repository.install(); }
+  if (canWrite) { adapter.install(); bus.install(); repository.install(); }
   installDirectory(repository);
   game.modules.get(MODULE_ID).api = Object.freeze({
     diagnostics: () => adapter.diagnostics(),
     repository,
-    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions() }),
+    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions(), rules: item => adapter.rulesView(item) }),
+    catalog: () => facilities.catalog(),
+    templateRules: uuid => foundry.utils.deepClone(game.settings.get(MODULE_ID, "templateRules")[uuid] ?? null),
+    checkRules: item => adapter.ruleStatus(item, game.user),
+    ownerSummary: (bastion, uuid) => adapter.ownerSummary(bastion, uuid, game.user),
     request: (action, facility, payload) => bus.request(action, facility, payload)
   });
   if (canWrite) void repository.migrate().then(() => bus.resume()).catch(console.error);

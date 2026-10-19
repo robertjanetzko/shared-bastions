@@ -1,7 +1,8 @@
-import { MODULE_ID, BASTION_UUID } from "../constants.mjs";
+import { MODULE_ID, BASTION_UUID, DATA_VERSION } from "../constants.mjs";
 import { BastionError } from "../core/errors.mjs";
 import { assertCanManage, electGM, resolveFacilityOwner } from "../core/ownership.mjs";
 import { strictBatch, assertWriteRuntime } from "../adapters/foundry.mjs";
+import { FACILITY_ACTIONS, validateFacilityPayload } from "./facilities.mjs";
 
 const LEDGER_ID = "SharedBastionLog";
 const QUEUE_ID = "SharedBastionReq";
@@ -21,6 +22,9 @@ export function validateRequest(request) {
       || !Array.isArray(request.payload.participants) || request.payload.participants.length > 100
       || request.payload.participants.some(uuid => !actorUuid.test(uuid))
       || new Set(request.payload.participants).size !== request.payload.participants.length) throw new BastionError("InvalidRequest");
+  } else if (FACILITY_ACTIONS.has(request.action)) {
+    if (!(["addFacility", "setTemplateRules"].includes(request.action) ? actorUuid : itemUuid).test(request.facility ?? "")) throw new BastionError("InvalidRequest");
+    validateFacilityPayload(request.action, request.payload);
   } else {
     if (!itemUuid.test(request.facility ?? "")) throw new BastionError("InvalidRequest");
     if (request.action === "build") {
@@ -184,13 +188,18 @@ export class CommandBus {
     }
     const bastion = this.repository.find();
     if (!bastion || (document !== bastion && document?.parent !== bastion)) throw new BastionError("InvalidBastion");
+    if (bastion.flags[MODULE_ID].version !== DATA_VERSION) throw new BastionError("UnsupportedDataVersion");
     if ((document.flags[MODULE_ID]?.revision ?? 0) !== request.revision) throw new BastionError("Conflict");
     if (request.action === "configureBastion") {
       if (!user.isGM) throw new BastionError("GMOnly");
       return this.repository.planConfigure(bastion, request.payload);
     }
+    if (["addFacility", "setTemplateRules"].includes(request.action)) return this.facilities.plan(request, user, document);
+    // A missing old owner must still be repairable through an explicit GM reassignment.
+    if (["reassignFacility", "setFacilityRules"].includes(request.action) && user.isGM) return this.facilities.plan(request, user, document);
     const owner = await resolveFacilityOwner(document, uuid => fromUuid(uuid));
     assertCanManage(user, owner);
+    if (FACILITY_ACTIONS.has(request.action)) return this.facilities.plan(request, user, document);
     if (request.action === "advance" && !user.isGM) throw new BastionError("GMOnly");
     const plan = request.action === "build" ? await this.adapter.planBuild(document, request.payload)
       : await this.adapter.planProgress(document, request.payload);

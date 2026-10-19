@@ -1,6 +1,7 @@
 import { MODULE_ID, SOURCE_REVIEW, OWNER_PROOF_RUNTIME } from "../constants.mjs";
 import { BastionError } from "../core/errors.mjs";
-import { resolveFacilityOwner } from "../core/ownership.mjs";
+import { resolveFacilityOwner, resolveParticipantOwner, assertCanManage } from "../core/ownership.mjs";
+import { validateRequirements, hasException } from "../core/rules.mjs";
 
 /** All system-specific reads belong here. No system or core files are patched. */
 export class Dnd5eAdapter {
@@ -23,11 +24,15 @@ export class Dnd5eAdapter {
   async ownerContext(facility) {
     if (!this.compatibility().supported) throw new BastionError("UnsupportedRuntime");
     const owner = await resolveFacilityOwner(facility, this.resolveUuid);
+    return this.ownerValues(owner, facility.parent);
+  }
+
+  ownerValues(owner, bastion) {
     const level = owner.system?.details?.level;
     if (!Number.isInteger(level) || level < 0) throw new BastionError("InvalidOwnerLevel");
     const facilities = this.config.DND5E?.facilities;
     if (!facilities?.advancement || !facilities?.sizes) throw new BastionError("UnsupportedRuntime");
-    const central = [...facility.parent.items].filter(item => item.type === "facility"
+    const central = [...bastion.items].filter(item => item.type === "facility"
       && item.flags?.[MODULE_ID]?.owner === owner.uuid);
     const personal = [...owner.items].filter(item => item.type === "facility");
     // Existing facilities still on the owner count until the transfer is verified.
@@ -39,6 +44,14 @@ export class Dnd5eAdapter {
       basic: { count: count("basic"), free: allowance(facilities.advancement.basic, level) },
       special: { count: count("special"), limit: allowance(facilities.advancement.special, level) }
     };
+  }
+
+  async ownerSummary(bastion, uuid, user) {
+    if (!this.compatibility().supported) throw new BastionError("UnsupportedRuntime");
+    const owner = await resolveParticipantOwner(bastion, uuid, this.resolveUuid);
+    assertCanManage(user, owner);
+    const { level, basic, special } = this.ownerValues(owner, bastion);
+    return { level, basic, special };
   }
 
   roomArea(facility) {
@@ -81,11 +94,102 @@ export class Dnd5eAdapter {
       currency: this.game.i18n.localize(config.currencies[config.defaultCurrency].abbreviation) }));
   }
 
+  install() {
+    Hooks.on("preCreateItem", (item, data, options) => {
+      if (options.sharedBastionConstruction && item.type === "facility") {
+        // Native Facility._preCreate uses the carrier's level. Restore our owner-derived intent.
+        item.updateSource({ "system.building.built": data.system.building.built });
+      }
+    });
+  }
+
+  newFacilityData(source, { id, owner, exceptions, definition }) {
+    const data = source.toObject();
+    delete data._stats;
+    data._id = id;
+    data.flags = { dnd5e: foundry.utils.deepClone(source.flags.dnd5e ?? {}), [MODULE_ID]: { owner, revision: 0, source: source.uuid,
+      requirements: validateRequirements(source.flags[MODULE_ID]?.requirements ?? []), exceptions } };
+    // Reset operation state rather than importing a template's occupants or completed rewards.
+    data.system.building = { built: false, size: data.system.size };
+    data.system.progress = { value: 0, max: null, order: "", paid: false };
+    data.system.disabled = false;
+    for (const key of ["hirelings", "defenders"]) data.system[key].value = [];
+    data.system.craft = { item: null, quantity: 1 };
+    data.system.trade.creatures.value = [];
+    data.system.trade.pending = { creatures: [], operation: null, stocked: false, value: 0 };
+    data.system.trade.stock.stocked = false;
+    data.system.trade.stock.value = 0;
+    if (definition) {
+      data.system.level = definition.level;
+      data.system.order = definition.order;
+      data.system.hirelings.max = definition.hirelings;
+      data.system.defenders.max = definition.defenders;
+      data.flags[MODULE_ID].requirements = validateRequirements(definition.requirements);
+    }
+    return data;
+  }
+
+  initialConstruction(data, context) {
+    data.system.building.built = data.system.type.value === "special" || context.basic.count < context.basic.free;
+  }
+
+  rulesView(item) {
+    return { level: item.system.level, hirelings: item.system.hirelings.max ?? 0, defenders: item.system.defenders.max ?? 0,
+      orders: [{ value: "", label: this.game.i18n.localize("SHARED_BASTION.NoOrder") }, ...Object.entries(this.config.DND5E.facilities.orders)
+        .filter(([value, config]) => item.system.type.value === "special" && !config.hidden && !config.basic && !["build", "change"].includes(value))
+        .map(([value, config]) => ({ value, label: config.label }))]
+        .map(entry => ({ ...entry, selected: entry.value === item.system.order })) };
+  }
+
+  ruleUpdates(item, payload) {
+    if (!this.rulesView(item).orders.some(entry => entry.value === payload.order)) throw new BastionError("InvalidRules");
+    if (item.system.hirelings.value.length > payload.hirelings || item.system.defenders.value.length > payload.defenders) throw new BastionError("InvalidRules");
+    return { "system.level": payload.level, "system.order": payload.order,
+      "system.hirelings.max": payload.hirelings, "system.defenders.max": payload.defenders,
+      [`flags.${MODULE_ID}.requirements`]: payload.requirements,
+      [`flags.${MODULE_ID}.exceptions`]: payload.exceptions.map(entry => ({ scope: entry.scope, reason: entry.reason.trim() })) };
+  }
+
+  async assertRules(facility, { adding = false } = {}) {
+    const context = await this.ownerContext(facility);
+    const { owner, level } = context;
+    const minimum = Math.min(...Object.keys(this.config.DND5E.facilities.advancement.basic).map(Number));
+    if (level < Math.max(minimum, facility.system.level ?? minimum) && !hasException(facility, "level")) {
+      throw new BastionError("LevelRequired");
+    }
+    if (facility.system.type.value === "special" && context.special.count + Number(adding) > context.special.limit
+      && !hasException(facility, "limit")) throw new BastionError("FacilityLimit");
+    const requirements = validateRequirements(facility.flags?.[MODULE_ID]?.requirements ?? []);
+    const satisfied = requirement => {
+      if (requirement === "spellcasting") return Object.keys(owner.spellcastingClasses ?? {}).length > 0;
+      const [kind, value] = requirement.split(":");
+      if (kind === "tool") return (owner.system.tools?.[value]?.value ?? 0) >= 1;
+      if (kind === "weapon") return owner.system.traits.weaponProf.value.has(value);
+      if (kind === "item") return owner.items.some(item => item.system.identifier === value);
+      // Explicit approvals cover prerequisites that the system does not model.
+      return false;
+    };
+    if (requirements.some(requirement => !satisfied(requirement)) && !hasException(facility, "requirements")) {
+      throw new BastionError("PrerequisiteRequired");
+    }
+    return context;
+  }
+
+  async ruleStatus(facility, user) {
+    try {
+      const owner = await resolveFacilityOwner(facility, this.resolveUuid);
+      assertCanManage(user, owner);
+      await this.assertRules(facility);
+      return { allowed: true };
+    } catch (error) {
+      if (!(error instanceof BastionError)) throw error;
+      return { allowed: false, code: error.code };
+    }
+  }
+
   /** T02: derive a paid native build order; never accept client-supplied costs. */
   async planBuild(facility, payload) {
-    const context = await this.ownerContext(facility);
-    const minimum = Math.min(...Object.keys(this.config.DND5E.facilities.advancement.basic).map(Number));
-    if (context.level < minimum) throw new BastionError("LevelRequired");
+    const context = await this.assertRules(facility);
     if (facility.system.type.value !== "basic" || facility.system.building.built) throw new BastionError("InvalidOrder");
     if (facility.system.progress.max) throw new BastionError("OrderInProgress");
     const size = this.config.DND5E.facilities.sizes[payload.size];

@@ -503,3 +503,130 @@ test("T05: owner sections, overview filters and live player actions share the sa
     await gmContext.close().catch(()=>{});
   }
 });
+
+test("T06: trusted templates, individual limits, editing, scoped exceptions and owner repair",async({browser})=>{
+  const contexts=[];const context=async()=>{const result=await browser.newContext();contexts.push(result);return result;};
+  let gm=await join(await context(),"Gamemaster");let fixtures;
+  try {
+    fixtures=await gm.evaluate(async()=>{
+      const prefix="SB T06 ";
+      const previousDefinitions=game.settings.get("shared-bastion","templateRules");
+      const packId="world.sb-t06-facilities";
+      if(game.packs.has(packId)) {await game.packs.get(packId).configure({locked:false});await game.packs.get(packId).deleteCompendium();}
+      for(const actor of game.actors.filter(a=>a.flags["shared-bastion"]?.integrationFixture).sort((a,b)=>Number(Boolean(b.flags["shared-bastion"].bastion))-Number(Boolean(a.flags["shared-bastion"].bastion)))) await actor.delete();
+      for(const item of game.items.filter(i=>i.flags["shared-bastion"]?.integrationFixture)) await item.delete();
+      for(const user of game.users.filter(u=>u.name.startsWith(prefix))) await user.delete();
+      const a=await User.create({name:prefix+"Alice",role:CONST.USER_ROLES.PLAYER});const b=await User.create({name:prefix+"Bob",role:CONST.USER_ROLES.PLAYER});
+      const flag={"shared-bastion":{integrationFixture:true}};
+      const alice=await Actor.create({name:prefix+"Level 5",type:"character",ownership:{default:0,[a.id]:3},flags:flag,system:{currency:{gp:4000}},
+        items:[{name:"Test Class",type:"class",system:{levels:5,identifier:"fighter"}},...Array.from({length:2},(_,i)=>({name:prefix+`Personal ${i}`,type:"facility",system:{type:{value:"basic"},building:{built:true}}}))]});
+      const bob=await Actor.create({name:prefix+"Level 13",type:"character",ownership:{default:0,[b.id]:3},flags:flag,system:{currency:{gp:9000}},
+        items:[{name:"Test Class",type:"class",system:{levels:13,identifier:"fighter"}}]});
+      await a.update({character:alice.id});await b.update({character:bob.id});
+      const bastion=await game.modules.get("shared-bastion").api.repository.create({name:prefix+"Bastion",participants:[alice.uuid,bob.uuid]});
+      await bastion.setFlag("shared-bastion","integrationFixture",true);
+      await bastion.createEmbeddedDocuments("Item",[{name:"Carrier Class",type:"class",system:{levels:20,identifier:"fighter"}}]);
+      await bastion.update({"system.currency.gp":7000});
+      const basic=await Item.create({name:prefix+"Bedroom",type:"facility",ownership:{default:2},flags:flag,system:{type:{value:"basic",subtype:"bedroom"},level:5,size:"cramped"}});
+      const special=await Item.create({name:prefix+"Smithy",type:"facility",ownership:{default:2},flags:{"shared-bastion":{integrationFixture:true}},system:{type:{value:"special",subtype:"smithy"},level:9,size:"roomy"}});
+      const untrusted=await Item.create({name:prefix+"Editable rules",type:"facility",ownership:{default:2,[a.id]:3},flags:flag,system:{type:{value:"basic"}}});
+      const pack=await foundry.documents.collections.CompendiumCollection.createCompendium({name:"sb-t06-facilities",label:"SB T06 Templates",type:"Item"});
+      await pack.configure({locked:false,ownership:{PLAYER:"OBSERVER",ASSISTANT:"OWNER",GAMEMASTER:"OWNER"}});
+      await pack.importDocument(basic);
+      await pack.configure({locked:true});
+      return {pack:pack.collection,previousDefinitions,bastion:bastion.id,alice:alice.id,bob:bob.id,aliceUuid:alice.uuid,bobUuid:bob.uuid,aliceUser:a.id,bobUser:b.id,aliceName:a.name,bobName:b.name,
+        basic:basic.uuid,special:special.uuid,untrusted:untrusted.uuid,items:[basic.id,special.id,untrusted.id]};
+    });
+    const alice=await join(await context(),fixtures.aliceName);const bob=await join(await context(),fixtures.bobName);
+    const attempt=(page,action,uuid,payload)=>page.evaluate(async({action,uuid,payload})=>{
+      try {return {ok:true,result:await game.modules.get("shared-bastion").api.request(action,uuid,payload)};}catch(error){return {ok:false,code:error.code};}
+    },{action,uuid,payload});
+    const add=(page,owner,template,exceptions=[])=>attempt(page,"addFacility",`Actor.${fixtures.bastion}`,{owner,template,exceptions});
+    await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await gm.locator('[data-action="configureTemplates"]').click();
+    await gm.locator('dialog [name="template"]').selectOption(fixtures.special);
+    await gm.locator('dialog [data-action="save"]').click();
+    await gm.locator('dialog [name="requirements"]').fill("tool:smith");
+    await gm.locator('dialog').filter({has:gm.locator('[name="requirements"]')}).locator('[data-action="save"]').click();
+    await expect.poll(()=>gm.evaluate(uuid=>game.settings.get("shared-bastion","templateRules")[uuid]?.requirements,fixtures.special)).toEqual(["tool:smith"]);
+    expect(await gm.evaluate(async uuid=>(await fromUuid(uuid)).flags["shared-bastion"].requirements??null,fixtures.special)).toBe(null);
+    expect((await attempt(alice,"setTemplateRules",`Actor.${fixtures.bastion}`,{template:fixtures.special,level:1,order:"",hirelings:0,defenders:0,requirements:[],exceptions:[]})).code).toBe("GMOnly");
+
+    expect((await add(alice,fixtures.bobUuid,fixtures.basic)).code).toBe("NotOwner");
+    expect((await add(alice,fixtures.aliceUuid,fixtures.untrusted)).code).toBe("UntrustedTemplate");
+    expect((await add(alice,fixtures.aliceUuid,fixtures.special)).code).toBe("LevelRequired");
+    expect((await add(bob,fixtures.bobUuid,fixtures.special)).code).toBe("PrerequisiteRequired");
+    expect((await add(alice,fixtures.aliceUuid,fixtures.basic,[{scope:"level",reason:"Claim"}])).code).toBe("GMOnly");
+    await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await expect(alice.locator(".bastion-owner-summary")).toHaveCount(1);
+    await expect(alice.locator(".bastion-owner-summary")).toContainText("0 / 2");
+    await alice.locator('[data-action="addFacility"]').click();
+    await alice.locator('dialog [name="template"]').selectOption(fixtures.basic);
+    await alice.locator('dialog [data-action="save"]').click();
+    await expect(alice.locator('.bastion-facility')).toHaveCount(1);
+    const uuid=await gm.evaluate(id=>game.actors.get(id).itemTypes.facility[0].uuid,fixtures.bastion);
+    expect(await gm.evaluate(async uuid=>(await fromUuid(uuid)).system.building.built,uuid)).toBe(false);
+    await alice.locator('[data-action="editFacility"]').click();
+    await alice.locator('dialog [name="name"]').fill("Our Shared Bedroom");
+    await alice.locator('dialog [name="notes"]').fill("Room prepared by Alice.");
+    await alice.locator('dialog [data-action="save"]').click();
+    await expect(alice.locator('.bastion-facility')).toContainText("Room prepared by Alice.");
+    const rules={level:9,order:"",hirelings:0,defenders:0,requirements:["tool:smith"],exceptions:[{scope:"level",reason:"A boon from the patron"}]};
+    expect((await attempt(alice,"setFacilityRules",uuid,rules)).code).toBe("GMOnly");
+    expect((await attempt(gm,"setFacilityRules",uuid,rules)).ok).toBe(true);
+    await expect(alice.locator('[data-action="buildFacility"]')).toBeDisabled();
+    expect((await attempt(alice,"build",uuid,{size:"cramped"})).code).toBe("PrerequisiteRequired");
+    rules.exceptions.push({scope:"requirements",reason:"Patron supplies the needed expertise"});
+    expect((await attempt(gm,"setFacilityRules",uuid,rules)).ok).toBe(true);
+    await gm.evaluate(id=>game.actors.get(id).update({"system.currency.gp":499}),fixtures.alice);
+    expect((await attempt(alice,"build",uuid,{size:"cramped"})).code).toBe("InsufficientFunds");
+    await gm.evaluate(id=>game.actors.get(id).update({"system.currency.gp":4000}),fixtures.alice);
+    expect((await attempt(alice,"build",uuid,{size:"cramped"})).ok).toBe(true);
+    await gm.evaluate(id=>game.actors.get(id).update({"system.tools.smith.value":1}),fixtures.bob);
+    const specials=[];
+    for(let i=0;i<5;i++){const result=await add(bob,fixtures.bobUuid,fixtures.special);expect(result.ok).toBe(true);specials.push(result.result.uuid);}
+    expect((await add(bob,fixtures.bobUuid,fixtures.special)).code).toBe("FacilityLimit");
+    const extra=await add(gm,fixtures.bobUuid,fixtures.special,[{scope:"limit",reason:"Campaign reward"}]);expect(extra.ok).toBe(true);
+    await gm.reload();await gm.waitForFunction(()=>game.ready===true);
+    expect(await gm.evaluate(async uuid=>(await fromUuid(uuid)).flags["shared-bastion"].exceptions,uuid)).toEqual(rules.exceptions);
+    await expect(alice.locator('.bastion-facility').first()).toContainText("Patron supplies the needed expertise");
+    await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    const facilityId=uuid.split(".").at(-1);
+    await gm.locator(`[data-facility-id="${facilityId}"] [data-action="reassignFacility"]`).click();
+    await gm.locator('dialog [name="owner"]').selectOption(fixtures.bobUuid);
+    await gm.locator('dialog [data-action="save"]').click();
+    await expect.poll(()=>gm.evaluate(async uuid=>(await fromUuid(uuid)).flags["shared-bastion"].owner,uuid)).toBe(fixtures.bobUuid);
+    expect((await attempt(alice,"editFacility",uuid,{name:"Forbidden",notes:""})).code).toBe("NotOwner");
+    expect((await attempt(bob,"editFacility",uuid,{name:"Reassigned Bedroom",notes:"Now Bob's"})).ok).toBe(true);
+    const totals=await gm.evaluate(data=>({alice:game.actors.get(data.alice).system.currency.gp,bob:game.actors.get(data.bob).system.currency.gp,carrier:game.actors.get(data.bastion).system.currency.gp}),fixtures);
+    expect(totals).toEqual({alice:3500,bob:9000,carrier:7000});
+    await bob.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
+    await bob.locator(`[data-facility-id="${facilityId}"] [data-action="removeFacility"]`).click();
+    await bob.locator('dialog [data-action="yes"]').click();
+    await expect.poll(()=>gm.evaluate(async uuid=>Boolean(await fromUuid(uuid)),uuid)).toBe(false);
+    expect(await gm.evaluate(uuid=>fromUuid(uuid),uuid)).toBe(null);
+    const orphan=await add(alice,fixtures.aliceUuid,fixtures.basic);expect(orphan.ok).toBe(true);
+    await gm.evaluate(id=>game.actors.get(id).delete(),fixtures.alice);
+    expect((await attempt(gm,"reassignFacility",orphan.result.uuid,{owner:fixtures.bobUuid})).ok).toBe(true);
+    const native=await bob.evaluate(async()=>{const catalog=await game.modules.get("shared-bastion").api.catalog();return catalog.find(item=>item.uuid.startsWith("Compendium.world.sb-t06-facilities."));});
+    expect(native?.uuid).toBeTruthy();
+    const original=await gm.evaluate(async uuid=>JSON.stringify((await fromUuid(uuid)).toObject()),native.uuid);
+    const nativeDefinition=await gm.evaluate(async uuid=>({template:uuid,...game.modules.get("shared-bastion").api.presentation.rules(await fromUuid(uuid))}),native.uuid);
+    const nativeRules={template:native.uuid,level:5,order:nativeDefinition.orders.find(o=>o.selected)?.value??"",hirelings:nativeDefinition.hirelings,defenders:nativeDefinition.defenders,requirements:[],exceptions:[]};
+    expect((await attempt(gm,"setTemplateRules",`Actor.${fixtures.bastion}`,nativeRules)).ok).toBe(true);
+    expect((await add(bob,fixtures.bobUuid,native.uuid,[{scope:"limit",reason:"Native compendium integration check"}])).code).toBe("GMOnly");
+    expect((await add(gm,fixtures.bobUuid,native.uuid,[{scope:"limit",reason:"Native compendium integration check"}])).ok).toBe(true);
+    expect(await gm.evaluate(async uuid=>JSON.stringify((await fromUuid(uuid)).toObject()),native.uuid)).toBe(original);
+    await gm.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t06-facilities.png"});
+    console.log("T06 passed",JSON.stringify({ownerStorage:true,individualLimits:true,exceptions:true,totals}));
+  } finally {
+    for(const c of contexts.slice(1)) await c.close().catch(()=>{});
+    if(fixtures&&!gm.isClosed()) await gm.evaluate(async data=>{
+      await game.settings.set("shared-bastion","templateRules",data.previousDefinitions);
+      if(data.pack&&game.packs.has(data.pack)) {await game.packs.get(data.pack).configure({locked:false});await game.packs.get(data.pack).deleteCompendium();}
+      await game.actors.get(data.bastion)?.delete();await game.actors.get(data.alice)?.delete();await game.actors.get(data.bob)?.delete();
+      for(const id of data.items) await game.items.get(id)?.delete();await game.users.get(data.aliceUser)?.delete();await game.users.get(data.bobUser)?.delete();
+    },fixtures);
+    for(const c of contexts) await c.close().catch(()=>{});
+  }
+});
