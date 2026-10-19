@@ -1,0 +1,31 @@
+/* Use the installed system's theme tokens and fonts. No copied artwork or fonts. */
+.shared-bastion .window-content {
+  background: var(--dnd5e-background-parchment, var(--dnd5e-color-parchment, #f1ebe8));
+  color: var(--color-text-primary, #191813);
+  padding: 1.5rem;
+}
+.shared-bastion .bastion-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--dnd5e-color-gold, #9f9275);
+  padding-bottom: .75rem;
+}
+.shared-bastion .bastion-heading h1 {
+  font-family: var(--dnd5e-font-modesto, "Palatino Linotype", serif);
+  font-size: 2.5rem;
+  border: 0;
+  margin: 0;
+}
+.shared-bastion .bastion-heading i {
+  font-size: 2rem;
+  color: var(--dnd5e-color-gold, #9f9275);
+}
+.shared-bastion .bastion-notice {
+  border-inline-start: 3px solid var(--dnd5e-color-gold, #9f9275);
+  padding: .75rem;
+  background: var(--dnd5e-background-5, rgb(0 0 0 / 5%));
+}
+.shared-bastion dl { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.shared-bastion dd { margin: 0; overflow-wrap: anywhere; }
+.shared-bastion .hint { color: var(--color-text-secondary, #666); }

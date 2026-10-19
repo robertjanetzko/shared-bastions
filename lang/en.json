@@ -1,0 +1,22 @@
+{
+  "SHARED_BASTION": {
+    "Title": "Shared Bastion",
+    "OpenStatus": "Show module status",
+    "StatusHint": "Facility management will follow the runtime verification of individual ownership context.",
+    "FoundationNotice": "Development version: The module foundation is in place. Shared management is not available yet.",
+    "ReviewedSystem": "Source reviewed",
+    "Compatibility": "Target version",
+    "Supported": "Within target range; runtime acceptance pending",
+    "Unsupported": "Outside target range",
+    "Errors": {
+      "UnsupportedRuntime": "Shared Bastion requires Foundry VTT 14.367 or later within V14 and D&D5e 6.0.x.",
+      "InvalidFacility": "This facility is not stored on a shared bastion.",
+      "UnsupportedDataVersion": "This bastion uses an unsupported data version.",
+      "MissingOwner": "The owner character is missing or is not a participant. The GM must repair the assignment.",
+      "InvalidUser": "The requesting user is not connected.",
+      "NotOwner": "You can only manage facilities belonging to your own characters.",
+      "InvalidOwnerLevel": "The owner character's level could not be determined.",
+      "InvalidSize": "The facility size is not available in the system configuration."
+    }
+  }
+}

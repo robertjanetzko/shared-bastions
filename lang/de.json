@@ -1,0 +1,22 @@
+{
+  "SHARED_BASTION": {
+    "Title": "Gemeinsame Bastion",
+    "OpenStatus": "Modulstatus anzeigen",
+    "StatusHint": "Die Einrichtungsverwaltung folgt nach der praktischen Prüfung des individuellen Besitzerkontexts.",
+    "FoundationNotice": "Entwicklungsversion: Das Modulgerüst ist eingerichtet. Die gemeinsame Verwaltung ist noch nicht verfügbar.",
+    "ReviewedSystem": "Quellcode geprüft",
+    "Compatibility": "Zielversion",
+    "Supported": "Im Zielbereich; Laufzeitabnahme steht aus",
+    "Unsupported": "Außerhalb des Zielbereichs",
+    "Errors": {
+      "UnsupportedRuntime": "Shared Bastion benötigt Foundry VTT ab 14.367 innerhalb V14 und D&D5e 6.0.x.",
+      "InvalidFacility": "Diese Einrichtung liegt nicht auf einer gemeinsamen Bastion.",
+      "UnsupportedDataVersion": "Diese Bastion verwendet eine nicht unterstützte Datenversion.",
+      "MissingOwner": "Der Besitzercharakter fehlt oder ist der Bastion nicht zugeordnet. Der GM muss die Zuordnung reparieren.",
+      "InvalidUser": "Der anfragende Benutzer ist nicht angemeldet.",
+      "NotOwner": "Du darfst nur Einrichtungen eigener Charaktere verwalten.",
+      "InvalidOwnerLevel": "Der Charakterlevel des Besitzers konnte nicht ermittelt werden.",
+      "InvalidSize": "Die Einrichtungsgröße ist in der Systemkonfiguration nicht verfügbar."
+    }
+  }
+}

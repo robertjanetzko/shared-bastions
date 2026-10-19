@@ -1,0 +1,25 @@
+{
+  "name": "shared-bastion",
+  "version": "0.1.0-dev.1",
+  "private": true,
+  "type": "module",
+  "description": "Shared native D&D5e facilities for Foundry VTT 14",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "node tools/check.mjs",
+    "check:foundry": "node tools/check-foundry.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:integration": "node tools/integration.mjs",
+    "test:browser:install": "node tools/integration.mjs --install",
+    "build": "node tools/package.mjs",
+    "dev:init": "node tools/init-dev.mjs",
+    "dev:up": "docker compose -f dev/compose.yaml up -d",
+    "dev:down": "docker compose -f dev/compose.yaml down",
+    "dev:status": "docker compose -f dev/compose.yaml ps"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  }
+}

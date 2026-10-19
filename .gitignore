@@ -1,1 +1,10 @@
 /.grill-with-ui
+/dev/secrets.json
+/dev/*.zip
+/dist/
+/node_modules/
+/Foundry*.zip
+.DS_Store
+/test-results/
+/playwright-report/
+/dev/probes/

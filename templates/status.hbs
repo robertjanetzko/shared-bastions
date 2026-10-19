@@ -1,0 +1,15 @@
+<section class="bastion-status">
+  <header class="bastion-heading">
+    <i class="fa-solid fa-chess-rook" aria-hidden="true"></i>
+    <h1>{{localize "SHARED_BASTION.Title"}}</h1>
+  </header>
+  <p class="bastion-notice">{{localize "SHARED_BASTION.FoundationNotice"}}</p>
+  <dl>
+    <dt>Foundry VTT</dt><dd>{{foundry}}</dd>
+    <dt>D&amp;D5e</dt><dd>{{system}}</dd>
+    <dt>{{localize "SHARED_BASTION.ReviewedSystem"}}</dt><dd>{{reviewedSystem}}</dd>
+    <dt>{{localize "SHARED_BASTION.Compatibility"}}</dt>
+    <dd>{{#if supported}}{{localize "SHARED_BASTION.Supported"}}{{else}}{{localize "SHARED_BASTION.Unsupported"}}{{/if}}</dd>
+  </dl>
+  <p class="hint">{{localize "SHARED_BASTION.StatusHint"}}</p>
+</section>

@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-19 · Status: durch Umsetzungsinterview präzisiert, Implementierung noch nicht begonnen.
+Stand: 2026-10-19 · Status: T01 abgenommen; T02 in praktischer Integrationsprüfung.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -162,10 +162,16 @@ Währung dürfen nicht versehentlich die individuellen Bastionregeln bestimmen.
 
 Ein Task wird erst abgehakt, wenn seine Abnahmekriterien erfüllt und die
 zugehörigen Prüfungen dokumentiert sind. Die folgenden Tasks sind noch offen.
+Code vorhanden bedeutet nicht abgenommen; insbesondere ersetzen Unit-Tests
+keine erfolgreiche Prüfung in einer Foundry-Welt.
 
 ### Stufe 1 – Gemeinsame Verwaltung
 
-- [ ] **T01 – Modulgerüst und Entwicklungsablauf**
+- [x] **T01 – Modulgerüst und Entwicklungsablauf**
+  - Stand: Manifest, lesender Systemadapter, Entwicklungsdiagnose, DE/EN,
+    Styles, Vorlagen, Prüf-/Paketbefehle und Docker-Testumgebung implementiert.
+    Foundry 14.369 / D&D5e 6.0.6 in isolierter Testwelt geladen. Modulstart,
+    Statusansicht und Modulressourcen mit Chromium erfolgreich geprüft.
   - Umfang: Manifest, Systemabhängigkeit, ES-Module, Styles, Vorlagen,
     Sprachdateien sowie nachvollziehbare lokale Installation einrichten.
   - Abhängigkeit: keine.
@@ -173,6 +179,10 @@ zugehörigen Prüfungen dokumentiert sind. Die folgenden Tasks sind noch offen.
     tatsächlich vorhandene Entwicklungs- und Prüfkommandos sind dokumentiert.
 
 - [ ] **T02 – Integration des zentralen Facility-Speichers prüfen**
+  - Stand: Besitzerauflösung und individuelle Konfigurationsauswertung mit
+    Unit-Tests vorbereitet; native Schnittstellen anhand D&D5e 6.0.6 untersucht.
+    [Befunde und nächste praktische Prüfung](docs/integration-findings.md).
+    Noch keine erfolgreichen nativen Aufträge oder Ressourcenbuchungen.
   - Umfang: Eine native Einrichtung auf dem zentralen Aktor mit einem anderen,
     privaten Charakter als Regelbesitzer betreiben; erforderliche Systemzugriffe
     und geeignete Erweiterungspunkte im Adapter festhalten.
@@ -341,7 +351,10 @@ zugehörigen Prüfungen dokumentiert sind. Die folgenden Tasks sind noch offen.
 Automatisierte Tests konzentrieren sich auf Besitzerregeln, individuelle
 Regelzuordnung, Wiederholungen/Konflikte und Grundrissgeometrie. Native Rechte,
 Dialoge und Bewegung werden zusätzlich in einer laufenden Foundry-Welt geprüft.
-Noch existieren keine Testwerkzeuge oder ausführbaren Projektkommandos.
+`npm run check`, `npm test` und `npm run build` sind eingerichtet und erfolgreich
+ausgeführt. Die zehn Unit-Tests prüfen Modulgrenzen; native Integration ist offen.
+Die Docker-Testinstallation startet über `npm run dev:up`; Details in
+[README.md](README.md).
 
 ## 7. Grenzen und technische Nachweise
 
@@ -377,3 +390,5 @@ ersetzt keine Prüfung in der Zielversion.
 | --- | --- | --- |
 | 2026-10-19 | Anforderungen, Architektur und Tasks aus der Abstimmung dokumentiert. | Dokumentprüfung; keine Implementierung vorhanden. |
 | 2026-10-19 | Umsetzungsinterview abgeschlossen: Besitzerabschnitte, Betriebsrechte, GM-Ausnahmen, Verzeichniseinstieg, kompakter Bau und Tokensicht präzisiert; Design und Prototyp ergänzt. | Zehn Antworten und Prototyp v1 abgeglichen; keine Foundry-Laufzeitprüfung. |
+| 2026-10-19 | T01 implementiert und T02 vorbereitet: Modulgerüst, Statusansicht mit D&D5e-Designvariablen, lesender Besitzeradapter, Übersetzungen, Prüf-/Paketbefehle und isolierte Docker-Testinstallation. Nutzer stellt Foundry-14.369-ZIP bereit; offizielles D&D5e 6.0.6 in Testinstallation kopiert. | `npm run check`, zehn Unit-Tests und `npm run build` erfolgreich; Foundry 14.369 startet und HTTP leitet auf `/license`. T01/T02 bleiben offen: Lizenzaktivierung, Modulstart in Welt und native Mehrclientintegration noch nicht geprüft; Browser-Skill meldet keine verfügbaren Browser. |
+| 2026-10-19 | T01 abgenommen: Lizenzierung abgeschlossen, Testwelt `shared-bastion-integration` erstellt, Modul aktiviert und ApplicationV2-Statusansicht gerendert. | Native Foundry-Schemaprüfung und Handlebars-Render erfolgreich; Chromium-Test T01 auf Foundry 14.369 / D&D5e 6.0.6 bestanden. Keine JavaScript-Fehler oder fehlerhaften Modulressourcen; Screenshot geprüft. Die Testclients nutzen Softwaregrafik, die Szenenabnahme steht separat aus. |

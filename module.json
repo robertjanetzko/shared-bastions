@@ -1,0 +1,20 @@
+{
+  "id": "shared-bastion",
+  "title": "Shared Bastion",
+  "description": "Development foundation for shared native D&D5e facilities. Runtime owner integration is not yet accepted.",
+  "version": "0.1.0-dev.1",
+  "compatibility": { "minimum": "14.367", "maximum": "14" },
+  "relationships": {
+    "systems": [{
+      "id": "dnd5e",
+      "type": "system",
+      "compatibility": { "minimum": "6.0.0", "maximum": "6.0.99" }
+    }]
+  },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/shared-bastion.css"],
+  "languages": [
+    { "lang": "de", "name": "Deutsch", "path": "lang/de.json" },
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
+  ]
+}

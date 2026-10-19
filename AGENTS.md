@@ -46,6 +46,9 @@ vor diesem Dokument und dem Plan; daraus folgende Änderungen hier nachführen.
   und der Absprache am Tisch.
 - D&D5e-spezifische Zugriffe werden in einem Systemadapter gebündelt. Native
   Daten, Systemkonfigurationen und geeignete Funktionen wiederverwenden.
+- Das visuelle Design orientiert sich am offiziellen `foundryvtt/dnd5e`-System.
+  Vorhandene Farb- und Schriftvariablen wiederverwenden; keine Bilder oder
+  Schriftpakete ohne eigenen Bedarf mitliefern.
 - Szenenänderungen zunächst planen und anzeigen, dann nach GM-Klick übernehmen.
   Ausschließlich eigene markierte Elemente verändern und manuelle Konflikte beachten.
 - Die erste Szene ist ein kompakter gemeinsamer Bau unabhängig vom Besitzer,
@@ -103,14 +106,35 @@ zusätzlichen Freigabeprozess für routinemäßige Umsetzung im vereinbarten Umf
 
 ### Verfügbare Befehle
 
-Noch keine: Es existieren weder Paketmanifest noch Build- oder Testkonfiguration.
-Keine Installations- oder Testbefehle erfinden. Nach T01 die realen Befehle und
-Voraussetzungen hier dokumentieren.
+Voraussetzungen: Node.js >=24, Python 3 für die ZIP-Paketierung; Docker Desktop
+für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
+Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
+
+- `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
+- `npm test`: zehn Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl und
+  individuellen Konfigurationskontext. Kein Nachweis nativer Integration.
+- `npm run build`: Entwicklungsarchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
+- `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
+  Manifest-/Versionsprüfung und Handlebars-Render ohne Weltstart.
+- `npm run test:browser:install`: Chromium für die lokale Integrationssuite laden.
+- `npm run test:integration`: Modulprüfung in der bereits laufenden, eigenen
+  Testwelt `shared-bastion-integration`; keine bestehende Spielwelt verwenden.
+- `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
+- `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
+  Testinstallation unter <http://localhost:30014> starten, prüfen und beenden.
+
+Die Docker-Konfiguration erwartet `FoundryVTT-Node-14.369.zip` im Projektstamm.
+Installation, Datenhaltung und Lizenzierung stehen in [README.md](README.md).
 
 ### Getestete Laufzeitversionen
 
-Noch keine. Ziel sind Foundry V14 und D&D5e 6.0.x; konkrete Builds bei der ersten
-praktischen Integrationsprüfung ergänzen.
+Foundry **14.369** aus der vom Nutzer bereitgestellten ZIP startet im isolierten
+Docker-Container. In der Testwelt `shared-bastion-integration` wurde das Modul
+mit D&D5e **6.0.6** aktiviert; Start und Statusansicht wurden mit Chromium
+erfolgreich geprüft (T01). Der Quellcode wurde auf Commit
+`28f35531021bb07609c79c4cbbb9b7e7c2744bf9` geprüft. Die Besitzerintegration
+ist noch nicht abgenommen. Chromium nutzt Softwaregrafik; Sicht und Bewegung
+in einer generierten Szene sind noch nicht geprüft.
 
 ## Aktueller Stand
 
@@ -118,16 +142,26 @@ praktischen Integrationsprüfung ergänzen.
 - Zehn Interviewfragen sind beantwortet und abgeschlossen. Das Ergebnis steht in
   `docs/implementation-design.md`; `docs/implementation-visual.html` enthält
   den exportierten interaktiven Prototyp v1.
-- Keine Implementierung, Tests oder Modulstruktur vorhanden.
-- Nächster Task: T01; danach T02 als erster praktischer Integrationsnachweis.
-- Die Recherche belegt native Facility-Items und bestehende Auftrags-/
-  Kalenderfunktionen, aber noch keine funktionierende zentrale Besitzerintegration.
+- T01 ist umgesetzt und abgenommen: Manifest, ES-Module,
+  Systemabhängigkeit, Styles, Statusvorlage, Sprachdateien, Prüf- und Paketbefehle
+  sowie Docker-Testumgebung sind vorhanden. Das Modul bietet noch keine Verwaltung.
+- Der lesende Besitzeradapter und zehn erfolgreiche Unit-Tests bilden die
+  Grundlage für T02. Die vollständige Oberfläche folgt erst nach dessen Nachweis.
+- Native Aufträge verwenden einen separaten Zahlungsablauf, der Zahlungsaktor
+  und Item-Elternaktor gleichsetzt. Er darf für zentrale Items nicht unverändert
+  übernommen werden. Der Kalender sammelt Facility-Updates selbst; doppelte
+  Verarbeitung durch zusätzliche Hooks ist zu verhindern.
+- Einfache Einrichtungen haben ein kostenloses Anfangskontingent, keine harte
+  Obergrenze für weitere kostenpflichtige Räume. Systemwerte im Adapter lesen.
+- Details und verlinkte Quellcodebefunde: [Integrationsbefunde](docs/integration-findings.md).
 - Offen zu verifizieren: Besitzerkontext nativer Aufträge, Fortschritt zentraler
   Einrichtungen, Absenderzuordnung des GM-Transports und Behandlung von Teilfehlern
   bei Änderungen über mehrere Dokumente. Details stehen in `PLAN.md`.
-- Der lokale Foundry-Standardpfad war bei der Recherche nicht vorhanden;
-  der verfügbare Foundry-MCP-Anschluss war nicht erreichbar. Daraus folgt keine
-  Aussage darüber, ob Foundry an einem anderen Ort oder extern installiert ist.
+- Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill
+  meldet keine verfügbaren Browser. Eine separate lokale Chromium-Testumgebung
+  prüft deshalb die isolierte Welt über Playwright; T01 ist damit bestanden.
+- `FoundryVTT-Node-14.369.zip`, `dev/secrets.json`, Docker-Daten und `dist/` sind
+  lokale Entwicklungsartefakte und gehören nicht ins Repository oder Modularchiv.
 - Lokale Interviewdaten liegen unter `.grill-with-ui/` im Projekt. Sie sind kein
   Bestandteil des auszuliefernden Moduls. Bei weiteren Interviews in diesem Projekt
   `GRILL_HOME="$PWD/.grill-with-ui"` verwenden, damit Sessions dort auffindbar bleiben.

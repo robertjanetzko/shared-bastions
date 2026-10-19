@@ -1,0 +1,37 @@
+name: shared-bastion-test
+services:
+  cache-init:
+    image: felddy/foundryvtt:14.369
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "cp /tmp/foundryvtt.zip /cache/foundryvtt-14.369.zip && chown -R node:node /cache && mkdir -p /data/Data/systems /data/Data/worlds /data/Data/modules && chown node:node /data /data/Data /data/Data/systems /data/Data/worlds /data/Data/modules"
+    volumes:
+      - foundry_cache:/cache
+      - foundry_data:/data
+      - ../FoundryVTT-Node-14.369.zip:/tmp/foundryvtt.zip:ro
+  foundry:
+    image: felddy/foundryvtt:14.369
+    hostname: shared-bastion-test
+    depends_on:
+      cache-init:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:30014:30000"
+    environment:
+      FOUNDRY_TELEMETRY: "false"
+      CONTAINER_PRESERVE_CONFIG: "true"
+      CONTAINER_VERBOSE: "false"
+    secrets:
+      - source: foundry_config
+        target: config.json
+    volumes:
+      - foundry_data:/data
+      - ../:/data/Data/modules/shared-bastion:ro
+      - foundry_cache:/data/container_cache
+secrets:
+  foundry_config:
+    file: ./secrets.json
+volumes:
+  foundry_data:
+  foundry_cache:
