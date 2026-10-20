@@ -7,7 +7,8 @@ wird durch die neue Nutzerentscheidung ersetzt. Der Szenengenerator bleibt offen
 
 ## Umgesetzte Bedienung
 
-- Ausschließlich Besitzerabschnitte mit Spieler- und Charaktername; eigene
+- Ausschließlich Besitzerabschnitte mit Portrait und Spielername, darunter klein
+  die private Stufe für Besitzer/GM; Charaktername im Tooltip. Eigene
   Charaktere zuerst, weitere nach Spielernamen und Charaktername. Der GM sieht
   alle alphabetisch. Mehrfachbesitz und fehlende Benutzerzuordnung sind definiert.
 - Zwei Spalten für Basis- und besondere Einrichtungen, auf schmalen Fenstern eine.
@@ -89,3 +90,27 @@ bestätigt. Das temporäre Testvolume ist entfernt. Die ungenutzten Testkonten
 „SB T10 Alice“ und „SB T10 Bob“ aus dem ersten Aufbau wurden nach ausdrücklicher
 Nutzerfreigabe gelöscht. Alle Akteurdaten und übrigen Benutzer sind im
 Vorher-/Nachher-Vergleich unverändert.
+
+## Visuelle Nacharbeit: native Größen und kompakte Hinweise
+
+Kacheltitel und Größenangaben verwenden die nativen Schriftgrößen 13/10,
+Personalplätze 26, Auftragsicons 22 und Innenabstände 8 Pixel. Freie Plätze
+haben mindestens 50 Pixel Höhe. Die Fortschrittsleiste zeigt wie nativ nur die
+Tagewerte. Abschnittsköpfe enthalten neben dem Portrait nur den Spielernamen
+und darunter klein die Stufe. Ohne Spielerzuordnung wird der Charaktername verwendet.
+
+Hinweise, Notizen, letzte Ergebnisse und Ausnahmen stehen im Text-Tooltip eines
+kleinen Symbols unten rechts an der Kachel. Warnungen verwenden ein Warnsymbol.
+Die Zugübersicht ist über das Infosymbol unten rechts am Fenster zugänglich.
+Alle Symbole unterstützen Tastaturfokus; Klick/Enter auf einen Kachelhinweis
+öffnen keine Aktivität. Eingaben werden als Text angezeigt, auch enthaltene HTML-Tags.
+
+Die native Prüfung auf 14.369 / 6.0.6 verglich den Charakterbogen direkt mit der
+Shared Bastion: Titel 13 und Untertitel 10 Pixel stimmen überein. Beide Themen,
+schmale Fenster, Hover und Tastatur wurden mit einer ungespeicherten Vorschau
+geprüft; sämtliche Akteurdaten blieben identisch. Statische Prüfung und alle
+30 Unit-Tests bestanden; Paket neu gebaut. Die zwölfteilige Integrationssuite
+wurde für diese Darstellungsnacharbeit nicht wiederholt.
+
+Screenshots: `test-results/ui-scale-comparison.png`, `ui-compact-hints.png`,
+`ui-compact-dark.png`, `ui-compact-light.png`, `ui-compact-narrow.png`.

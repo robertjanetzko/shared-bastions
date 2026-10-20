@@ -19,46 +19,46 @@
 .bastion-sheet .bastion-heading h1 { margin: 0; border: 0; font-size: var(--font-size-32); }
 .bastion-sheet .bastion-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 24px 24px; container-type: inline-size; }
 .bastion-sheet .card-content { padding: 10px; }
-.bastion-sheet .bastion-turn-info { margin-bottom: 24px; }
-.bastion-sheet .bastion-turn-info .card-content { display: flex; gap: 8px 24px; flex-wrap: wrap; }
-.bastion-sheet .bastion-owner-section + .bastion-owner-section { margin-top: 32px; }
-.bastion-sheet .bastion-section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.bastion-sheet .bastion-section-heading img { width: 44px; height: 44px; object-fit: cover; border: var(--dnd5e-border-gold); border-radius: 4px; }
-.bastion-sheet .bastion-section-heading h2 { margin: 0; border: 0; font-family: var(--dnd5e-font-roboto-slab); font-size: var(--font-size-20); }
-.bastion-sheet .bastion-player-name, .bastion-sheet .bastion-owner-summary { color: var(--color-text-secondary); font-size: var(--font-size-12); }
-.bastion-sheet .bastion-owner-summary { margin: 0 0 12px; }
+.bastion-sheet .bastion-turn-info { display: flex; justify-content: flex-end; padding: 4px 24px 12px; color: var(--color-text-secondary); font-size: var(--font-size-12); }
+.bastion-sheet .bastion-owner-section + .bastion-owner-section { margin-top: 24px; }
+.bastion-sheet .bastion-section-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bastion-sheet .bastion-section-heading img { width: 36px; height: 36px; object-fit: cover; border: var(--dnd5e-border-gold); border-radius: 4px; }
+.bastion-sheet .bastion-section-heading h2 { margin: 0; border: 0; font-family: var(--dnd5e-font-roboto-slab); font-size: var(--font-size-14); }
+.bastion-sheet .bastion-owner-summary { display: block; color: var(--color-text-secondary); font-size: var(--font-size-10); }
 .bastion-sheet .bastion-facility-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.bastion-sheet .facilities > h3 { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--color-text-secondary); padding-bottom: 6px; font-size: var(--font-size-16); }
 .bastion-sheet .facilities .counter { margin-inline-start: auto; white-space: nowrap; }
 .bastion-sheet .facilities > ul { display: flex; flex-direction: column; gap: 8px; }
-.bastion-sheet .facility { --bar-height: 20px; position: relative; display: flex; flex-direction: column; gap: 4px; overflow: hidden; border-radius: 5px; }
+.bastion-sheet .facility { --bar-height: 20px; position: relative; display: flex; flex-direction: column; gap: 4px; overflow: hidden; border-radius: 5px; padding-bottom: 8px; }
 .bastion-sheet .facility > * { position: relative; }
-.bastion-sheet .facility.empty { width: 100%; min-height: 64px; height: auto; justify-content: center; padding: 12px; border: 2px dashed var(--dnd5e-color-gold); background: transparent; color: var(--dnd5e-color-gold); opacity: .6; }
+.bastion-sheet .facility.empty { width: 100%; min-height: 50px; height: auto; justify-content: center; padding: 8px; font-size: var(--font-size-13); border: 2px dashed var(--dnd5e-color-gold); background: transparent; color: var(--dnd5e-color-gold); opacity: .6; }
 .bastion-sheet .facility.empty:not(:disabled):hover { opacity: 1; }
 .bastion-sheet .facility.empty:disabled { cursor: default; }
 .bastion-sheet .facility.building, .bastion-sheet .facility.damaged { filter: grayscale(1); }
-.bastion-sheet .facility:not(.empty) { border: var(--dnd5e-border-gold); background: var(--dnd5e-background-card); min-height: 68px; }
+.bastion-sheet .facility:not(.empty) { border: var(--dnd5e-border-gold); background: var(--dnd5e-background-card); }
 .bastion-sheet .facility > .underlay { position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: 5px; object-fit: cover; mask-image: linear-gradient(135deg, transparent 35%, black); opacity: .5; pointer-events: none; }
 .bastion-sheet .facility:has(> .facility-progress) > .underlay { top: var(--bar-height); height: calc(100% - var(--bar-height)); border-radius: 0 0 5px 5px; }
-.bastion-sheet .facility-header { display: flex; align-items: center; gap: 8px; padding: 12px 12px 0; }
+.bastion-sheet .facility-header { display: flex; align-items: center; gap: 8px; padding: 8px 8px 0; }
 .bastion-sheet .facility .name-stacked { flex: 1; min-width: 0; }
-.bastion-sheet .facility .name-stacked .title { font-size: var(--font-size-18); overflow-wrap: anywhere; }
-.bastion-sheet .facility .name-stacked .subtitle { font-size: var(--font-size-14); }
+.bastion-sheet .facility .name-stacked .title { font-size: var(--font-size-13); overflow-wrap: anywhere; }
+.bastion-sheet .facility .name-stacked .subtitle { font-size: var(--font-size-10); }
 .bastion-sheet .facility[data-action="useFacility"] { cursor: var(--cursor-pointer); }
 .bastion-sheet .facility[data-action="useFacility"]:hover .title { text-shadow: 0 0 8px var(--color-shadow-primary); }
-.bastion-sheet .facility-progress { height: var(--bar-height); border: 0; border-radius: 0; font-size: var(--font-size-12); }
+.bastion-sheet .facility-progress { height: var(--bar-height); border: 0; border-radius: 0; font-size: var(--font-size-11); }
 .bastion-sheet .facility-progress::before { background: linear-gradient(to right, var(--dnd5e-color-hp-1), var(--dnd5e-color-hp-2)); border-radius: 0; }
-.bastion-sheet .facility-occupants { padding-inline: 12px; }
-.bastion-sheet .facility .occupant-slot { --slot-size: 30px; color: var(--color-text-secondary); }
+.bastion-sheet .facility-progress + .facility-header { margin-top: -4px; }
+.bastion-sheet .facility-occupants { padding-inline: 8px; }
+.bastion-sheet .facility .occupant-slot { --slot-size: 26px; color: var(--color-text-secondary); }
 .bastion-sheet .facility .occupant-slot.empty { opacity: .5; }
-.bastion-sheet .facility .order-slot { --icon-size: 24px; --icon-fill: var(--dnd5e-color-gold); padding: 4px; box-shadow: inset 0 0 3px var(--dnd5e-shadow-45); }
+.bastion-sheet .facility .order-slot { --icon-size: 22px; --icon-fill: var(--dnd5e-color-gold); padding: 4px; box-shadow: inset 0 0 3px var(--dnd5e-shadow-45); }
 .bastion-sheet .facility .order-slot.empty dnd5e-icon { opacity: .15; }
-.bastion-sheet .facility > :last-child { margin-bottom: 0; padding-bottom: 12px; }
-.bastion-sheet .bastion-tile-state { padding-inline: 12px; color: var(--color-text-secondary); font-style: italic; }
-.bastion-sheet .facility > .card { margin: 4px 12px 0; font-size: var(--font-size-12); }
+.bastion-sheet .bastion-tile-state { padding-inline: 8px; color: var(--color-text-secondary); font-size: var(--font-size-10); font-style: italic; }
 .bastion-sheet .bastion-warning { color: var(--dnd5e-color-note-warn); }
-.bastion-sheet .facility > .bastion-warning { margin: 4px 12px; }
+.bastion-sheet .facility > .bastion-facility-info { position: absolute; inset-inline-end: 8px; bottom: 6px; font-size: var(--font-size-11); color: var(--color-text-secondary); cursor: help; }
+.bastion-sheet .facility > .bastion-facility-info.bastion-warning { color: var(--dnd5e-color-note-warn); }
+.bastion-sheet .facility:has(> .bastion-facility-info) .facility-header { padding-inline-end: 26px; }
+.bastion-sheet .facility:has(> .bastion-facility-info) .facility-occupants { padding-inline-end: 26px; }
 .bastion-sheet [tabindex="0"]:focus-visible { outline: 2px solid var(--dnd5e-color-gold); outline-offset: 2px; }
+.bastion-info-tooltip { white-space: pre-line; text-align: start; }
 .bastion-note { white-space: pre-wrap; }
 .bastion-preview { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
 .bastion-preview dd { margin: 0; }

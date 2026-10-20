@@ -1044,7 +1044,7 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
     expect((await attempt(gm,"setFacilityRules",fixtures.armory,{level:5,order:"empower",hirelings:0,defenders:0,requirements:[`item:${identifier}`],exceptions:[]})).ok).toBe(true);
     expect((await order(fixtures.armory,"empower")).ok).toBe(true);expect((await advance(fixtures.armory,7)).ok).toBe(true);
     await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
-    await expect(alice.locator(".bastion-result").first()).toContainText("Last completed:");
+    await expect(alice.locator(".bastion-result").first()).toHaveAttribute("data-tooltip-text", /Last completed:/);
     await alice.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t07-operations.png"});
     await gm.reload();await gm.waitForFunction(()=>game.ready===true);await replay(fixtures.workshop);
     expect(await rewards()).toHaveLength(2);expect(await gold()).toBe(950-fixtures.craftCost.gold);
@@ -1144,7 +1144,7 @@ test("UI: native compendium selection, slot construction, themes and stale permi
     await gm.locator('dialog [name="exception-level"]').fill("A patron's reward");
     await gm.locator('dialog [data-action="add"]').click();
     await expect(own.locator('.special .bastion-facility')).toHaveCount(2);
-    await expect(own).toContainText("A patron's reward");
+    await expect(own.locator(".bastion-facility-info").filter({ has: player.locator(".fa-triangle-exclamation") })).toHaveAttribute("data-tooltip-text", /A patron's reward/);
     for (const theme of ["dark", "light"]) {
       await player.evaluate(theme => game.configureUI({ ...game.settings.get("core", "uiConfig"), colorScheme: { applications: theme, interface: theme } }), theme);
       await player.locator('.bastion-sheet').screenshot({ path: `test-results/ui-player-${theme}.png` });

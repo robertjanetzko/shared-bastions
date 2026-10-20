@@ -4,23 +4,14 @@
     {{#unless hasConnection}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.ConnectionRequired"}}</p>
     {{else}}{{#unless hasGM}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.NoGM"}}</p>
     {{else}}{{#unless canWrite}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/unless}}{{/unless}}
-    <section class="card bastion-turn-info">
-      <header class="header"><h3>{{localize "SHARED_BASTION.BastionTurns"}}</h3></header>
-      <div class="card-content">
-        <span>{{#if calendar.enabled}}{{localize "SHARED_BASTION.CalendarMode"}}{{else}}{{localize "SHARED_BASTION.ManualMode"}} · {{calendar.duration}} {{localize "SHARED_BASTION.Days"}}{{/if}}</span>
-        {{#if turnCount}}<span>{{localize "SHARED_BASTION.TurnCount"}}: {{turnCount}}</span>{{/if}}
-        {{#if lastTurn}}<span>{{lastTurn.completed}} {{localize "SHARED_BASTION.CompletedOrders"}} · {{lastTurn.blocked}} {{localize "SHARED_BASTION.BlockedOrders"}}</span>{{/if}}
-      </div>
-    </section>
     {{#if emptyParticipants}}<p class="notification warning">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
     {{#each sections}}
     <section class="bastion-owner-section" data-owner-uuid="{{uuid}}">
-      <header class="bastion-section-heading" data-owner-uuid="{{uuid}}" {{#if canManage}}tabindex="0" aria-label="{{name}} · {{localize 'SHARED_BASTION.ContextMenuHint'}}"{{/if}}>
+      <header class="bastion-section-heading" data-owner-uuid="{{uuid}}" data-tooltip-text="{{name}}" {{#if canManage}}tabindex="0" aria-label="{{name}} · {{localize 'SHARED_BASTION.ContextMenuHint'}}"{{/if}}>
         {{#if img}}<img src="{{img}}" alt="">{{/if}}
-        <div>{{#if playerName}}<span class="roboto-upper bastion-player-name">{{playerName}}</span>{{/if}}<h2>{{name}}</h2></div>
+        <div><h2>{{#if playerName}}{{playerName}}{{else}}{{name}}{{/if}}</h2>{{#if summary}}<span class="bastion-owner-summary">{{localize "SHARED_BASTION.CharacterLevel"}} {{summary.level}}</span>{{/if}}</div>
         {{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}
       </header>
-      {{#if summary}}<p class="bastion-owner-summary">{{localize "SHARED_BASTION.CharacterLevel"}} {{summary.level}}</p>{{/if}}
       <div class="bastion-facility-columns">
       {{#each groups}}
       <section class="facilities {{type}}" data-type="{{type}}">
@@ -33,7 +24,7 @@
           <img class="underlay" src="{{img}}" alt="" inert>
           {{#if progress}}<div class="facility-progress meter progress" role="meter" aria-label="{{localize 'SHARED_BASTION.Progress'}}"
               aria-valuemin="0" aria-valuenow="{{progress.value}}" aria-valuemax="{{progress.max}}" style="--bar-percentage: {{progress.percent}}%">
-            <div class="label"><span class="value">{{progress.value}}</span><span class="separator"> / </span><span class="max">{{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>
+            <div class="label"><span class="value">{{progress.value}}</span><span class="separator"> / </span><span class="max">{{progress.max}}</span></div>
           </div>{{/if}}
           <div class="facility-header">
             <div class="name-stacked"><span class="title">{{name}}</span><span class="subtitle">{{sizeLabel}}</span></div>
@@ -43,13 +34,7 @@
           {{#if occupants.length}}<div class="slots facility-occupants">
             {{#each occupants}}<div class="slot occupant-slot {{role}} {{#unless occupied}}empty{{/unless}}" data-tooltip="{{localize label}}{{#if name}}: {{name}}{{/if}}">{{#if img}}<img src="{{img}}" alt="{{name}}">{{else}}<i class="fa-solid {{#if occupied}}fa-user-check{{else}}fa-user{{/if}}" inert></i>{{/if}}</div>{{/each}}
           </div>{{/if}}
-          {{#if disabled}}<p class="bastion-warning">{{stateLabel}}</p>{{/if}}
-          {{#if missingOwner}}<p class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</p>{{/if}}
-          {{#if progressIssueLabel}}<p class="bastion-warning" role="status">{{localize progressIssueLabel}}</p>{{/if}}
-          {{#if ruleIssueLabel}}<p class="bastion-warning">{{localize ruleIssueLabel}}</p>{{/if}}
-          {{#if exceptions.length}}<aside class="card bastion-exceptions"><header class="header"><h4>{{localize "SHARED_BASTION.Exceptions"}}</h4></header><ul class="card-content unlist">{{#each exceptions}}<li>{{localize label}}: {{reason}}</li>{{/each}}</ul></aside>{{/if}}
-          {{#if notes}}<aside class="card"><header class="header"><h4>{{localize "SHARED_BASTION.Notes"}}</h4></header><p class="card-content bastion-note">{{notes}}</p></aside>{{/if}}
-          {{#if lastResult}}<aside class="card bastion-result"><header class="header"><h4>{{localize "SHARED_BASTION.LastResult"}}: {{lastResult.label}}</h4></header><div class="card-content">{{#if lastResult.gold}}{{lastResult.gold}} {{localize "SHARED_BASTION.GoldPieces"}}{{/if}}{{#each lastResult.items}} {{quantity}} × {{name}}{{/each}}</div></aside>{{/if}}
+          {{#if infoText}}<span class="bastion-facility-info {{#if hasWarning}}bastion-warning{{/if}} {{#if lastResult}}bastion-result{{/if}}" tabindex="0" role="img" aria-label="{{infoText}}" data-tooltip-text="{{infoText}}" data-tooltip-class="bastion-info-tooltip"><i class="fa-solid {{#if hasWarning}}fa-triangle-exclamation{{else}}fa-circle-info{{/if}}" inert></i></span>{{/if}}
         </li>
         {{/each}}
         {{#each slots}}
@@ -63,4 +48,5 @@
     </section>
     {{/each}}
   </div>
+  <footer class="bastion-turn-info"><span tabindex="0" role="img" aria-label="{{turnInfo}}" data-tooltip-text="{{turnInfo}}" data-tooltip-class="bastion-info-tooltip"><i class="fa-solid fa-circle-info" inert></i></span></footer>
 </section>

@@ -177,13 +177,22 @@ zurückgestellten Ausbau.
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
   Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte.
 - Der Bogen verwendet native D&D5e-Anwendungskomponenten, Bildkacheln und
-  Informationskarten. Freie Plätze öffnen den nativen Kompendiumbrowser, eigene
+  kompakte Hinweise als Text-Tooltips. Freie Plätze öffnen den nativen Kompendiumbrowser, eigene
   Einrichtungen die native Aktivitätsauswahl. Verwaltung liegt in Kontextmenüs,
   GM-Verwaltung und Bastionzüge im Fenstermenü. Fremde Einrichtungen sind für
   Spieler nicht bedienbar. Öffentliche Teilnehmermetadaten enthalten zusätzlich
   Benutzerreferenzen für die Sortierung; private Charakterregelwerte bleiben lokal
   beim Besitzer beziehungsweise GM. Neugestaltung N01 ist nativ abgenommen.
   Der frühere Listen-/Filterbogen ist durch die Nutzerentscheidung ersetzt.
+  Die visuelle Nacharbeit gleicht Kachelmaße exakt mit D&D5e 6.0.6 ab
+  (Titel 13, Untertitel 10, Personal 26, Auftragsicon 22, Innenabstand 8,
+  freie Plätze mindestens 50 Pixel). Abschnittsköpfe zeigen Portrait, Spielername
+  und darunter klein die private Stufe; Charaktername im Tooltip. Hinweise,
+  Ergebnisse und Ausnahmen erscheinen als fokussierbares Symbol unten rechts
+  mit reinem Text-Tooltip; Warnungen bleiben als Warnsymbol erkennbar. Die
+  Zugübersicht liegt im Infosymbol am unteren Fensterrand. Native Prüfung mit
+  ungespeicherter Vorschau bestätigt beide Themen, schmale Fenster, Hover,
+  Tastatur und unveränderte Weltdokumente.
 - Der Bogen wird nur dem markierten Träger über `core.sheetClass` zugeordnet;
   er ist kein wählbarer Standard für normale Charaktere. Spieler bleiben auf
   dem Träger OBSERVER; eigene Charakterbögen und deren Rechte bleiben unverändert.
@@ -290,7 +299,7 @@ zurückgestellten Ausbau.
   Bau-/Fortschrittspfad, Absenderzuordnung, Parallelität und Transaktionsabbrüche
   sind bestätigt. Details stehen in `PLAN.md`.
 - N01 ist abgenommen: native Kacheln, Kompendiumbrowser und Aktivitätsauswahl,
-  Kontext-/Fenstermenüs, sortierte Besitzerabschnitte und Informationskarten.
+  Kontext-/Fenstermenüs und sortierte Besitzerabschnitte.
   Die frühere Gesamtübersicht und Besitzerfilter entfallen. Alle 30 Unit-Tests und
   zwölf nativen Integrationstests bestanden; beide Themen, schmale Fenster und
   Dialoge visuell geprüft. Das aktualisierte Archiv umfasst 45 geprüfte Dateien,

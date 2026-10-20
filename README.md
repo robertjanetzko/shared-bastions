@@ -28,8 +28,10 @@ Aktor aus demselben Verzeichnis. Im Bastion-Bogen verwaltet der GM die Teilnehme
 Der Bogen zeigt pro Besitzercharakter Basiseinrichtungen links und besondere
 Einrichtungen rechts. Eigene Charaktere stehen zuerst, die übrigen nach
 Spielername und Charaktername sortiert; beim GM gilt die alphabetische Reihenfolge.
+Abschnittsköpfe zeigen das Portrait, daneben den Spielernamen und darunter klein
+die Stufe (für Besitzer/GM). Der Charaktername erscheint beim Darüberfahren.
 Die Kacheln verwenden das Facility-Bild und zeigen Größe, Personal und laufenden
-Fortschritt. Auf schmalen Fenstern stehen die beiden Spalten untereinander.
+Fortschritt in den nativen D&D5e-Größen. Auf schmalen Fenstern stehen die beiden Spalten untereinander.
 
 Ein Klick auf eine eigene Einrichtung öffnet die native Aktivitätsauswahl. Ein
 ungebauter Raum bietet dort „Bauen“ an; danach zeigt der Dialog Größe, Kosten und
@@ -89,6 +91,10 @@ fehlende Besitzer reparieren. Sichtbare Ausnahmen für Level, Plätze oder weite
 Voraussetzungen benötigen jeweils eine Begründung. Sie bleiben nach Neuladen
 bestehen und umgehen weder Besitzerrechte noch normale Zahlungen. Persönliche
 Level und Platzlimits sieht nur der jeweilige Besitzer beziehungsweise der GM.
+Hinweise, Notizen, Ergebnisse und begründete Ausnahmen stehen im Tooltip des
+kleinen Symbols unten rechts an der Kachel. Warnungen verwenden ein Warnsymbol.
+Die Zugübersicht ist über das Infosymbol unten rechts am Fenster erreichbar.
+Die Symbole lassen sich auch mit Tab fokussieren.
 
 ## Befehle, Mietlinge und Ergebnisse
 

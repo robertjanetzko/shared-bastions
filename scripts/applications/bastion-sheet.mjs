@@ -168,7 +168,13 @@ export function createBastionSheet() {
         menuEntry("addWorldFacility", "AddWorldFacility", "plus", {}, () => this.canWrite),
         menuEntry("addFacility", "AddSpecialFacility", "building-columns", { facilityType: "special" }, () => game.user.isGM && this.canWrite)
       ], { jQuery: false, fixed: true });
+      this.element.addEventListener("click", event => {
+        if (!event.target.closest(".bastion-facility-info")) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }, { capture: true });
       this.element.addEventListener("keydown", event => {
+        if (event.target.closest(".bastion-facility-info")) return;
         const target = event.target.closest(".facility[data-facility-id], .bastion-section-heading[data-owner-uuid]");
         if (!target || !this.mayManage(target)) return;
         if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
@@ -282,7 +288,7 @@ export function createBastionSheet() {
         const own = owned.has(item.flags[MODULE_ID]?.owner);
         const rules = own ? await this.api.checkRules(item) : null;
         const progressIssue = item.flags[MODULE_ID]?.progressIssue;
-        return { ...data, ...this.api.presentation.tile(item),
+        const tile = { ...data, ...this.api.presentation.tile(item),
           ownerUuid: item.flags[MODULE_ID]?.owner, missingOwner: !roster.find(entry => entry.uuid === item.flags[MODULE_ID]?.owner)?.available,
           canInteract: this.canWrite && own,
           isBusy: this.busy.has(item.id) || this.busy.has(`choice:${item.id}`),
@@ -292,6 +298,21 @@ export function createBastionSheet() {
           notes: item.flags[MODULE_ID]?.notes,
           exceptions: (item.flags[MODULE_ID]?.exceptions ?? []).map(entry => ({ ...entry,
             label: { level: "SHARED_BASTION.ExceptionLevel", limit: "SHARED_BASTION.ExceptionLimit", requirements: "SHARED_BASTION.ExceptionRequirements" }[entry.scope] })) };
+        const localize = key => game.i18n.localize(key);
+        tile.hasWarning = Boolean(tile.disabled || tile.missingOwner || tile.progressIssueLabel || tile.ruleIssueLabel || tile.exceptions.length);
+        tile.infoText = [
+          tile.disabled ? tile.stateLabel : null,
+          tile.missingOwner ? localize("SHARED_BASTION.MissingReference") : null,
+          tile.progressIssueLabel ? localize(tile.progressIssueLabel) : null,
+          tile.ruleIssueLabel ? localize(tile.ruleIssueLabel) : null,
+          ...tile.exceptions.map(entry => `${localize(entry.label)}: ${entry.reason}`),
+          tile.notes ? `${localize("SHARED_BASTION.Notes")}: ${tile.notes}` : null,
+          tile.lastResult ? `${localize("SHARED_BASTION.LastResult")}: ${tile.lastResult.label}\n${[
+            tile.lastResult.gold ? `${tile.lastResult.gold} ${localize("SHARED_BASTION.GoldPieces")}` : null,
+            ...(tile.lastResult.items ?? []).map(entry => `${entry.quantity} × ${entry.name}`)
+          ].filter(Boolean).join(" · ")}` : null
+        ].filter(Boolean).join("\n");
+        return tile;
       }));
       const unknown = facilities.filter(item => !roster.some(entry => entry.uuid === item.ownerUuid));
       if (unknown.length) sections.push({ uuid: "unknown", name: game.i18n.localize("SHARED_BASTION.UnknownOwner"), available: false });
@@ -308,9 +329,16 @@ export function createBastionSheet() {
           canAdd: section.canAdd
         }));
       }
-      return { ...context, name: this.actor.name, sections, canWrite: this.canWrite,
+      const calendar = this.api.calendarState();
+      const localize = key => game.i18n.localize(`SHARED_BASTION.${key}`);
+      const turnInfo = [localize("BastionTurns"),
+        calendar.enabled ? localize("CalendarMode") : `${localize("ManualMode")} · ${calendar.duration} ${localize("Days")}`,
+        state.turnCount ? `${localize("TurnCount")}: ${state.turnCount}` : null,
+        state.lastTurn ? `${state.lastTurn.completed} ${localize("CompletedOrders")} · ${state.lastTurn.blocked} ${localize("BlockedOrders")}` : null
+      ].filter(Boolean).join("\n");
+      return { ...context, name: this.actor.name, sections, canWrite: this.canWrite, turnInfo,
         hasGM: Boolean(electGM(game.users)), hasConnection: game.socket.connected,
-        calendar: this.api.calendarState(), turnCount: state.turnCount ?? 0, lastTurn: state.lastTurn,
+        calendar, turnCount: state.turnCount ?? 0, lastTurn: state.lastTurn,
         emptyParticipants: !roster.length };
     }
   };

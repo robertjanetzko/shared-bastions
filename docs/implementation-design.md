@@ -12,8 +12,10 @@ zurückgestellt.
 
 ## Native Oberfläche ab 2026-10-20
 
-Der Bogen enthält ausschließlich Besitzerabschnitte mit Spieler- und Charaktername,
-Basiseinrichtungen links und besonderen Einrichtungen rechts. Eigene Charaktere
+Der Bogen enthält ausschließlich Besitzerabschnitte mit Portrait, Spielername und
+kleiner Stufenangabe darunter (nur für Besitzer/GM). Der Charaktername bleibt im
+Tooltip des Abschnittskopfs; ohne Spielerzuordnung dient er als Ersatzname.
+Basiseinrichtungen stehen links und besondere Einrichtungen rechts. Eigene Charaktere
 stehen zuerst, weitere nach dem alphabetisch ersten Nicht-GM mit Besitzerrecht,
 danach Charaktername. Beim GM gibt es keine Bevorzugung. Fehlende Zuordnungen
 stehen zuletzt. Benutzerreferenzen sind öffentliche Teilnehmermetadaten; private
@@ -33,7 +35,12 @@ Nur die an den nativen Charakterbogen gebundenen Facility-Styles werden lokal
 adaptiert (D&D5e 6.0.6, `less/v2/character.less`, MIT). Die Bastion übernimmt keine
 Charakterbogenklasse und verändert keine Systemdateien. Rechtsklick/Umschalt+F10,
 Pfeiltasten und Enter bedienen Einrichtungskontextmenüs; GM-Verwaltung und Züge
-liegen im Fenstermenü. Beide Themen und einspaltige schmale Fenster werden geprüft.
+liegen im Fenstermenü. Kacheltitel (13), Größenangaben (10), Personalplätze (26),
+Auftragsicons (22), Innenabstände (8) und freie Plätze (50 Pixel Mindesthöhe)
+folgen den nativen Maßen. Hinweise, Notizen, Ergebnisse und Ausnahmen erscheinen
+als kleines Symbol unten rechts mit Text-Tooltip; Warnungen erhalten ein
+Warnsymbol. Die Zugübersicht liegt ebenfalls als Infosymbol unten rechts am
+Fenster. Tooltips unterstützen Tastaturfokus und behandeln Eingaben als Text. Beide Themen und einspaltige schmale Fenster werden geprüft.
 
 ## Begriffe (Terms)
 
