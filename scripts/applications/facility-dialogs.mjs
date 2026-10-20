@@ -10,8 +10,9 @@ const wait = async (title, content, callback) => DialogV2.wait({ window: { title
   rejectClose: false, buttons: [{ action: "save", label: "SHARED_BASTION.Save", default: true,
     callback: (event, button, dialog) => callback(dialog.element) }] });
 
-export async function addFacility(actor, owners, api) {
-  const catalog = await api.catalog();
+export async function addFacility(actor, owners, api, { worldOnly = false } = {}) {
+  const catalog = (await api.catalog()).filter(entry => !worldOnly || entry.uuid.startsWith("Item."));
+  if (!catalog.length) { ui.notifications.info("SHARED_BASTION.NoTemplates", { localize: true }); return; }
   const input = await wait("SHARED_BASTION.AddFacility", await render("facility-add", { owners, catalog, isGM: game.user.isGM }), element => ({
     owner: element.querySelector('[name="owner"]').value,
     template: element.querySelector('[name="template"]').value,
@@ -69,4 +70,13 @@ export async function setFacilityRules(item, api, { actor } = {}) {
     if (actor) await api.request("setTemplateRules", actor.uuid, { ...input, template: item.uuid });
     else await api.request("setFacilityRules", item.uuid, input);
   }
+}
+
+/** GM exceptions are explicit reasons, never inferred from a browser selection. */
+export async function addExceptions(uuid) {
+  const item = await fromUuid(uuid);
+  return DialogV2.wait({ classes: ["dnd5e2"], window: { title: "SHARED_BASTION.AddFacility" },
+    content: await render("facility-exceptions", { name: item.name }), rejectClose: false,
+    buttons: [{ action: "add", label: "SHARED_BASTION.AddFacility", default: true,
+      callback: (event, button, dialog) => exceptions(dialog.element) }] });
 }

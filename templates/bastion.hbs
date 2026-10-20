@@ -1,66 +1,66 @@
 <section class="bastion-shell">
-  <header class="bastion-heading">
-    <i class="fa-solid fa-chess-rook" aria-hidden="true"></i>
-    <div><span class="bastion-eyebrow">{{localize "SHARED_BASTION.Title"}}</span><h1>{{name}}</h1></div>
-    {{#if isGM}}<button type="button" data-action="configureBastion" {{#unless canWrite}}disabled{{/unless}}><i class="fa-solid fa-users-gear" aria-hidden="true"></i> {{localize "SHARED_BASTION.Configure"}}</button>{{/if}}
-  </header>
-  {{#unless hasConnection}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.ConnectionRequired"}}</p>
-  {{else}}{{#unless hasGM}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.NoGM"}}</p>
-  {{else}}{{#unless canWrite}}<p class="bastion-notice" role="status">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/unless}}{{/unless}}
-  <nav class="bastion-tabs" aria-label="{{localize 'SHARED_BASTION.Views'}}">
-    <button type="button" data-action="changeView" data-view="owners" aria-pressed="{{ownersView}}" class="{{#if ownersView}}active{{/if}}">{{localize "SHARED_BASTION.ByOwner"}}</button>
-    <button type="button" data-action="changeView" data-view="overview" aria-pressed="{{overviewView}}" class="{{#if overviewView}}active{{/if}}">{{localize "SHARED_BASTION.Overview"}}</button>
-  </nav>
-  <div class="bastion-toolbar">
-    <label>{{localize "SHARED_BASTION.Filter"}} <select name="ownerFilter">{{#each filters}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
-    <span class="hint">{{participantCount}} {{localize "SHARED_BASTION.Participants"}} · {{facilityCount}} {{localize "SHARED_BASTION.Facilities"}}</span>
-    <button type="button" data-action="addFacility" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "SHARED_BASTION.AddFacility"}}</button>
-    {{#if isGM}}<button type="button" data-action="configureTemplates" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TemplateRules"}}</button>{{/if}}
-    {{#if isGM}}<button type="button" data-action="transferFacilities" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.TransferTitle"}}</button>{{/if}}
-  </div>
-  <div class="bastion-turnbar">
-    <div><span class="hint">{{#if calendar.enabled}}{{localize "SHARED_BASTION.CalendarMode"}}{{else}}{{localize "SHARED_BASTION.ManualMode"}} · {{calendar.duration}} {{localize "SHARED_BASTION.Days"}}{{/if}}</span>
-    {{#if turnCount}}<span class="bastion-turn-count">{{localize "SHARED_BASTION.TurnCount"}}: {{turnCount}}</span>{{/if}}
-    {{#if lastTurn}}<span class="hint">{{lastTurn.completed}} {{localize "SHARED_BASTION.CompletedOrders"}} · {{lastTurn.blocked}} {{localize "SHARED_BASTION.BlockedOrders"}}</span>{{/if}}</div>
-    {{#if isGM}}<button type="button" data-action="advanceTurn" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.AdvanceTurn"}}</button>{{#if hasProgressIssues}}{{#if calendar.enabled}}<button type="button" data-action="retryCalendar" {{#unless canWrite}}disabled{{/unless}}>{{localize "SHARED_BASTION.RetryProgress"}}</button>{{/if}}{{/if}}{{/if}}
-  </div>
+  <header class="bastion-heading"><h1>{{name}}</h1></header>
   <div class="bastion-body">
-    {{#if emptyParticipants}}<p class="bastion-notice">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
+    {{#unless hasConnection}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.ConnectionRequired"}}</p>
+    {{else}}{{#unless hasGM}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.NoGM"}}</p>
+    {{else}}{{#unless canWrite}}<p class="bastion-notice notification warning" role="status">{{localize "SHARED_BASTION.Errors.UnverifiedWriteRuntime"}}</p>{{/unless}}{{/unless}}{{/unless}}
+    <section class="card bastion-turn-info">
+      <header class="header"><h3>{{localize "SHARED_BASTION.BastionTurns"}}</h3></header>
+      <div class="card-content">
+        <span>{{#if calendar.enabled}}{{localize "SHARED_BASTION.CalendarMode"}}{{else}}{{localize "SHARED_BASTION.ManualMode"}} · {{calendar.duration}} {{localize "SHARED_BASTION.Days"}}{{/if}}</span>
+        {{#if turnCount}}<span>{{localize "SHARED_BASTION.TurnCount"}}: {{turnCount}}</span>{{/if}}
+        {{#if lastTurn}}<span>{{lastTurn.completed}} {{localize "SHARED_BASTION.CompletedOrders"}} · {{lastTurn.blocked}} {{localize "SHARED_BASTION.BlockedOrders"}}</span>{{/if}}
+      </div>
+    </section>
+    {{#if emptyParticipants}}<p class="notification warning">{{localize "SHARED_BASTION.EmptyParticipants"}}</p>{{/if}}
     {{#each sections}}
     <section class="bastion-owner-section" data-owner-uuid="{{uuid}}">
-      <header class="bastion-section-heading">{{#if img}}<img src="{{img}}" alt="">{{/if}}<h2>{{name}}</h2>{{#if uuid}}{{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}{{/if}}</header>
-      {{#if summary}}<p class="bastion-owner-summary hint">{{localize "SHARED_BASTION.CharacterLevel"}} {{summary.level}} · {{summary.special.count}} / {{summary.special.limit}} {{localize "SHARED_BASTION.SpecialFacilities"}} · {{summary.basic.count}} {{localize "SHARED_BASTION.BasicFacilities"}} ({{localize "SHARED_BASTION.FreeBasicAllowance"}}: {{summary.basic.free}})</p>{{/if}}
+      <header class="bastion-section-heading" data-owner-uuid="{{uuid}}" {{#if canManage}}tabindex="0" aria-label="{{name}} · {{localize 'SHARED_BASTION.ContextMenuHint'}}"{{/if}}>
+        {{#if img}}<img src="{{img}}" alt="">{{/if}}
+        <div>{{#if playerName}}<span class="roboto-upper bastion-player-name">{{playerName}}</span>{{/if}}<h2>{{name}}</h2></div>
+        {{#unless available}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/unless}}
+      </header>
+      {{#if summary}}<p class="bastion-owner-summary">{{localize "SHARED_BASTION.CharacterLevel"}} {{summary.level}}</p>{{/if}}
+      <div class="bastion-facility-columns">
       {{#each groups}}
-      <section class="bastion-group" data-type="{{type}}">
-        <h3>{{localize label}} <span class="bastion-count">{{facilities.length}}</span></h3>
+      <section class="facilities {{type}}" data-type="{{type}}">
+        <h3 class="icon"><i class="fa-solid {{icon}}" inert></i><span class="roboto-upper">{{localize label}}</span>{{#if counter}}<span class="counter">{{counter}}</span>{{/if}}</h3>
+        <ul class="unlist">
         {{#each facilities}}
-        <article class="bastion-facility" data-facility-id="{{id}}">
-          <img class="bastion-facility-image" src="{{img}}" alt="">
-          <div class="bastion-facility-main">
-            <button type="button" class="bastion-item-name" data-action="viewFacility">{{name}}</button>
-            <div class="bastion-meta"><span>{{owner}}</span><span>{{typeLabel}}</span><span>{{sizeLabel}}</span></div>
-            {{#if missingOwner}}<span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}
-            {{#if progressIssue}}<p class="bastion-warning">{{localize progressIssueLabel}}</p>{{/if}}
-            <div class="bastion-operation"><span class="bastion-state">{{stateLabel}}</span><span>{{orderLabel}}</span></div>
-            {{#if progress}}<div class="bastion-progress"><progress value="{{progress.value}}" max="{{progress.max}}" aria-label="{{localize 'SHARED_BASTION.Progress'}}"></progress><span>{{progress.value}} / {{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>{{/if}}
-            {{#if notes}}<p class="bastion-note">{{notes}}</p>{{/if}}
-            {{#if exceptions.length}}<ul class="bastion-exceptions">{{#each exceptions}}<li>{{localize label}}: {{reason}}</li>{{/each}}</ul>{{/if}}
-            {{#if lastResult}}<div class="bastion-result"><strong>{{localize "SHARED_BASTION.LastResult"}}: {{lastResult.label}}</strong>{{#if lastResult.gold}} {{lastResult.gold}} {{localize "SHARED_BASTION.GoldPieces"}}{{/if}}{{#each lastResult.items}} · {{quantity}} × {{name}}{{/each}}</div>{{/if}}
-            {{#each staff}}{{#if maximum}}<div class="bastion-staff"><span>{{localize label}}: {{count}} / {{maximum}}</span>{{#each people}}<span>{{name}}{{#if missing}} <span class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</span>{{/if}}</span>{{/each}}</div>{{/if}}{{/each}}
+        <li class="facility bastion-facility {{#if building}}building{{/if}} {{#if disabled}}damaged{{/if}}"
+            data-item-id="{{id}}" data-facility-id="{{id}}" {{#if canInspect}}tabindex="0"{{/if}}
+            {{#if canInteract}}data-action="useFacility" role="button" {{#if isBusy}}aria-disabled="true" aria-busy="true"{{/if}} aria-label="{{name}} · {{localize 'SHARED_BASTION.Activities'}}"{{/if}}>
+          <img class="underlay" src="{{img}}" alt="" inert>
+          {{#if progress}}<div class="facility-progress meter progress" role="meter" aria-label="{{localize 'SHARED_BASTION.Progress'}}"
+              aria-valuemin="0" aria-valuenow="{{progress.value}}" aria-valuemax="{{progress.max}}" style="--bar-percentage: {{progress.percent}}%">
+            <div class="label"><span class="value">{{progress.value}}</span><span class="separator"> / </span><span class="max">{{progress.max}} {{localize "SHARED_BASTION.Days"}}</span></div>
+          </div>{{/if}}
+          <div class="facility-header">
+            <div class="name-stacked"><span class="title">{{name}}</span><span class="subtitle">{{sizeLabel}}</span></div>
+            {{#if orderIcon}}<div class="slots"><div class="slot order-slot" data-tooltip="{{orderLabel}}"><dnd5e-icon src="{{orderIcon}}"></dnd5e-icon></div></div>{{else}}{{#if isSpecial}}<div class="slots"><div class="slot order-slot empty" data-tooltip="{{orderLabel}}"><dnd5e-icon src="systems/dnd5e/icons/svg/facilities/maintain.svg"></dnd5e-icon></div></div>{{/if}}{{/if}}
           </div>
-          <div class="bastion-facility-actions">
-            {{#if buildable}}<button type="button" class="bastion-build" data-action="buildFacility" title="{{localize buildReason}}" {{#unless canBuild}}disabled{{/unless}}><i class="fa-solid fa-hammer" aria-hidden="true"></i> {{localize "SHARED_BASTION.Build"}}</button>{{/if}}
-            {{#each orders}}<button type="button" data-action="issueOrder" data-order="{{value}}" {{#unless ../canOrder}}disabled{{/unless}}>{{label}}</button>{{/each}}
-            {{#each staff}}{{#if maximum}}<button type="button" data-action="setOccupants" data-role="{{role}}" {{#unless ../canManage}}disabled{{/unless}}>{{localize label}}</button>{{/if}}{{/each}}
-            {{#if canManage}}{{#if progress}}<button type="button" data-action="cancelOrder">{{localize "SHARED_BASTION.CancelOrder"}}</button>{{/if}}{{/if}}
-            {{#if canManage}}<button type="button" data-action="editFacility">{{localize "SHARED_BASTION.EditFacility"}}</button><button type="button" data-action="removeFacility">{{localize "SHARED_BASTION.RemoveFacility"}}</button>{{/if}}
-            {{#if @root.isGM}}<div class="bastion-admin-actions"><button type="button" data-action="reassignFacility" title="{{localize 'SHARED_BASTION.ReassignFacility'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-user-pen" aria-hidden="true"></i></button><button type="button" data-action="setFacilityRules" title="{{localize 'SHARED_BASTION.FacilityRules'}}" {{#unless canAdmin}}disabled{{/unless}}><i class="fa-solid fa-sliders" aria-hidden="true"></i></button></div>{{/if}}
-          </div>
-        </article>
-        {{else}}<p class="bastion-group-empty hint">{{localize "SHARED_BASTION.EmptyGroup"}}</p>{{/each}}
+          {{#if building}}<span class="bastion-tile-state">{{stateLabel}}</span>{{/if}}
+          {{#if occupants.length}}<div class="slots facility-occupants">
+            {{#each occupants}}<div class="slot occupant-slot {{role}} {{#unless occupied}}empty{{/unless}}" data-tooltip="{{localize label}}{{#if name}}: {{name}}{{/if}}">{{#if img}}<img src="{{img}}" alt="{{name}}">{{else}}<i class="fa-solid {{#if occupied}}fa-user-check{{else}}fa-user{{/if}}" inert></i>{{/if}}</div>{{/each}}
+          </div>{{/if}}
+          {{#if disabled}}<p class="bastion-warning">{{stateLabel}}</p>{{/if}}
+          {{#if missingOwner}}<p class="bastion-warning">{{localize "SHARED_BASTION.MissingReference"}}</p>{{/if}}
+          {{#if progressIssueLabel}}<p class="bastion-warning" role="status">{{localize progressIssueLabel}}</p>{{/if}}
+          {{#if ruleIssueLabel}}<p class="bastion-warning">{{localize ruleIssueLabel}}</p>{{/if}}
+          {{#if exceptions.length}}<aside class="card bastion-exceptions"><header class="header"><h4>{{localize "SHARED_BASTION.Exceptions"}}</h4></header><ul class="card-content unlist">{{#each exceptions}}<li>{{localize label}}: {{reason}}</li>{{/each}}</ul></aside>{{/if}}
+          {{#if notes}}<aside class="card"><header class="header"><h4>{{localize "SHARED_BASTION.Notes"}}</h4></header><p class="card-content bastion-note">{{notes}}</p></aside>{{/if}}
+          {{#if lastResult}}<aside class="card bastion-result"><header class="header"><h4>{{localize "SHARED_BASTION.LastResult"}}: {{lastResult.label}}</h4></header><div class="card-content">{{#if lastResult.gold}}{{lastResult.gold}} {{localize "SHARED_BASTION.GoldPieces"}}{{/if}}{{#each lastResult.items}} {{quantity}} × {{name}}{{/each}}</div></aside>{{/if}}
+        </li>
+        {{/each}}
+        {{#each slots}}
+        <li><button type="button" class="facility empty roboto-upper" data-action="addFacility" data-facility-type="{{../type}}" {{#unless ../canAdd}}disabled{{/unless}}>{{localize label}}</button></li>
+        {{/each}}
+        {{#unless facilities.length}}{{#unless slots.length}}<li class="empty bastion-group-empty">{{localize "SHARED_BASTION.EmptyGroup"}}</li>{{/unless}}{{/unless}}
+        </ul>
       </section>
       {{/each}}
+      </div>
     </section>
-    {{else}}<div class="bastion-empty"><i class="fa-solid fa-chess-rook" aria-hidden="true"></i><p>{{localize "SHARED_BASTION.NoMatches"}}</p></div>{{/each}}
+    {{/each}}
   </div>
 </section>

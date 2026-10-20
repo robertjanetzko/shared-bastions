@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-20 · Status: Stufe 1 (T01–T10) abgenommen, Version 0.1.0.
+Stand: 2026-10-20 · Status: Stufe 1 (T01–T10) abgenommen; native Bogen-Neugestaltung N01 abgenommen, Version 0.1.0.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -14,7 +14,9 @@ Alle Teilnehmer öffnen denselben Bastion-Bogen. Die Einrichtungen werden tatsä
 auf der gemeinsamen Bastion gespeichert und gehören jeweils einem Charakter.
 Spieler verwalten ihre Einrichtungen selbst; ihre Charakterbögen bleiben privat.
 
-Aktueller Arbeitsauftrag: **Stufe 1 bis einschließlich T10 fertigstellen**.
+Aktueller Arbeitsauftrag: **N01 – den abgenommenen Stufe-1-Bogen im nativen
+D&D5e-Design neu gestalten und regressionsprüfen**. T01–T10 bleiben funktional
+abgeschlossen.
 Stufe 2 bleibt geplanter späterer Ausbau und gehört nicht zur aktuellen Abnahme.
 
 Die Umsetzung erfolgt in zwei unabhängig abnehmbaren Stufen:
@@ -33,7 +35,7 @@ Die Umsetzung erfolgt in zwei unabhängig abnehmbaren Stufen:
 | Regelzuordnung | Level, Voraussetzungen, Einrichtungslimits, Kosten und Belohnungen gelten je Besitzercharakter. |
 | Rechte | Teilnehmer lesen alle Einrichtungen und verwalten ausschließlich die eigenen; GM hat Vollzugriff. |
 | Privatsphäre | Keine zusätzlichen Leserechte auf fremde Charakterbögen. |
-| Bogenaufbau | Abschnitte je Besitzercharakter; gemeinsame Gesamtübersicht als zusätzlicher Reiter. |
+| Bogenaufbau | Ausschließlich Besitzerabschnitte mit nativen Einrichtungskacheln in zwei Spalten; eigene Charaktere zuerst, andere nach Spielernamen. |
 | Einstieg | Ausschließlich Akteurverzeichnis; bestehende Charakterbögen bleiben unverändert. |
 | Spielerbearbeitung | Eigene Namen, Notizen, Personal und Aufträge; Bau und Erweiterung über vorgesehene Aktionen. Regeldefinitionen bearbeitet der GM. |
 | Regelprüfung | Für Spieler sperren; der GM darf begründete Ausnahmen für Voraussetzungen und Limits je Einrichtung setzen. |
@@ -63,12 +65,17 @@ Währung dürfen nicht versehentlich die individuellen Bastionregeln bestimmen.
   Charakterbögen sind nicht deren dauerhafter Speicher.
 - **B04:** Jede Einrichtung hat genau einen Besitzercharakter. Dessen Foundry-
   Eigentümer dürfen sie verwalten; eine GM-Neuzuordnung bleibt möglich.
-- **B05:** Die Übersicht zeigt Name, Besitzercharakter, Typ, Größe, Bauzustand,
-  Auftrag und Fortschritt. Hauptansicht sind Abschnitte je Besitzercharakter;
-  ein zusätzlicher Reiter bietet die Gesamtübersicht. Einfache und besondere
-  Einrichtungen sind innerhalb der Ansichten getrennt.
-- **B06:** Filter für alle Einrichtungen, eigene Einrichtungen und einzelne
-  Besitzercharaktere sind verfügbar.
+- **B05:** Der Bogen zeigt Abschnitte je Besitzercharakter mit Spieler- und
+  Charaktername; Basiseinrichtungen links, besondere rechts. Kacheln verwenden das
+  Facility-Bild, Größe, Auftragsicon, Personalplätze und Fortschritt. Eigene
+  Charaktere stehen zuerst, andere alphabetisch nach Spielernamen und Charaktername.
+  Beim GM gilt die alphabetische Reihenfolge ohne Bevorzugung. Schmale Fenster
+  stellen die Spalten untereinander dar.
+- **B06:** Der Bogen hat keine Gesamtübersicht und keine Besitzerfilter. Freie
+  Plätze öffnen den nativen, nach Einrichtungskategorie gefilterten Kompendiumbrowser.
+  Eigene Kacheln öffnen die native Aktivitätsauswahl; Verwaltung erfolgt über
+  Kontextmenüs, GM-Verwaltung und Bastionzüge über das Fenstermenü. Fremde
+  Einrichtungen sind für Spieler ausschließlich sichtbar.
 - **B07:** Spieler können zulässige neue Einrichtungen hinzufügen, eigene Namen
   und Notizen bearbeiten, eigene Einrichtungen entfernen sowie eigene Aufträge,
   Personal und Verteidiger verwalten. Bau und Größe ändern sich über die vorgesehenen
@@ -141,8 +148,9 @@ Währung dürfen nicht versehentlich die individuellen Bastionregeln bestimmen.
 
 ## 4. Technischer Aufbau
 
-- **Bastion-Bogen:** ApplicationV2-Oberfläche mit Besitzerabschnitten,
-  zusätzlichem Gesamtübersichtsreiter, Filtern, Status und Besitzeraktionen.
+- **Bastion-Bogen:** ApplicationV2 mit nativem D&D5e-Anwendungsmixin, sortierten
+  Besitzerabschnitten, Facility-Kacheln, Kompendiumbrowser, Aktivitätsauswahl und
+  Kontextmenüs. Bestehende Befehle führen weiterhin sämtliche Schreibaktionen aus.
   Keine Integration in vorhandene Charakterbögen und kein Bereit-Workflow.
 - **Persistenz:** Nativer Charakter-Aktor als zentraler Träger; Modul-Flags für
   Markierung, Teilnehmer-UUIDs, Besitzercharakter je Facility, begründete
@@ -309,6 +317,25 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
   - Abnahme: Alle Kriterien für Stufe 1 aus Abschnitt 6 sind erfüllt;
     Stufe 1 ist ohne Szenengenerator verwendbar.
 
+### Nacharbeit Stufe 1 – Nativer Bogen (N01)
+
+- [x] **N01 – Bogen nach D&D5e-Referenz gestalten und abnehmen**
+  - Umfang: Besitzerabschnitte ohne Reiter/Filter, eigene Charaktere zuerst;
+    native Kacheldarstellung mit freien Plätzen und Facility-Bild, gefilterter
+    Kompendiumbrowser und Aktivitätsauswahl; Kontext- und Fenstermenüs statt
+    sichtbarer Bearbeitungsbuttons. Native Informationskarten und DE/EN verwenden.
+  - Regeln: Private Werte nur für Besitzer/GM; zentraler Speicher, GM-Befehlspfad,
+    individuelle Kosten/Plätze und Wiederholungsschutz bleiben erhalten.
+  - Abnahme: Unit-Tests für Sortierung/Plätze; native Mehrclient-Prüfung für
+    Browserauswahl/Abbruch, fertige/unbebaute Einrichtungen, Aktivitäten, Menüs,
+    Fremdzugriff und Rechteentzug; visuelle Prüfung beider Themen und schmaler
+    Fenster; vollständige Stufe-1-Regression und Paketprüfung.
+  - Stand: Abgenommen mit 30 Unit-Tests und allen zwölf nativen Integrationstests
+    (6,4 Minuten) auf 14.369 / 6.0.6. Themen, schmale Fenster und Dialoge visuell
+    geprüft; 205 DE/EN-Schlüssel, native Schema-/Vorlagenprüfung und Archiv mit
+    45 Laufzeitdateien geprüft. [N01-Abnahme](docs/native-sheet-acceptance.md).
+    T01–T10 und ihre Abnahme dokumentieren den ursprünglichen Stand.
+
 ### Stufe 2 – Begehbare Bastion (zurückgestellt)
 
 - [ ] **T11 – Grundriss und Änderungsvorschau berechnen**
@@ -356,7 +383,10 @@ keine erfolgreiche Prüfung in einer Foundry-Welt.
 - GM und zwei getrennte Spielerclients; private Charaktere mit unterschiedlichen
   Leveln, unterschiedlichen Ressourcen und jeweils eigenen Einrichtungen.
 - Beide Spieler sehen alle Einrichtungen, verwalten aber nur die eigenen.
-- Besitzerabschnitte und Gesamtübersichtsreiter zeigen dieselben aktuellen Daten.
+- Sortierte Besitzerabschnitte zeigen dieselben aktuellen zentralen Einrichtungen
+  bei allen Teilnehmern; eigene Charaktere stehen beim jeweiligen Spieler zuerst.
+  Kacheln, freie Plätze, native Auswahl-/Aktivitätsdialoge und Kontextmenüs folgen
+  dem D&D5e-Design. Gesamtübersichtsreiter und Besitzerfilter entfallen.
 - Das Öffnen erfolgt aus dem Akteurverzeichnis; Charakterbögen bleiben unverändert.
 - Fremde Schreibaktionen einschließlich direkter ungültiger Modulbefehle scheitern.
 - Spieler können keine Regeldefinitionen frei ändern. Fehlende Voraussetzungen
@@ -454,3 +484,5 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-19 | T08 abgenommen: GM-Zug ohne Bereitschaftssperre, native globale Züge und automatische Tageswechsel über einen Besitzerpfad koordiniert. Zeitmarken je Einrichtung, sichtbare Einzelfehler mit Wiederaufnahme und summierte Besitzereinnahmen. | 23 Unit-Tests und neun native Integrationstests bestanden (3,4 min), T08 separat zusätzlich bestanden (30,1 s); Syntax-/Sprachprüfung, native Offline-API-Prüfung und Paketierung erfolgreich. Zwei Verkäufe à 48 GP ergeben 1.096 Besitzergold; anderer Besitzer 9.000 und Träger 7.000 unverändert. Kalenderwechsel, wiederholte Hooks, Uhr-Rücksprung, fehlende Ergebnisvorlage/Reparatur, Neuladen und zweiter GM erzeugen insgesamt ein Herstellungs-Item. Unbeteiligte Charakterbastion bleibt nativ. Bogen visuell geprüft; Handbuch und Entwicklungsdaten fehlen im Archiv. |
 | 2026-10-20 | T09 abgenommen: zweiphasiger Transfer mit Vorschau, privaten Sicherungen, inaktiven Kopien und tatsächlichem Quellen-/Kopienvergleich vor Entfernung. Übernahmedatensätze gelten nur für die konkrete Bastion-Erstellung; Wiederaufnahme und Verwerfen sind möglich. | 27 Unit-Tests; native T09- und T07-Prüfung zusammen bestanden (57,8 s). Drei Einrichtungen mit Fortschritt 4/10, 5/20 und 2/7 behalten bezahlte Aufträge, Bauzustand, Mietlinge und interne UUID-Links. Private Besitzer-Inventarvorlage schließt nach Transfer korrekt ab. Änderungen seit Vorschau, Erstellungs- und Löschveto hinterlassen keine Teilübernahme; GM-Neuladen und Wiederholung erzeugen keine aktiven Duplikate. Weiterer Raum über den GM-Dialog übernommen; Guthaben 1.000/9.000 unverändert. Transferdialog visuell geprüft; Syntax-/Sprachprüfung erfolgreich. |
 | 2026-10-20 | T10 und Stufe 1 abgeschlossen: Version 0.1.0, geprüfter Foundry-Build im Manifest, deutscher Bogen mit Handbuchbegriffen für alle nativen Einrichtungstypen, Installationsanleitung und Abnahmezuordnung. | Alle elf nativen Integrationstests auf Version 0.1.0 bestanden (4,5 min), 27 Unit-Tests bestanden. T10 mit aktivem Canvas: Verzeichniseinstieg, privater Standardbogen, direkte Actor-/Item-Schreibversuche abgewiesen, normaler verknüpfter Token bewegt und Rechteentzug ohne JavaScript-Fehler. Native Manifest-/Vorlagenprüfung, 36 ES-Module und 196 DE/EN-Schlüssel geprüft. ZIP mit 42 bytegleichen Quelldateien und korrekter Installationsstruktur auditiert; kein Handbuch, keine Zugangsdaten oder Entwicklungsdaten. Deutscher Bogen und Status visuell geprüft. T11–T14 bleiben zurückgestellt. |
+| 2026-10-20 | N01 abgenommen: native D&D5e-Kacheln mit Facility-Bildern, sortierte Besitzerabschnitte ohne Reiter/Filter, native Kategorie-/Stufenauswahl und Aktivitätsdialoge, Kontext-/Fenstermenüs und Informationskarten. Öffentliche Benutzerreferenzen ersetzen keine privaten Charakterwerte; GM-Befehlspfad unverändert. | 30 Unit-Tests und alle zwölf nativen Integrationstests bestanden (6,4 min), einschließlich Browserabbruch, fertiger/unbebauter Anlage, GM-Ausnahme, direktem Fremdzugriff sowie offenen Dialogen bei Rechteentzug/GM-Abmeldung. Dark/Light, schmale Fenster und Aktivitätsicons visuell geprüft. Native Schema-/Vorlagenprüfung, 39 ES-Module, 205 DE/EN-Schlüssel und Paket mit 45 Quelldateien geprüft. Kalender-Fixtures anhand ihrer Namen statt nativer Rückgabereihenfolge zugeordnet. Originaldaten der eingerichteten Testbastion durch temporäres Docker-Datenvolume vom Prüflauf getrennt. |
+| 2026-10-20 | Die ungenutzten Konten „SB T10 Alice“ und „SB T10 Bob“ nach ausdrücklicher Nutzerfreigabe gelöscht. | Identität und fehlende Akteurzuordnung vorab geprüft. Alle Akteurdaten und übrigen Benutzer vor/nach der Löschung identisch; „Manor House“ mit fünf Akteuren, zwei zentralen Einrichtungen und zwei Teilnehmern bestätigt. |

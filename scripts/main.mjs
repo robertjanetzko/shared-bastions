@@ -1,15 +1,17 @@
+import { BastionUIAdapter } from "./adapters/bastion-ui.mjs";
 import { MODULE_ID } from "./constants.mjs";
 import { Dnd5eAdapter } from "./adapters/dnd5e.mjs";
 import { BastionStatus } from "./applications/status.mjs";
 import { CommandBus } from "./services/commands.mjs";
 import { BastionRepository } from "./services/bastion.mjs";
-import { BastionSheet } from "./applications/bastion-sheet.mjs";
+import { createBastionSheet } from "./applications/bastion-sheet.mjs";
 import { installDirectory } from "./directory.mjs";
 import { FacilityService } from "./services/facilities.mjs";
 import { TurnService } from "./services/turns.mjs";
 import { TransferService } from "./services/transfer.mjs";
 
 Hooks.once("init", () => {
+  const BastionSheet = createBastionSheet();
   game.settings.register(MODULE_ID, "bastionUuid", { scope: "world", config: false, type: String, default: "" });
   game.settings.register(MODULE_ID, "commandStoreVersion", { scope: "world", config: false, type: Number, default: 0 });
   game.settings.register(MODULE_ID, "templateRules", { scope: "world", config: false, type: Object, default: {} });
@@ -28,6 +30,7 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   const adapter = new Dnd5eAdapter({ game, config: CONFIG, resolveUuid: uuid => fromUuid(uuid) });
+  const uiAdapter = new BastionUIAdapter(adapter);
   const repository = new BastionRepository(adapter);
   const bus = new CommandBus(adapter, repository);
   repository.bus = bus;
@@ -43,7 +46,9 @@ Hooks.once("ready", () => {
   game.modules.get(MODULE_ID).api = Object.freeze({
     diagnostics: () => adapter.diagnostics(),
     repository,
-    presentation: Object.freeze({ facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions(), rules: item => adapter.rulesView(item),
+    chooseActivity: item => uiAdapter.chooseActivity(item),
+    selectFacility: (summary, type) => uiAdapter.selectFacility(summary, type),
+    presentation: Object.freeze({ tile: item => uiAdapter.tile(item), facility: item => adapter.facilityView(item), buildOptions: () => adapter.buildOptions(), rules: item => adapter.rulesView(item),
       orders: item => adapter.operations.orders(item), staff: item => adapter.operations.staff(item) }),
     catalog: () => facilities.catalog(),
     templateRules: uuid => foundry.utils.deepClone(game.settings.get(MODULE_ID, "templateRules")[uuid] ?? null),

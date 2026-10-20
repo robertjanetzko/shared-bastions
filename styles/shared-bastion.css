@@ -1,90 +1,69 @@
-/* Use the installed system's theme tokens and fonts. No copied artwork or fonts. */
+/* Native D&D5e 6.0.6 components supply themes, type, cards, meters and slots.
+ * Facility structure adapts less/v2/character.less (MIT), reviewed at
+ * 28f35531021bb07609c79c4cbbb9b7e7c2744bf9. Those rules are scoped to the
+ * native character sheet; keep this bridge local instead of impersonating one.
+ */
+/* License for the adapted D&D5e facility declarations:
+ * Copyright 2021 Andrew Clayton
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 .shared-bastion-command-message { display: none !important; }
-.shared-bastion .window-content {
-  background: var(--dnd5e-background-parchment, var(--dnd5e-color-parchment, #f1ebe8));
-  color: var(--color-text-primary, #191813);
-  padding: 1.5rem;
-}
-.shared-bastion .bastion-heading {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-bottom: 1px solid var(--dnd5e-color-gold, #9f9275);
-  padding-bottom: .75rem;
-}
-.shared-bastion .bastion-heading h1 {
-  font-family: var(--dnd5e-font-modesto, "Palatino Linotype", serif);
-  font-size: 2.5rem;
-  border: 0;
-  margin: 0;
-}
-.shared-bastion .bastion-heading > i {
-  font-size: 2rem;
-  color: var(--dnd5e-color-gold, #9f9275);
-}
-.shared-bastion .bastion-notice {
-  border-inline-start: 3px solid var(--dnd5e-color-gold, #9f9275);
-  padding: .75rem;
-  background: var(--dnd5e-background-5, rgb(0 0 0 / 5%));
-}
-.shared-bastion dl { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-.shared-bastion dd { margin: 0; overflow-wrap: anywhere; }
-.shared-bastion .hint { color: var(--color-text-secondary, #666); }
 .bastion-sheet .window-content { padding: 0; }
-.shared-bastion .bastion-shell { display: flex; flex-direction: column; height: 100%; }
-.shared-bastion .bastion-shell > .bastion-heading { padding: 1.5rem; }
-.shared-bastion .bastion-heading > div { flex: 1; }
-.shared-bastion .bastion-eyebrow { color: var(--dnd5e-color-gold); font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; }
-.shared-bastion .bastion-body { overflow: auto; padding: 1.5rem; }
-.shared-bastion h2 { font-family: var(--dnd5e-font-roboto-slab, serif); font-size: 1.15rem; border-bottom: 1px solid var(--dnd5e-color-gold); padding-bottom: .5rem; }
-.shared-bastion .bastion-roster { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-.shared-bastion .bastion-owner { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border: 1px solid var(--dnd5e-color-gold); border-radius: 4px; }
-.shared-bastion .bastion-owner img { width: 32px; height: 32px; object-fit: cover; border: none; border-radius: 3px; }
-.shared-bastion .bastion-facility { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem; border-bottom: 1px solid var(--dnd5e-color-gold); }
-.shared-bastion .bastion-empty { padding: 3rem 1rem; text-align: center; color: var(--color-text-secondary); }
-.shared-bastion .bastion-empty i { font-size: 3rem; color: var(--dnd5e-color-gold); }
-.shared-bastion .bastion-count { color: var(--dnd5e-color-gold); font-size: .85rem; }
-.shared-bastion .bastion-warning { color: var(--dnd5e-color-note-warn, #9b6903); }
-.bastion-participant-choice { display: flex; align-items: center; gap: .5rem; padding: .35rem; }
-.shared-bastion .bastion-tabs { display: flex; gap: .75rem; padding: .75rem 1.5rem 0; border-bottom: 1px solid var(--dnd5e-color-gold); }
-.shared-bastion .bastion-tabs button { border: 0; border-radius: 0; background: transparent; padding: .5rem .75rem; border-bottom: 3px solid transparent; box-shadow: none; }
-.shared-bastion .bastion-tabs button.active { border-bottom-color: var(--dnd5e-color-gold); color: var(--dnd5e-color-gold); }
-.shared-bastion .bastion-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: 1rem 1.5rem; }
-.shared-bastion .bastion-toolbar label { display: flex; align-items: center; gap: .75rem; }
-.shared-bastion .bastion-toolbar select { width: auto; min-width: 180px; }
-.shared-bastion .bastion-body { min-height: 0; flex: 1; padding-top: 0; }
-.shared-bastion .bastion-owner-section { margin-bottom: 1.75rem; }
-.shared-bastion .bastion-section-heading { display: flex; align-items: center; gap: .75rem; border-bottom: 1px solid var(--dnd5e-color-gold); margin-bottom: .75rem; padding: .5rem 0; }
-.shared-bastion .bastion-section-heading img { width: 38px; height: 38px; object-fit: cover; border: 1px solid var(--dnd5e-color-gold); border-radius: 4px; }
-.shared-bastion .bastion-section-heading h2 { border: 0; margin: 0; flex: 1; }
-.shared-bastion .bastion-group h3 { display: flex; gap: .5rem; align-items: center; margin: 1rem 0 .25rem; border: 0; font-size: .85rem; font-weight: bold; text-transform: uppercase; letter-spacing: .04em; }
-.shared-bastion .bastion-group-empty { padding: .5rem .75rem; margin: 0; font-style: italic; }
-.shared-bastion .bastion-facility { align-items: flex-start; justify-content: initial; padding: .85rem .5rem; border-color: var(--color-border-light-primary); }
-.shared-bastion .bastion-facility-image { width: 42px; height: 42px; object-fit: cover; border: 1px solid var(--dnd5e-color-gold); border-radius: 4px; }
-.shared-bastion .bastion-facility-main { flex: 1; min-width: 0; }
-.shared-bastion button.bastion-item-name { display: block; width: auto; max-width: 100%; height: auto; padding: 0; margin: 0 0 .25rem; background: none; border: 0; box-shadow: none; color: inherit; font: bold 1rem var(--dnd5e-font-roboto-slab, serif); text-align: start; white-space: normal; overflow-wrap: anywhere; }
-.shared-bastion .bastion-meta, .shared-bastion .bastion-operation { display: flex; flex-wrap: wrap; gap: .35rem .75rem; font-size: .8rem; color: var(--color-text-secondary); }
-.shared-bastion .bastion-operation { margin-top: .4rem; }
-.shared-bastion .bastion-state { color: var(--dnd5e-color-gold); }
-.shared-bastion .bastion-progress { display: flex; align-items: center; gap: .75rem; margin-top: .4rem; font-size: .8rem; }
-.shared-bastion .bastion-progress progress { flex: 1; height: 7px; accent-color: var(--dnd5e-color-gold); }
-.shared-bastion .bastion-progress span { white-space: nowrap; }
-.shared-bastion .bastion-build { flex: 0 0 auto; width: auto; }
-.bastion-preview { display: grid; grid-template-columns: auto 1fr; gap: .5rem 1rem; }
+.bastion-sheet .bastion-shell { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.bastion-sheet .bastion-heading { padding: 16px 24px 8px; text-align: center; }
+.bastion-sheet .bastion-heading h1 { margin: 0; border: 0; font-size: var(--font-size-32); }
+.bastion-sheet .bastion-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 24px 24px; container-type: inline-size; }
+.bastion-sheet .card-content { padding: 10px; }
+.bastion-sheet .bastion-turn-info { margin-bottom: 24px; }
+.bastion-sheet .bastion-turn-info .card-content { display: flex; gap: 8px 24px; flex-wrap: wrap; }
+.bastion-sheet .bastion-owner-section + .bastion-owner-section { margin-top: 32px; }
+.bastion-sheet .bastion-section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.bastion-sheet .bastion-section-heading img { width: 44px; height: 44px; object-fit: cover; border: var(--dnd5e-border-gold); border-radius: 4px; }
+.bastion-sheet .bastion-section-heading h2 { margin: 0; border: 0; font-family: var(--dnd5e-font-roboto-slab); font-size: var(--font-size-20); }
+.bastion-sheet .bastion-player-name, .bastion-sheet .bastion-owner-summary { color: var(--color-text-secondary); font-size: var(--font-size-12); }
+.bastion-sheet .bastion-owner-summary { margin: 0 0 12px; }
+.bastion-sheet .bastion-facility-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.bastion-sheet .facilities > h3 { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--color-text-secondary); padding-bottom: 6px; font-size: var(--font-size-16); }
+.bastion-sheet .facilities .counter { margin-inline-start: auto; white-space: nowrap; }
+.bastion-sheet .facilities > ul { display: flex; flex-direction: column; gap: 8px; }
+.bastion-sheet .facility { --bar-height: 20px; position: relative; display: flex; flex-direction: column; gap: 4px; overflow: hidden; border-radius: 5px; }
+.bastion-sheet .facility > * { position: relative; }
+.bastion-sheet .facility.empty { width: 100%; min-height: 64px; height: auto; justify-content: center; padding: 12px; border: 2px dashed var(--dnd5e-color-gold); background: transparent; color: var(--dnd5e-color-gold); opacity: .6; }
+.bastion-sheet .facility.empty:not(:disabled):hover { opacity: 1; }
+.bastion-sheet .facility.empty:disabled { cursor: default; }
+.bastion-sheet .facility.building, .bastion-sheet .facility.damaged { filter: grayscale(1); }
+.bastion-sheet .facility:not(.empty) { border: var(--dnd5e-border-gold); background: var(--dnd5e-background-card); min-height: 68px; }
+.bastion-sheet .facility > .underlay { position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: 5px; object-fit: cover; mask-image: linear-gradient(135deg, transparent 35%, black); opacity: .5; pointer-events: none; }
+.bastion-sheet .facility:has(> .facility-progress) > .underlay { top: var(--bar-height); height: calc(100% - var(--bar-height)); border-radius: 0 0 5px 5px; }
+.bastion-sheet .facility-header { display: flex; align-items: center; gap: 8px; padding: 12px 12px 0; }
+.bastion-sheet .facility .name-stacked { flex: 1; min-width: 0; }
+.bastion-sheet .facility .name-stacked .title { font-size: var(--font-size-18); overflow-wrap: anywhere; }
+.bastion-sheet .facility .name-stacked .subtitle { font-size: var(--font-size-14); }
+.bastion-sheet .facility[data-action="useFacility"] { cursor: var(--cursor-pointer); }
+.bastion-sheet .facility[data-action="useFacility"]:hover .title { text-shadow: 0 0 8px var(--color-shadow-primary); }
+.bastion-sheet .facility-progress { height: var(--bar-height); border: 0; border-radius: 0; font-size: var(--font-size-12); }
+.bastion-sheet .facility-progress::before { background: linear-gradient(to right, var(--dnd5e-color-hp-1), var(--dnd5e-color-hp-2)); border-radius: 0; }
+.bastion-sheet .facility-occupants { padding-inline: 12px; }
+.bastion-sheet .facility .occupant-slot { --slot-size: 30px; color: var(--color-text-secondary); }
+.bastion-sheet .facility .occupant-slot.empty { opacity: .5; }
+.bastion-sheet .facility .order-slot { --icon-size: 24px; --icon-fill: var(--dnd5e-color-gold); padding: 4px; box-shadow: inset 0 0 3px var(--dnd5e-shadow-45); }
+.bastion-sheet .facility .order-slot.empty dnd5e-icon { opacity: .15; }
+.bastion-sheet .facility > :last-child { margin-bottom: 0; padding-bottom: 12px; }
+.bastion-sheet .bastion-tile-state { padding-inline: 12px; color: var(--color-text-secondary); font-style: italic; }
+.bastion-sheet .facility > .card { margin: 4px 12px 0; font-size: var(--font-size-12); }
+.bastion-sheet .bastion-warning { color: var(--dnd5e-color-note-warn); }
+.bastion-sheet .facility > .bastion-warning { margin: 4px 12px; }
+.bastion-sheet [tabindex="0"]:focus-visible { outline: 2px solid var(--dnd5e-color-gold); outline-offset: 2px; }
+.bastion-note { white-space: pre-wrap; }
+.bastion-preview { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
 .bastion-preview dd { margin: 0; }
-.bastion-dialog-fields { display: grid; gap: .75rem; }
-.bastion-dialog-fields label { display: grid; gap: .25rem; }
-.bastion-dialog-fields fieldset { display: grid; gap: .5rem; }
-.shared-bastion .bastion-facility-actions { display: flex; flex-direction: column; align-items: stretch; gap: .3rem; max-width: 140px; }
-.shared-bastion .bastion-facility-actions button { width: auto; margin: 0; font-size: .75rem; }
-.shared-bastion .bastion-admin-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
-.shared-bastion .bastion-admin-actions button { flex: 1; min-width: 40px; }
-.shared-bastion .bastion-exceptions { margin: .5rem 0 0; padding-inline-start: 1rem; color: var(--dnd5e-color-gold); font-size: .8rem; }
-.shared-bastion .bastion-note { font-size: .8rem; white-space: pre-wrap; margin: .4rem 0; }
-.shared-bastion .bastion-result { margin: .5rem 0; font-size: .8rem; color: var(--dnd5e-color-gold); }
-.shared-bastion .bastion-staff { display: flex; flex-wrap: wrap; gap: .25rem .6rem; margin-top: .4rem; font-size: .8rem; }
-.shared-bastion .bastion-staff > span:first-child { color: var(--color-text-secondary); }
-.shared-bastion .bastion-turnbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 0 1.5rem 1rem; padding: .65rem .75rem; border: 1px solid var(--dnd5e-color-gold); border-radius: 4px; font-size: .8rem; }
-.shared-bastion .bastion-turnbar > div { flex: 1; display: flex; flex-direction: column; gap: .25rem; }
-.shared-bastion .bastion-turnbar button { width: auto; }
-.shared-bastion .bastion-turn-count { color: var(--dnd5e-color-gold); }
+.bastion-dialog-fields { display: grid; gap: 12px; }
+.bastion-dialog-fields label { display: grid; gap: 4px; }
+.bastion-dialog-fields fieldset { display: grid; gap: 8px; }
+.bastion-participant-choice { display: flex; align-items: center; gap: 8px; padding: 6px; }
+@container (max-width: 600px) { .bastion-sheet .bastion-facility-columns { grid-template-columns: minmax(0, 1fr); } }

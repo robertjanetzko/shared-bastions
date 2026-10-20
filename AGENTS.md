@@ -7,8 +7,9 @@ Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-20.
 
 `shared-bastion` erweitert Foundry VTT V14 mit D&D5e 6.0.x um einen gemeinsamen
 Bastion-Bogen und anschließend eine automatisch erzeugte begehbare Szene.
-Der aktuelle ausdrückliche Arbeitsauftrag endet nach Stufe 1 (T01–T10);
-der Szenengenerator T11–T14 ist zurückgestellt.
+Der aktuelle ausdrückliche Arbeitsauftrag umfasst die abgeschlossene Stufe 1
+(T01–T10) und deren native Bogen-Neugestaltung N01; der Szenengenerator T11–T14
+ist zurückgestellt.
 
 Die Anforderungen, nummerierten Tasks, Abhängigkeiten und Abnahmekriterien stehen
 in [PLAN.md](PLAN.md). Das abgeschlossene Umsetzungsinterview ist im
@@ -32,8 +33,10 @@ vor diesem Dokument und dem Plan; daraus folgende Änderungen hier nachführen.
   Bastion erhält nur benötigte Bastiondaten und Referenzen.
 - Spieler lesen die gesamte Bastion und verwalten die eigenen Einrichtungen.
   Der GM darf alles bearbeiten und Besitzer neu zuordnen.
-- Die Hauptansicht enthält Abschnitte je Besitzercharakter, dazu einen zusätzlichen
-  Reiter für die Gesamtübersicht. Einstieg ausschließlich über das Akteurverzeichnis;
+- Der Bogen enthält ausschließlich Besitzerabschnitte mit nativen Facility-Kacheln:
+  Basiseinrichtungen links, besondere rechts; eigene Charaktere zuerst, andere nach
+  Spielernamen und Charaktername. Keine Gesamtübersicht und keine Besitzerfilter.
+  Einstieg ausschließlich über das Akteurverzeichnis;
   vorhandene Charakterbögen bleiben unverändert.
 - Spieler ändern eigene Namen, Notizen, Personal und Aufträge. Sie dürfen neue
   zulässige Einrichtungen hinzufügen; Bau und Größe ändern sich über die vorgesehenen
@@ -113,7 +116,7 @@ für die isolierte Foundry-Testinstallation. `npm ci` installiert Playwright als
 Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
 
 - `npm run check`: Manifest, ES-Modulsyntax, lokale Imports und DE/EN-Sprachschlüssel.
-- `npm test`: 27 Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
+- `npm test`: 30 Unit-Tests für Besitzerauflösung, Rechte, GM-Auswahl,
   konkrete Befehlseingaben und individuellen Konfigurationskontext.
 - `npm run build`: installierbares Modularchiv unter `dist/`, ohne Foundry-ZIP und Secrets.
 - `npm run check:foundry -- /pfad/zur/entpackten/Foundry-Installation`: native
@@ -125,14 +128,16 @@ Entwicklungsabhängigkeit; das ausgelieferte Modul benötigt keine npm-Pakete.
   bestehen mit einem GM und zwei Spielern. T03 prüft den Verzeichniseinstieg,
   persistente Spezialbögen, Teilnehmerrechte und fehlende Besitzer.
   T04 prüft zwei GMs/zwei Spieler, Parallelität, Hook-Abbruch und Ausfall vor
-  beziehungsweise nach Speicherung. T05 prüft Ansichten, Besitzerfilter, UI-Bau,
+  beziehungsweise nach Speicherung. T05 prüft sortierte Kacheln, Kontextmenüs, UI-Bau,
   Dialogabbruch und Live-Aktualisierung mit zwei Spielern. T06 prüft Vorlagen und Regeln, Besitzerwechsel/-löschung
   sowie weltlokale GM-Regeldefinitionen. T07 prüft native Befehlsdialoge, Herstellung/Ernte, Handel, Erweiterung,
   Mietlinge/Verteidiger und Ergebnisabrechnung. T08 prüft Kalender/Züge und GM-Wechsel;
   T09 den zweiphasigen Transfer. T10 prüft zusätzlich einen aktiven Canvas-Client,
   normalen verknüpften Token, direkten nativen Schreibschutz, deutschen Bogen und
-  Rechteentzug ohne `cycleTokens`-Fehler. Alle elf nativen Integrationstests sind
-  auf Version 0.1.0 bestanden (4,5 Minuten).
+  Rechteentzug ohne `cycleTokens`-Fehler. Die ursprünglichen elf nativen Integrationstests sind
+  auf Version 0.1.0 bestanden (4,5 Minuten). N01 ergänzt eine zwölfte native
+  UI-Prüfung für Kompendiumauswahl, Bauzustand, GM-Ausnahme, Themen und offene Dialoge.
+  Alle zwölf Prüfungen sind im abschließenden Gesamtlauf bestanden (6,4 Minuten).
   Szenengenerator-Tests gehören zum späteren Ausbau.
 - `npm run dev:init`: lokale Secret-Datei mit zufälligem Test-Adminschlüssel anlegen.
 - `npm run dev:up` / `npm run dev:status` / `npm run dev:down`: isolierte
@@ -171,14 +176,14 @@ zurückgestellten Ausbau.
   Teilnehmerkonfiguration und Rechteentzug funktionieren nach Neuladen und mit
   getrenntem Spielerclient. Der Träger enthält nur Namen/Bilder/UUIDs und
   Verfügbarkeitsstatus der Teilnehmer, keine Charakterregelwerte.
-- Die Übersicht zeigt Besitzerabschnitte und eine Gesamtansicht mit
-  Alle/Eigene/Besitzerfiltern. Anzeige und Beschreibung verwenden ausschließlich
-  öffentliche Facility-Daten; fremde Charakterregelwerte werden nicht aufgelöst.
-  Persönliche Level/Plätze werden nur nach Besitzerprüfung lokal dem jeweiligen
-  Spieler und dem GM angezeigt, niemals im öffentlichen Roster gespeichert.
-  T05 ist mit zwei Spielern abgenommen: Filter, Dialogabbruch, Kosten,
-  Live-Fortschritt und GM-Abmeldung/Rückkehr ohne Neuladen.
-  Ein Bauauftrag im eigenen Abschnitt läuft über denselben geprüften Befehlspfad.
+- Der Bogen verwendet native D&D5e-Anwendungskomponenten, Bildkacheln und
+  Informationskarten. Freie Plätze öffnen den nativen Kompendiumbrowser, eigene
+  Einrichtungen die native Aktivitätsauswahl. Verwaltung liegt in Kontextmenüs,
+  GM-Verwaltung und Bastionzüge im Fenstermenü. Fremde Einrichtungen sind für
+  Spieler nicht bedienbar. Öffentliche Teilnehmermetadaten enthalten zusätzlich
+  Benutzerreferenzen für die Sortierung; private Charakterregelwerte bleiben lokal
+  beim Besitzer beziehungsweise GM. Neugestaltung N01 ist nativ abgenommen.
+  Der frühere Listen-/Filterbogen ist durch die Nutzerentscheidung ersetzt.
 - Der Bogen wird nur dem markierten Träger über `core.sheetClass` zugeordnet;
   er ist kein wählbarer Standard für normale Charaktere. Spieler bleiben auf
   dem Träger OBSERVER; eigene Charakterbögen und deren Rechte bleiben unverändert.
@@ -275,15 +280,29 @@ zurückgestellten Ausbau.
   eigene Inventarreferenz zusätzlich erlaubt; neue Spieleraufträge benötigen
   weiterhin geschützte Welt-/Kompendiumvorlagen, fremde Inventare sind gesperrt.
 - T10 und Stufe 1 sind abgenommen. Version 0.1.0 ist die Stufe-1-Auslieferung;
-  `dist/shared-bastion-0.1.0.zip` enthält 42 geprüfte Quelldateien. 27 Unit-Tests,
+  das ursprüngliche Archiv enthielt 42 geprüfte Quelldateien. Damals 27 Unit-Tests,
   elf native Integrationstests, Schema-/Vorlagenprüfung und Paket-Audit bestanden.
-  Deutsch und Englisch umfassen 196 Schlüssel; die Namen der 35 nativen
+  Die ursprüngliche Abnahme umfasste 196 DE/EN-Schlüssel; die Namen der 35 nativen
   Einrichtungstypen folgen im Deutschen der lokalen Handbuch-Begriffsvorlage.
   Abnahme und Zuordnung aller Kriterien
-  stehen in [Stufe-1-Abnahme](docs/stage1-acceptance.md). Der aktive Auftrag endet
-  bei T10; T11–T14 bleiben späterer Ausbau und werden nicht als umgesetzt geführt.
+  stehen in [Stufe-1-Abnahme](docs/stage1-acceptance.md). N01 gestaltet den
+  abgenommenen Bogen neu; T11–T14 bleiben späterer Ausbau und werden nicht als umgesetzt geführt.
   Bau-/Fortschrittspfad, Absenderzuordnung, Parallelität und Transaktionsabbrüche
   sind bestätigt. Details stehen in `PLAN.md`.
+- N01 ist abgenommen: native Kacheln, Kompendiumbrowser und Aktivitätsauswahl,
+  Kontext-/Fenstermenüs, sortierte Besitzerabschnitte und Informationskarten.
+  Die frühere Gesamtübersicht und Besitzerfilter entfallen. Alle 30 Unit-Tests und
+  zwölf nativen Integrationstests bestanden; beide Themen, schmale Fenster und
+  Dialoge visuell geprüft. Das aktualisierte Archiv umfasst 45 geprüfte Dateien,
+  DE/EN jeweils 205 Schlüssel. [N01-Abnahme](docs/native-sheet-acceptance.md).
+  Für den Prüflauf wurde das lokale Datenvolume kopiert, damit die vorhandene
+  Bastion nicht durch Integrationsfixtures ersetzt wird. Native Dokumentergebnisse
+  in Tests über ihre Identität zuordnen, nicht über ihre Rückgabereihenfolge.
+  Die ursprüngliche Testinstallation mit „Manor House“ (fünf Akteure, zwei zentrale
+  Einrichtungen, zwei Teilnehmer) ist wieder gestartet; das temporäre Testvolume
+  ist entfernt. Die ungenutzten Testkonten „SB T10 Alice“ und „SB T10 Bob“
+  sind nach ausdrücklicher Nutzerfreigabe gelöscht. Alle Akteurdaten und die
+  übrigen Benutzer sind beim Vorher-/Nachher-Vergleich unverändert.
 - Der Foundry-MCP-Anschluss ist weiterhin nicht erreichbar. Der Browser-Skill
   meldet keine verfügbaren Browser. Eine separate lokale Chromium-Testumgebung
   prüft deshalb die isolierte Welt über Playwright; T01 ist damit bestanden.

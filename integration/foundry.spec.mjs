@@ -27,6 +27,21 @@ async function join(context, name, observe = () => {}, { withCanvas = false, lan
   return page;
 }
 
+async function headerAction(page, label) {
+  await page.locator('.bastion-sheet .header-control[data-action="toggleControls"]').click();
+  await page.locator('#context-menu .context-item').filter({ hasText: label }).click();
+  await expect(page.locator('#context-menu')).toHaveCount(0);
+}
+async function facilityMenu(page, id, label) {
+  await page.locator(`.bastion-sheet [data-facility-id="${id}"]`).click({ button: "right" });
+  await page.locator('#context-menu .context-item').filter({ hasText: label }).click();
+  await expect(page.locator('#context-menu')).toHaveCount(0);
+}
+async function activity(page, id, order) {
+  await page.locator(`.bastion-sheet [data-facility-id="${id}"]`).click();
+  await page.locator('.activity-choice [data-action="choose"]').filter({ hasText: new RegExp(order, "i") }).click();
+}
+
 test("T10: German sheet, native observer permissions and roster removal work with an active canvas",async({browser})=>{
   const gmContext=await browser.newContext();const aliceContext=await browser.newContext();const bobContext=await browser.newContext();
   const gm=await join(gmContext,"Gamemaster");let fixtures;
@@ -56,10 +71,10 @@ test("T10: German sheet, native observer permissions and roster removal work wit
     const bob=await join(bobContext,fixtures.bobName);
     await alice.evaluate(async()=>{await ui.sidebar.changeTab("actors","primary");ui.sidebar.expand();await ui.actors.render({force:true});});
     await alice.locator(`[data-entry-id="${fixtures.bastion}"] .entry-name`).click();
-    await expect(alice.locator('.bastion-sheet')).toContainText("Nach Besitzer");
-    await expect(alice.locator('.bastion-sheet')).toContainText("Gesamtübersicht");
+    await expect(alice.locator('.bastion-sheet [data-action="changeView"]')).toHaveCount(0);
+    await expect(alice.locator('.bastion-owner-section').first()).toContainText("Alriks privater Charakter");
     await expect(alice.locator('.bastion-sheet')).toContainText("Beengt");
-    await expect(alice.locator('.bastion-meta').first()).toContainText("Schlafzimmer");
+    await expect(alice.locator('.facility .title').first()).toContainText("Alriks Schlafzimmer");
     await alice.locator('.bastion-sheet .bastion-shell').screenshot({path:"test-results/t10-de-canvas.png"});
     expect(await alice.evaluate(data=>({observer:game.actors.get(data.bastion).testUserPermission(game.user,"OBSERVER"),
       owner:game.actors.get(data.bastion).testUserPermission(game.user,"OWNER"),foreign:game.actors.get(data.other).testUserPermission(game.user,"OBSERVER"),
@@ -134,7 +149,10 @@ test("T08: native turns and calendar days settle the shared bastion once across 
       await bastion.update({"flags.shared-bastion.integrationFixture":true,"system.currency.gp":7000});
       await bastion.createEmbeddedDocuments("Item",[{name:"Carrier class",type:"class",system:{levels:20,identifier:"fighter"}}]);
       const room=(name,ownerUuid)=>({name,type:"facility",flags:{"shared-bastion":{owner:ownerUuid,revision:0,calendarTime:game.time.worldTime}},system:{type:{value:"basic",subtype:"bedroom"},building:{built:true,size:"cramped"},size:"cramped"}});
-      const rooms=await bastion.createEmbeddedDocuments("Item",[room("Building A",owner.uuid),room("Building B",other.uuid),room("Sale A1",owner.uuid),room("Sale A2",owner.uuid),room("Missing result",owner.uuid)]);
+      const createdRooms=await bastion.createEmbeddedDocuments("Item",[room("Building A",owner.uuid),room("Building B",other.uuid),room("Sale A1",owner.uuid),room("Sale A2",owner.uuid),room("Missing result",owner.uuid)]);
+      // Bind test roles by identity, not the order returned by native document creation.
+      const rooms=["Building A","Building B","Sale A1","Sale A2","Missing result"].map(name=>createdRooms.find(item=>item.name===name));
+      if(rooms.some(item=>!item)) throw new Error("Missing named calendar fixture");
       await bastion.updateEmbeddedDocuments("Item",rooms.map((f,index)=>({_id:f.id,"system.progress":{value:0,max:index===4?100: index<2?100:7,order:index<2?"build":index===4?"craft":"trade",paid:true},
         ...(index===2||index===3?{"system.trade.stock":{max:1000,value:100},"system.trade.profit":20,"system.trade.pending":{operation:"sell",value:40,creatures:[],stocked:false}}:{})})));
       const [native]=await unrelated.createEmbeddedDocuments("Item",[room("Native room",owner.uuid)]);
@@ -151,7 +169,7 @@ test("T08: native turns and calendar days settle the shared bastion once across 
       rewards:game.actors.get(data.owner).items.filter(i=>i.flags["shared-bastion"]?.resultFrom).length};},fixtures);
     expect(await player.evaluate(async()=>{try{await game.modules.get("shared-bastion").api.advanceTurn();return "allowed";}catch(e){return e.code;}})).toBe("GMOnly");
     await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
-    await gm.locator('.bastion-turnbar [data-action="advanceTurn"]').click();
+    await headerAction(gm, "Advance bastion turn");
     await gm.locator('dialog [data-action="yes"]').click();
     await expect.poll(state).toMatchObject({progress:[7,7,0,0,7],native:0,gold:1096,count:1,other:9000,carrier:7000});
     await gm.evaluate(()=>game.dnd5e.bastion.advanceAllBastions());
@@ -174,10 +192,20 @@ test("T08: native turns and calendar days settle the shared bastion once across 
     await expect.poll(state).toMatchObject({progress:[18,17,0,0,17],issue:"OperationSourceUnavailable",gold:1096});
     await gm.evaluate(()=>game.dnd5e.bastion.advanceAllBastions());
     expect(await state()).toMatchObject({progress:[18,17,0,0,17],count:3,gold:1096});
-    await expect(gm.locator('.bastion-turnbar [data-action="retryCalendar"]')).toBeVisible();
+    expect(await gm.evaluate(id => game.actors.get(id).sheet._getHeaderControls().some(control => control.action === "retryCalendar"), fixtures.bastion)).toBe(true);
     await gm.locator('.bastion-sheet .bastion-shell').screenshot({path:"test-results/t08-calendar.png"});
     await gm.evaluate(data=>Item.create(data,{keepId:true}),fixtures.recipe);
-    await expect.poll(state,{timeout:15000}).toMatchObject({issue:null,rewards:1,progress:[18,17,0,0,0]});
+    try {
+      await expect.poll(state,{timeout:15000}).toMatchObject({issue:null,rewards:1,progress:[18,17,0,0,0]});
+    } catch (error) {
+      console.log("T08 recovery diagnostics", JSON.stringify(await gm.evaluate(data => ({
+        canonical: game.modules.get("shared-bastion").api.repository.find()?.id,
+        facility: game.actors.get(data.bastion).items.get(data.rooms[4]).toObject(),
+        inventory: game.actors.get(data.owner).items.map(item => ({ id: item.id, type: item.type, flags: item.flags })),
+        messages: game.messages.filter(message => message.type === "bastionTurn" && message.speaker.actor === data.bastion).map(message => ({ id: message.id, system: message.system.toObject() }))
+      }), fixtures)));
+      throw error;
+    }
     await gm.reload();await gm.waitForFunction(()=>game.ready===true);
     expect(await state()).toMatchObject({gold:1096,rewards:1,progress:[18,17,0,0,0]});
     second=await join(secondContext,fixtures.secondName);
@@ -394,7 +422,7 @@ test("T09: reviewed transfers keep backups, preserve progress and resume without
     await gm.reload();await gm.waitForFunction(()=>game.ready===true);
     expect((await preview()).pending.every(p=>p.ready)).toBe(true);
     await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
-    await gm.locator('[data-action="transferFacilities"]').click();
+    await headerAction(gm, "Transfer facilities");
     await expect(gm.locator('dialog [data-action="finish"]')).toBeVisible();
     await gm.locator('dialog').screenshot({path:"test-results/t09-transfer.png"});
     await gm.locator('dialog [data-action="finish"]').click();
@@ -418,7 +446,7 @@ test("T09: reviewed transfers keep backups, preserve progress and resume without
       const [room]=await game.actors.get(data.other).createEmbeddedDocuments("Item",[{name:"SB T09 Additional room",type:"facility",system:{type:{value:"basic",subtype:"bedroom"},size:"cramped"}}]);
       await room.update({"system.building.built":false,"system.progress":{value:1,max:20,order:"build",paid:true}});
     },fixtures);
-    await gm.locator('[data-action="transferFacilities"]').click();
+    await headerAction(gm, "Transfer facilities");
     await expect(gm.locator('dialog [name="source-0"]')).toBeChecked();
     await gm.locator('dialog [data-action="stage"]').click();
     await expect.poll(counts).toMatchObject({sources:[0,0],pending:0,active:4,gold:[1000,9000]});
@@ -461,7 +489,7 @@ test("T03: directory creation, private participants and the dedicated sheet pers
     await gm.evaluate(id=>game.actors.get(id).setFlag("shared-bastion","integrationFixture",true),result.id);
     expect(result.sheet).toBe("BastionSheet");
     expect(result.flag.participants).toEqual([fixtures.ownerUuid]);
-    expect(Object.keys(result.flag.roster[0]).sort()).toEqual(["uuid","name","img","available"].sort());
+    expect(Object.keys(result.flag.roster[0]).sort()).toEqual(["uuid","name","img","available","users"].sort());
     expect(result.ownership[fixtures.user]).toBe(2);
     expect(await gm.evaluate(id=>({sheet:game.actors.get(id).sheet.constructor.name,ownership:game.actors.get(id).ownership}),fixtures.owner))
       .toEqual({sheet:fixtures.originalSheet,ownership:fixtures.originalOwnership});
@@ -642,7 +670,7 @@ test("T04: two GMs, competing owners, durable failover and no-GM read mode", asy
   }
 });
 
-test("T05: owner sections, overview filters and live player actions share the same data", async ({browser})=>{
+test("T05: sorted native tiles, activity dialogs and live player actions share the same data", async ({browser})=>{
   const gmContext=await browser.newContext();
   const aliceContext=await browser.newContext();
   const bobContext=await browser.newContext();
@@ -689,32 +717,28 @@ test("T05: owner sections, overview filters and live player actions share the sa
     expect(await ids(alice)).toEqual(await ids(bob));
     await expect(alice.locator(".bastion-owner-section")).toHaveCount(2);
     await expect(alice.locator('.bastion-owner-section [data-type="basic"]')).toHaveCount(2);
-    await expect(row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
-    await expect(row(alice,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
-    await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
-    await expect(row(bob,fixtures.aliceBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(row(alice,fixtures.aliceBuild)).toHaveAttribute("data-action", "useFacility");
+    await expect(row(alice,fixtures.bobBuild)).not.toHaveAttribute("data-action");
+    await expect(row(bob,fixtures.bobBuild)).toHaveAttribute("data-action", "useFacility");
+    await expect(row(bob,fixtures.aliceBuild)).not.toHaveAttribute("data-action");
     await expect(alice.locator(".bastion-sheet")).not.toContainText("1257");
     await expect.poll(()=>bob.evaluate(id=>game.actors.get(id).testUserPermission(game.user,"OBSERVER"),fixtures.owners[0].id)).toBe(false);
-    // Both tabs and every filter operate on the same central native items.
-    await alice.locator('[data-action="changeView"][data-view="overview"]').click();
-    await expect(alice.locator(".bastion-owner-section")).toHaveCount(1);
-    expect(await ids(alice)).toEqual([...fixtures.aliceIds,...fixtures.bobIds].sort());
-    await alice.locator('[name="ownerFilter"]').selectOption("mine");
-    expect(await ids(alice)).toEqual(fixtures.aliceIds);
-    await alice.locator('[name="ownerFilter"]').selectOption(fixtures.owners[1].uuid);
-    expect(await ids(alice)).toEqual(fixtures.bobIds);
-    await alice.locator('[data-action="changeView"][data-view="owners"]').click();
-    expect(await ids(alice)).toEqual(fixtures.bobIds);
-    await alice.locator('[name="ownerFilter"]').selectOption("all");
-    // The read-only description opens without routing through a private character sheet.
-    await row(alice,fixtures.aliceBuild).locator('[data-action="viewFacility"]').click();
+    // Each viewer gets their own section first, with no alternate view or per-tile buttons.
+    await expect(alice.locator(".bastion-owner-section").first()).toHaveAttribute("data-owner-uuid", fixtures.owners[0].uuid);
+    await expect(bob.locator(".bastion-owner-section").first()).toHaveAttribute("data-owner-uuid", fixtures.owners[1].uuid);
+    await expect(alice.locator('.bastion-sheet [name="ownerFilter"], .bastion-sheet [data-action="changeView"], .facility button')).toHaveCount(0);
+    // Keyboard opens the native context menu and can activate its first entry.
+    await row(alice,fixtures.aliceBuild).focus();
+    await row(alice,fixtures.aliceBuild).press("Shift+F10");
+    await expect(alice.locator('#context-menu [role="menuitem"]').first()).toBeFocused();
+    await alice.keyboard.press("Enter");
     await expect(alice.locator("dialog")).toContainText("A shared room.");
     await alice.locator('dialog .window-header [data-action="close"]').click();
     // Canceling a build dialog is inert, then a confirmed build updates both clients.
-    await row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]').click();
+    await activity(alice, fixtures.aliceBuild, "Build");
     await alice.locator('dialog .window-header [data-action="close"]').click();
     expect(await gm.evaluate(id=>game.actors.get(id).system.currency.gp,fixtures.owners[0].id)).toBe(1257);
-    await row(alice,fixtures.aliceBuild).locator('[data-action="buildFacility"]').click();
+    await activity(alice, fixtures.aliceBuild, "Build");
     await alice.locator('dialog [name="size"]').selectOption("cramped");
     await alice.locator('dialog [data-action="build"]').click();
     await expect(row(alice,fixtures.aliceBuild)).toContainText("0 / 20 days");
@@ -723,22 +747,25 @@ test("T05: owner sections, overview filters and live player actions share the sa
     await gm.evaluate(({bastion,id})=>game.actors.get(bastion).items.get(id).update({name:"Wayfarers' New Bedroom"}),{bastion:fixtures.bastion,id:fixtures.aliceBuild});
     await expect(row(alice,fixtures.aliceBuild)).toContainText("Wayfarers' New Bedroom");
     await expect(row(bob,fixtures.aliceBuild)).toContainText("Wayfarers' New Bedroom");
-    await bob.locator('[name="ownerFilter"]').selectOption("mine");
-    expect(await ids(bob)).toEqual(fixtures.bobIds);
+    expect(await ids(bob)).toEqual([...fixtures.aliceIds,...fixtures.bobIds].sort());
     await gm.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t05-overview-gm.png"});
     await alice.locator(".bastion-sheet .bastion-shell").screenshot({path:"test-results/t05-overview-player.png"});
-    // Presence changes are reflected without reloading either player's sheet.
+    // A chooser opened before GM logout cannot submit a write afterward.
+    await row(bob,fixtures.bobBuild).click();
+    await expect(bob.locator(".activity-choice")).toBeVisible();
     await gmContext.close();
     await expect(bob.locator(".bastion-sheet .bastion-notice")).toContainText("No GM");
-    await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(row(bob,fixtures.bobBuild)).not.toHaveAttribute("data-action");
     await expect(rows(alice)).toHaveCount(8);
+    await bob.locator('.activity-choice [data-action="choose"]').click();
+    await expect(bob.locator('dialog [name="size"]')).toHaveCount(0);
     const recovery=await browser.newContext();
     try {
       gm=await join(recovery,"Gamemaster");
       await expect(bob.locator(".bastion-sheet .bastion-notice")).toHaveCount(0);
-      await expect(row(bob,fixtures.bobBuild).locator('[data-action="buildFacility"]')).toBeEnabled();
+      await expect(row(bob,fixtures.bobBuild)).toHaveAttribute("data-action", "useFacility");
       expect(errors).toEqual([]);
-      console.log("T05 passed: identical central items, private owners, tabs/filters, UI build, live update and GM return");
+      console.log("T05 passed: identical central items, private owners, native tiles/menus, UI build, live update and GM return");
       await aliceContext.close();await bobContext.close();
       await gm.evaluate(async data=>{
         await game.actors.get(data.bastion)?.delete();
@@ -795,7 +822,7 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     },{action,uuid,payload});
     const add=(page,owner,template,exceptions=[])=>attempt(page,"addFacility",`Actor.${fixtures.bastion}`,{owner,template,exceptions});
     await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
-    await gm.locator('[data-action="configureTemplates"]').click();
+    await headerAction(gm, "Template rules");
     await gm.locator('dialog [name="template"]').selectOption(fixtures.special);
     await gm.locator('dialog [data-action="save"]').click();
     await gm.locator('dialog [name="requirements"]').fill("tool:smith");
@@ -811,22 +838,26 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     expect((await add(alice,fixtures.aliceUuid,fixtures.basic,[{scope:"level",reason:"Claim"}])).code).toBe("GMOnly");
     await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
     await expect(alice.locator(".bastion-owner-summary")).toHaveCount(1);
-    await expect(alice.locator(".bastion-owner-summary")).toContainText("0 / 2");
-    await alice.locator('[data-action="addFacility"]').click();
+    await expect(alice.locator('.bastion-owner-section').first().locator('.special .counter')).toContainText("0 / 2");
+    await alice.locator(".bastion-section-heading").first().click({button:"right"});
+    await alice.locator("#context-menu .context-item").filter({hasText:"Add world template"}).click();
     await alice.locator('dialog [name="template"]').selectOption(fixtures.basic);
     await alice.locator('dialog [data-action="save"]').click();
     await expect(alice.locator('.bastion-facility')).toHaveCount(1);
     const uuid=await gm.evaluate(id=>game.actors.get(id).itemTypes.facility[0].uuid,fixtures.bastion);
     expect(await gm.evaluate(async uuid=>(await fromUuid(uuid)).system.building.built,uuid)).toBe(false);
-    await alice.locator('[data-action="editFacility"]').click();
+    await facilityMenu(alice, uuid.split(".").at(-1), "Edit");
     await alice.locator('dialog [name="name"]').fill("Our Shared Bedroom");
     await alice.locator('dialog [name="notes"]').fill("Room prepared by Alice.");
     await alice.locator('dialog [data-action="save"]').click();
-    await expect(alice.locator('.bastion-facility')).toContainText("Room prepared by Alice.");
+    await expect(alice.locator(".bastion-facility")).toContainText("Room prepared by Alice.");
+    await facilityMenu(alice, uuid.split(".").at(-1), "Facility details");
+    await expect(alice.locator("dialog")).toContainText("Room prepared by Alice.");
+    await alice.locator('dialog .window-header [data-action="close"]').click();
     const rules={level:9,order:"",hirelings:0,defenders:0,requirements:["tool:smith"],exceptions:[{scope:"level",reason:"A boon from the patron"}]};
     expect((await attempt(alice,"setFacilityRules",uuid,rules)).code).toBe("GMOnly");
     expect((await attempt(gm,"setFacilityRules",uuid,rules)).ok).toBe(true);
-    await expect(alice.locator('[data-action="buildFacility"]')).toBeDisabled();
+    await expect(alice.locator(".bastion-facility").first()).toContainText("prerequisite");
     expect((await attempt(alice,"build",uuid,{size:"cramped"})).code).toBe("PrerequisiteRequired");
     rules.exceptions.push({scope:"requirements",reason:"Patron supplies the needed expertise"});
     expect((await attempt(gm,"setFacilityRules",uuid,rules)).ok).toBe(true);
@@ -847,7 +878,7 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     await expect(alice.locator('.bastion-facility').first()).toContainText("Patron supplies the needed expertise");
     await gm.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
     const facilityId=uuid.split(".").at(-1);
-    await gm.locator(`[data-facility-id="${facilityId}"] [data-action="reassignFacility"]`).click();
+    await facilityMenu(gm, facilityId, "Change owner");
     await gm.locator('dialog [name="owner"]').selectOption(fixtures.bobUuid);
     await gm.locator('dialog [data-action="save"]').click();
     await expect.poll(()=>gm.evaluate(async uuid=>(await fromUuid(uuid)).flags["shared-bastion"].owner,uuid)).toBe(fixtures.bobUuid);
@@ -856,7 +887,7 @@ test("T06: trusted templates, individual limits, editing, scoped exceptions and 
     const totals=await gm.evaluate(data=>({alice:game.actors.get(data.alice).system.currency.gp,bob:game.actors.get(data.bob).system.currency.gp,carrier:game.actors.get(data.bastion).system.currency.gp}),fixtures);
     expect(totals).toEqual({alice:3500,bob:9000,carrier:7000});
     await bob.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
-    await bob.locator(`[data-facility-id="${facilityId}"] [data-action="removeFacility"]`).click();
+    await facilityMenu(bob, facilityId, "Remove");
     await bob.locator('dialog [data-action="yes"]').click();
     await expect.poll(()=>gm.evaluate(async uuid=>Boolean(await fromUuid(uuid)),uuid)).toBe(false);
     expect(await gm.evaluate(uuid=>fromUuid(uuid),uuid)).toBe(null);
@@ -928,7 +959,7 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
     expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"hirelings",actors:[fixtures.npc,fixtures.npc,fixtures.npc]})).code).toBe("OccupantCapacity");
     await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
     const workshopId=fixtures.workshop.split(".").at(-1);
-    await alice.locator(`[data-facility-id="${workshopId}"] [data-action="setOccupants"][data-role="hirelings"]`).click();
+    await facilityMenu(alice, workshopId, "Hirelings");
     await alice.locator('dialog [name="occupant-0"]').evaluate((element,uuid)=>{
       const transfer=new DataTransfer();transfer.setData("text/plain",JSON.stringify({type:"Actor",uuid}));
       element.dispatchEvent(new DragEvent("drop",{bubbles:true,cancelable:true,dataTransfer:transfer}));
@@ -938,7 +969,7 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
     await expect.poll(()=>gm.evaluate(async uuid=>(await fromUuid(uuid)).system.hirelings.value,fixtures.workshop)).toEqual([fixtures.npc]);
     expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"hirelings",actors:[fixtures.npc,fixtures.npc]})).ok).toBe(true);
     expect((await attempt(alice,"setOccupants",fixtures.workshop,{role:"defenders",actors:[fixtures.npc]})).ok).toBe(true);
-    await alice.locator(`[data-facility-id="${workshopId}"] [data-action="issueOrder"][data-order="craft"]`).click();
+    await activity(alice, workshopId, "Craft");
     await alice.locator('.activity-usage [name="craft.item"]').evaluate((element,uuid)=>{
       const transfer=new DataTransfer();transfer.setData("text/plain",JSON.stringify({type:"Item",uuid}));
       element.dispatchEvent(new DragEvent("drop",{bubbles:true,cancelable:true,dataTransfer:transfer}));
@@ -966,7 +997,7 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
     expect((await advance(fixtures.garden,7)).ok).toBe(true);
     expect(await rewards()).toHaveLength(2);expect((await rewards()).find(r=>r.from===fixtures.garden).quantity).toBe(3);
     const storehouseId=fixtures.storehouse.split(".").at(-1);
-    await alice.locator(`[data-facility-id="${storehouseId}"] [data-action="issueOrder"][data-order="trade"]`).click();
+    await activity(alice, storehouseId, "Trade");
     await alice.locator('.activity-usage [name="trade.stock.value"] input[type="number"]').fill("100");
     await alice.locator('.activity-usage [name="trade.stock.value"] input[type="number"]').press("Tab");
     await expect(alice.locator('.activity-usage [name="costs.gold"]')).toHaveValue("100");
@@ -990,7 +1021,7 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
     // The native dialog configures enlargement but performs no world writes itself.
     await alice.evaluate(id=>game.actors.get(id).sheet.render({force:true}),fixtures.bastion);
     const bedroomId=fixtures.bedroom.split(".").at(-1);
-    const button=alice.locator(`[data-facility-id="${bedroomId}"] [data-action="issueOrder"][data-order="enlarge"]`);
+    const button={click:()=>activity(alice, bedroomId, "Enlarge")};
     const beforeDialog=await gold();
     await button.click();await expect(alice.locator('.activity-usage [name="costs.gold"]')).toHaveAttribute("readonly","");
     await alice.locator('.activity-usage .window-header [data-action="close"]').click();expect(await gold()).toBe(beforeDialog);
@@ -1025,6 +1056,122 @@ test("T07: native orders settle owner costs, goods and income once",async({brows
       await game.actors.get(data.bastion)?.delete();for(const id of [data.owner,data.other,data.npcId]) await game.actors.get(id)?.delete();
       await game.items.get(data.recipeId)?.delete();for(const id of [data.alice,data.bob]) await game.users.get(id)?.delete();
     },fixtures);
+    await gmContext.close();
+  }
+});
+
+test("UI: native compendium selection, slot construction, themes and stale permissions", async ({ browser }) => {
+  const gmContext = await browser.newContext(); const playerContext = await browser.newContext();
+  const gm = await join(gmContext, "Gamemaster"); let fixtures;
+  try {
+    fixtures = await gm.evaluate(async () => {
+      const api = game.modules.get("shared-bastion").api;
+      const prefix = "SB UI "; const flags = { "shared-bastion": { integrationFixture: true } };
+      for (const actor of game.actors.filter(a => a.flags["shared-bastion"]?.integrationFixture)) await actor.delete();
+      for (const user of game.users.filter(u => u.name.startsWith(prefix))) await user.delete();
+      const packId = "world.sb-ui-facilities";
+      if (game.packs.has(packId)) { await game.packs.get(packId).configure({ locked: false }); await game.packs.get(packId).deleteCompendium(); }
+      const player = await User.create({ name: prefix + "Alice", role: CONST.USER_ROLES.PLAYER });
+      const otherUser = await User.create({ name: prefix + "Bob", role: CONST.USER_ROLES.PLAYER });
+      const actor = (name, user) => Actor.create({ name, type: "character", flags, ownership: { default: 0, [user.id]: 3 },
+        items: [{ name: "Fighter", type: "class", system: { levels: 5, identifier: "fighter" } }] });
+      const owner = await actor("Zora", player); const other = await actor("Arin", otherUser);
+      const bastion = await api.repository.create({ name: "The Shared Bastion", participants: [other.uuid, owner.uuid] });
+      await bastion.setFlag("shared-bastion", "integrationFixture", true);
+      const pack = await foundry.documents.collections.CompendiumCollection.createCompendium({ name: "sb-ui-facilities", label: "UI Facilities", type: "Item" });
+      await pack.configure({ locked: false, ownership: { PLAYER: "OBSERVER", ASSISTANT: "OWNER", GAMEMASTER: "OWNER" } });
+      const facility = (name, type, subtype, level = 5) => ({ name, type: "facility", img: "systems/dnd5e/ui/official/banner-group-dark.jpg",
+        system: { type: { value: type, subtype }, size: type === "basic" ? "cramped" : "roomy", level, order: type === "special" ? "research" : "", hirelings: { max: type === "special" ? 1 : 0 } } });
+      const templates = await Item.createDocuments([facility("UI Bedroom", "basic", "bedroom"), facility("UI Kitchen", "basic", "kitchen"),
+        facility("UI Library", "special", "library"), facility("UI High Level", "special", "workshop", 9)], { pack: pack.collection });
+      await pack.configure({ locked: true });
+      await owner.createEmbeddedDocuments("Item", [facility("Personal bedroom", "basic", "bedroom")]);
+      const [foreign] = await bastion.createEmbeddedDocuments("Item", [{ ...facility("Arin's Library", "special", "library"), flags: { "shared-bastion": { owner: other.uuid } } }]);
+      return { bastion: bastion.id, owner: owner.id, other: other.id, player: player.id, playerName: player.name, otherUser: otherUser.id,
+        pack: pack.collection, templates: ["UI Bedroom", "UI Kitchen", "UI Library", "UI High Level"].map(name => templates.find(item => item.name === name).uuid), foreign: foreign.id };
+    });
+    const errors = []; const player = await join(playerContext, fixtures.playerName, page => page.on("pageerror", e => errors.push(e.message)));
+    for (const page of [gm, player]) await page.evaluate(id => game.actors.get(id).sheet.render({ force: true }), fixtures.bastion);
+    const own = player.locator(`.bastion-owner-section[data-owner-uuid="Actor.${fixtures.owner}"]`);
+    await expect(own.locator('.basic [data-action="addFacility"]')).toHaveCount(1);
+    await expect(player.locator('.bastion-owner-section').first()).toHaveAttribute('data-owner-uuid', `Actor.${fixtures.owner}`);
+    await expect(gm.locator('.bastion-owner-section').first()).toHaveAttribute('data-owner-uuid', `Actor.${fixtures.owner}`);
+    await expect(player.locator(`[data-facility-id="${fixtures.foreign}"]`)).not.toHaveAttribute("data-action");
+    // A direct invocation cannot bypass the visible interaction restrictions.
+    expect(await player.evaluate(data => {
+      const sheet = game.actors.get(data.bastion).sheet;
+      try { sheet.facility(sheet.element.querySelector(`[data-facility-id="${data.foreign}"]`)); return "allowed"; } catch (error) { return error.code; }
+    }, fixtures)).toBe("NotOwner");
+    expect(await player.evaluate(async data => {
+      const sheet = game.actors.get(data.bastion).sheet;
+      const target = sheet.element.querySelector(`[data-facility-id="${data.foreign}"]`);
+      const before = game.messages.size;
+      await sheet.options.actions.useFacility.call(sheet, null, target);
+      await sheet.options.actions.editFacility.call(sheet, null, sheet.actionTarget(target, "editFacility"));
+      return game.messages.size - before;
+    }, fixtures)).toBe(0);
+    await expect(player.locator('.activity-choice, dialog')).toHaveCount(0);
+    const choose = async (category, uuid, names) => {
+      await own.locator(`.${category} [data-action="addFacility"]`).first().click();
+      await expect(player.locator('.compendium-browser .item-list > .item[data-uuid^=\"Compendium.world.sb-ui-facilities.\"] .title')).toHaveText(names);
+      await player.screenshot({ path: `test-results/ui-browser-${category}.png` });
+      await player.locator(`.compendium-browser [data-uuid="${uuid}"] dnd5e-checkbox`).click();
+      await player.locator('.compendium-browser button[type="submit"]').click();
+      await expect(player.locator('.compendium-browser')).toHaveCount(0);
+    };
+    await own.locator('.basic [data-action="addFacility"]').click();
+    await player.locator('.compendium-browser .window-header [data-action="close"]').click();
+    await expect(player.locator('.compendium-browser')).toHaveCount(0);
+    await expect(own.locator('.basic .bastion-facility')).toHaveCount(0);
+    await choose("basic", fixtures.templates[0], ["UI Bedroom", "UI Kitchen"]);
+    await expect(own.locator('.basic .bastion-facility')).toHaveCount(1);
+    await expect(own.locator('.basic [data-action="addFacility"]')).toHaveText("Build facility");
+    await choose("basic", fixtures.templates[1], ["UI Bedroom", "UI Kitchen"]);
+    await expect(own.locator('.basic .bastion-facility')).toHaveCount(2);
+    await choose("special", fixtures.templates[2], ["UI Library"]);
+    await expect(own.locator('.special .bastion-facility')).toHaveCount(1);
+    const state = await gm.evaluate(data => game.actors.get(data.bastion).itemTypes.facility.filter(i => i.flags["shared-bastion"].owner === `Actor.${data.owner}`)
+      .map(i => ({ id: i.id, name: i.name, built: i.system.building.built, size: i.system.size })), fixtures);
+    expect(state.find(i => i.name === "UI Bedroom")).toMatchObject({ built: true, size: "roomy" });
+    expect(state.find(i => i.name === "UI Kitchen")).toMatchObject({ built: false });
+    expect(state.find(i => i.name === "UI Library")).toMatchObject({ built: true });
+    expect(await own.locator('.facility .underlay').first().evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    // The GM's native browser is not limited by the selected owner's level.
+    await gm.locator(`[data-owner-uuid="Actor.${fixtures.owner}"] .special [data-action="addFacility"]`).click();
+    await expect(gm.locator('.compendium-browser .item-list > .item[data-uuid^=\"Compendium.world.sb-ui-facilities.\"] .title')).toHaveText(["UI High Level", "UI Library"]);
+    await gm.locator(`.compendium-browser [data-uuid="${fixtures.templates[3]}"] dnd5e-checkbox`).click();
+    await gm.locator('.compendium-browser button[type="submit"]').click();
+    await gm.locator('dialog [name="exception-level"]').fill("A patron's reward");
+    await gm.locator('dialog [data-action="add"]').click();
+    await expect(own.locator('.special .bastion-facility')).toHaveCount(2);
+    await expect(own).toContainText("A patron's reward");
+    for (const theme of ["dark", "light"]) {
+      await player.evaluate(theme => game.configureUI({ ...game.settings.get("core", "uiConfig"), colorScheme: { applications: theme, interface: theme } }), theme);
+      await player.locator('.bastion-sheet').screenshot({ path: `test-results/ui-player-${theme}.png` });
+    }
+    await gm.locator('.bastion-sheet').screenshot({ path: 'test-results/ui-gm.png' });
+    await player.evaluate(id => game.actors.get(id).sheet.setPosition({ width: 560 }), fixtures.bastion);
+    await expect.poll(() => own.locator('.bastion-facility-columns').evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length)).toBe(1);
+    await player.locator('.bastion-sheet').screenshot({ path: 'test-results/ui-player-narrow.png' });
+    // Revoke ownership while the native chooser is open; submission is rechecked.
+    const kitchen = state.find(i => i.name === "UI Kitchen");
+    await player.locator(`[data-facility-id="${kitchen.id}"]`).click();
+    await expect(player.locator('.activity-choice')).toBeVisible();
+    await expect(player.locator('.activity-choice [data-action="choose"] dnd5e-icon')).toHaveAttribute('src', 'systems/dnd5e/icons/svg/facilities/build.svg');
+    await player.locator('.activity-choice').screenshot({ path: 'test-results/ui-activity-choice.png' });
+    await gm.evaluate(data => game.actors.get(data.owner).update({ [`ownership.${data.player}`]: 0 }), fixtures);
+    await player.locator('.activity-choice [data-action="choose"]').click();
+    await expect(player.locator('dialog [name="size"]')).toHaveCount(0);
+    expect(await gm.evaluate(data => game.actors.get(data.bastion).items.get(data.id).system.progress.max, { ...fixtures, id: kitchen.id })).toBeNull();
+    expect(errors.filter(message => !message.includes("cycleTokens"))).toEqual([]);
+  } finally {
+    await playerContext.close().catch(() => {});
+    if (fixtures) await gm.evaluate(async data => {
+      await game.actors.get(data.bastion)?.delete();
+      for (const id of [data.owner, data.other]) await game.actors.get(id)?.delete();
+      for (const id of [data.player, data.otherUser]) await game.users.get(id)?.delete();
+      const pack = game.packs.get(data.pack); if (pack) { await pack.configure({ locked: false }); await pack.deleteCompendium(); }
+    }, fixtures);
     await gmContext.close();
   }
 });

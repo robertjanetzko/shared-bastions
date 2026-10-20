@@ -205,6 +205,15 @@
       "guildhall": "Gildenhalle",
       "sanctum": "Sanktum",
       "warRoom": "Einsatzzentrale"
-    }
+    },
+    "FreeFacility": "Kostenlose Einrichtung",
+    "BuildFacility": "Einrichtung bauen",
+    "FacilityDetails": "Einrichtungsdetails",
+    "AddWorldFacility": "Weltvorlage hinzufügen",
+    "ContextMenuHint": "Rechtsklick oder Umschalt+F10 für Optionen",
+    "Activities": "Aktivität auswählen",
+    "BastionTurns": "Bastionzüge",
+    "BrowserHint": "Wähle eine Einrichtung. Bei fehlenden Ergebnissen die aktivierten Kompendien, Suche und Stufenfilter prüfen. Weltvorlagen sind über das Kontextmenü der Charakterüberschrift erreichbar.",
+    "AddSpecialFacility": "Besondere Einrichtung hinzufügen"
   }
 }

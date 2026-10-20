@@ -30,6 +30,11 @@ export class BastionRepository {
     if (!game.user.isGM) throw new BastionError("GMOnly");
   }
 
+  playerUsers(actor) {
+    return actor ? game.users.filter(user => !user.isGM
+      && actor.getUserLevel(user) >= CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER).map(user => user.id) : [];
+  }
+
   async roster(uuids) {
     if (!Array.isArray(uuids) || uuids.length > 100 || new Set(uuids).size !== uuids.length) throw new BastionError("InvalidRequest");
     const roster = [];
@@ -38,7 +43,7 @@ export class BastionRepository {
       const actor = await fromUuid(uuid);
       if (!actor || actor.type !== "character" || actor.pack || actor.isToken || isBastion(actor)) throw new BastionError("MissingOwner");
       // Only public bastion identity, never level, currency, abilities or biography.
-      roster.push({ uuid, name: actor.name, img: actor.img, available: true });
+      roster.push({ uuid, name: actor.name, img: actor.img, users: this.playerUsers(actor), available: true });
     }
     return roster;
   }
@@ -134,7 +139,7 @@ export class BastionRepository {
         const actor = await fromUuid(uuid);
         const previous = bastion.flags[MODULE_ID].roster?.find(entry => entry.uuid === uuid);
         roster.push({ uuid, name: actor?.name ?? previous?.name ?? uuid, img: actor?.img ?? previous?.img ?? "icons/svg/mystery-man.svg",
-          available: actor?.type === "character" && !isBastion(actor) });
+          users: this.playerUsers(actor), available: actor?.type === "character" && !isBastion(actor) });
       }
       const ownership = await this.ownership(roster);
       if (game.actors.get(bastion.id) !== bastion) return;
@@ -163,7 +168,8 @@ export class BastionRepository {
       schedule(actor);
     });
     Hooks.on("createUser", () => schedule());
-    Hooks.on("updateUser", (user, changes) => { if ("role" in changes) schedule(); });
+    Hooks.on("deleteUser", () => schedule());
+    Hooks.on("updateUser", (user, changes) => { if ("role" in changes || "name" in changes) schedule(); });
     Hooks.on("userConnected", () => schedule());
     queueMicrotask(() => schedule());
   }

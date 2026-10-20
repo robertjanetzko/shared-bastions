@@ -205,6 +205,15 @@
       "guildhall": "Guildhall",
       "sanctum": "Sanctum",
       "warRoom": "War Room"
-    }
+    },
+    "FreeFacility": "Free facility",
+    "BuildFacility": "Build facility",
+    "FacilityDetails": "Facility details",
+    "AddWorldFacility": "Add world template",
+    "ContextMenuHint": "Right-click or Shift+F10 for options",
+    "Activities": "Choose activity",
+    "BastionTurns": "Bastion turns",
+    "BrowserHint": "Choose a facility. If no results appear, check enabled compendium sources, search and level filters. World templates are available from the character heading’s context menu.",
+    "AddSpecialFacility": "Add special facility"
   }
 }

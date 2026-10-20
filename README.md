@@ -5,7 +5,7 @@ Facility-Items liegen auf einem zentralen Aktor; Regeln, Zahlungen und Ergebniss
 gelten individuell für den jeweiligen Besitzercharakter. Spieler verwalten ihre
 Einrichtungen ohne zusätzliche Leserechte auf fremde Charaktere.
 
-**Version 0.1.0 – Stufe 1:** Besitzerabschnitte und Gesamtübersicht,
+**Version 0.1.0 – Stufe 1:** Besitzerabschnitte im nativen D&D5e-Kacheldesign,
 Einrichtungsverwaltung, individuelle Regeln mit begründeten GM-Ausnahmen,
 native Befehle und Personal, Kalenderfortschritt und geprüfter Transfer.
 Praktisch geprüft auf **Foundry 14.369 / D&D5e 6.0.6**.
@@ -25,13 +25,20 @@ Spielerrechnern; es wird in der Foundry-Installation geladen.
 Der GM erstellt die Bastion über „Bastion erstellen“ im Akteurverzeichnis und
 wählt die Teilnehmercharaktere. Danach öffnen alle Teilnehmer den gemeinsamen
 Aktor aus demselben Verzeichnis. Im Bastion-Bogen verwaltet der GM die Teilnehmer.
-Der Bogen gliedert Einrichtungen nach Besitzer und Typ. Der zusätzliche Reiter
-„Gesamtübersicht“ und die Filter „Alle“, „Eigene“ und einzelne Besitzer zeigen
-dieselben zentralen Items. Name, Typ, Größe, Bauzustand, Auftrag und Fortschritt
-werden gemeinsam aktualisiert. Ein Klick auf den Namen öffnet die öffentliche
-Beschreibung. Eigene unbebaute einfache Räume lassen sich über „Bauen“ starten;
-der Dialog zeigt Größe, Kosten und Dauer. Schließen bricht ohne Abbuchung ab.
-Ohne GM bleiben Ansichten und Filter lesbar, Schreibaktionen sind gesperrt.
+Der Bogen zeigt pro Besitzercharakter Basiseinrichtungen links und besondere
+Einrichtungen rechts. Eigene Charaktere stehen zuerst, die übrigen nach
+Spielername und Charaktername sortiert; beim GM gilt die alphabetische Reihenfolge.
+Die Kacheln verwenden das Facility-Bild und zeigen Größe, Personal und laufenden
+Fortschritt. Auf schmalen Fenstern stehen die beiden Spalten untereinander.
+
+Ein Klick auf eine eigene Einrichtung öffnet die native Aktivitätsauswahl. Ein
+ungebauter Raum bietet dort „Bauen“ an; danach zeigt der Dialog Größe, Kosten und
+Dauer. Rechtsklick oder Umschalt+F10 öffnet das Kontextmenü mit Details, Bearbeiten,
+Entfernen, Personal und Auftragsabbruch. Pfeiltasten und Enter bedienen das Menü.
+Fremde Einrichtungen sind für Spieler sichtbar, aber nicht bedienbar.
+Teilnehmerkonfiguration, Vorlagenregeln, Transfer und Bastionzüge liegen für den
+GM im Dreipunktmenü des Fensters. Ohne GM bleibt der Bogen lesbar; Schreiben ist
+gesperrt. Schließen eines Auswahl-/Auftragsdialogs bucht nichts ab.
 
 Der gemeinsame Aktor enthält nur die benötigte öffentliche Identität der
 Charaktere; ihre eigenen Bögen behalten ihre bisherigen Rechte.
@@ -45,10 +52,12 @@ bleiben bis zur erneuten Integrationsprüfung im Lesemodus.
 
 ## Einrichtungen und Regeln
 
-Über „Einrichtung hinzufügen“ wählst du einen eigenen Teilnehmercharakter und
-vorhandene Facility-Vorlagen. Der Katalog verwendet Welt-Items und zugängliche
-Item-Kompendien; das Modul liefert keine Regeltexte. Die Quellen müssen lesbar
-und ihre Definitionen vor Spielerbearbeitung geschützt sein. Neue Einrichtungen
+Ein Klick auf einen gestrichelten freien Platz öffnet den nativen
+Kompendiumbrowser für Basis- oder besondere Einrichtungen. Für Spieler begrenzt
+die Stufe des zugehörigen Charakters die Auswahl. GM-Ausnahmen werden nach der
+Auswahl ausdrücklich begründet. Weltvorlagen wählst du über „Weltvorlage hinzufügen“
+im Kontextmenü der Charakterüberschrift. Das Modul liefert keine Regeltexte.
+Die Quellen müssen lesbar und ihre Definitionen vor Spielerbearbeitung geschützt sein. Neue Einrichtungen
 übernehmen weder laufende Aufträge noch Personal oder bereits erzeugte Ergebnisse
 von der Vorlage. Vorhandene Einrichtungen auf dem Besitzer zählen bis zum Transfer
 mit. Die kostenlosen Anfangsräume und besonderen Plätze kommen aus D&D5e. Die beiden
@@ -61,6 +70,8 @@ Vorlage vom nativen Typ „Facility“ beziehungsweise „Einrichtung“ und tr�
 Daten ein. Die beteiligten Spieler benötigen Leserechte (Beobachter), dürfen die
 Definition jedoch nicht bearbeiten. Alternativ ein vorhandenes lesbares
 Item-Kompendium verwenden. Eine zusätzliche Regelsammlung ist keine Voraussetzung.
+Bei ausgeschöpften besonderen Plätzen kann der GM über „Besondere Einrichtung hinzufügen“ im
+Abschnittskontextmenü eine begründete Ausnahme anlegen.
 
 Der GM kann unter „Vorlagenregeln“ Level, Auftragsart, Kapazitäten und zusätzliche
 Voraussetzungen für künftig hinzugefügte Einrichtungen festlegen. Diese Einstellungen
@@ -73,7 +84,7 @@ Eine Freigabebedingung deckt Fälle ab, die das native Modell nicht abbildet.
 
 Spieler bearbeiten eigene Namen und öffentliche Notizen. Entfernen beendet den
 Eintrag einschließlich laufender Aufträge, ohne Kostenerstattung. Der GM ändert
-Besitzer und Regeln über die jeweiligen Knöpfe am Eintrag; damit lassen sich auch
+Besitzer und Regeln über das Kontextmenü der Einrichtung; damit lassen sich auch
 fehlende Besitzer reparieren. Sichtbare Ausnahmen für Level, Plätze oder weitere
 Voraussetzungen benötigen jeweils eine Begründung. Sie bleiben nach Neuladen
 bestehen und umgehen weder Besitzerrechte noch normale Zahlungen. Persönliche
@@ -81,8 +92,9 @@ Level und Platzlimits sieht nur der jeweilige Besitzer beziehungsweise der GM.
 
 ## Befehle, Mietlinge und Ergebnisse
 
-Eigene fertige Einrichtungen zeigen ihre verfügbaren Befehle. Der Knopf öffnet
-den nativen D&D5e-Dialog, ohne einen Befehl direkt auf dem Träger auszuführen.
+Ein Klick auf eine eigene fertige Einrichtung öffnet die native Aktivitätsauswahl.
+Die gewählte Aktivität öffnet den nativen D&D5e-Auftragsdialog, ohne einen Befehl
+direkt auf dem Träger auszuführen.
 Kosten und Dauer werden aus der gewählten Aktion beziehungsweise der geschützten
 Vorlage berechnet; beim Bestätigen prüft der GM-Client sie erneut. Herstellen nutzt
 die native `getCraftCost`-Berechnung. Gegenstände und Kreaturen müssen aus für den
@@ -95,7 +107,8 @@ werden wie im System unmittelbar erweitert. Laufende Befehle sperren einen neuen
 Start. Schließen des Dialogs verbraucht nichts; der ausdrückliche Abbruch eines
 bereits begonnenen Befehls erstattet bezahlte Kosten nicht.
 
-„Mietlinge“ und „Bastionsverteidiger“ öffnen die nativen Referenzfelder für NSC.
+„Mietlinge“ und „Bastionsverteidiger“ im Einrichtungskontextmenü öffnen die nativen
+Referenzfelder für NSC.
 Ziehe zugängliche NSC aus dem Akteurverzeichnis oder einem Kompendium auf freie
 Plätze; die native Kapazität wird beim Speichern nochmals geprüft. Der gemeinsame
 Bogen erhält nur UUIDs und benötigte Namen/Bilder, keine privaten Charakterwerte.
@@ -112,7 +125,7 @@ abgewickelt.
 
 ## Bastionzüge und Kalender
 
-Der GM führt „Bastionzug ausführen“ im gemeinsamen Bogen aus. Der Dialog zeigt
+Der GM führt „Bastionzug ausführen“ im Dreipunktmenü des gemeinsamen Bogens aus. Der Dialog zeigt
 die eingestellte Dauer; es gibt keinen Bereit-Status. Ohne aktivierte automatische
 Kalenderfortschritte zählt ein Zug die in D&D5e eingestellten Tage. Auch der native
 globale Bastionsknopf verarbeitet die gemeinsame Bastion über denselben Ablauf.
@@ -135,7 +148,7 @@ und gemeinsam mit Fortschritt und Beleg gespeichert.
 
 ## Bestehende Einrichtungen übertragen
 
-Der GM öffnet „Einrichtungen übertragen“ im Bastion-Bogen. Die Vorschau zeigt
+Der GM öffnet „Einrichtungen übertragen“ im Dreipunktmenü des Bastion-Bogens. Die Vorschau zeigt
 Einrichtungen aller Teilnehmercharaktere mit Besitzer und laufendem Fortschritt.
 Die Auswahl wird öffentlich Teil der gemeinsamen Bastion; andere Charakterdaten
 bleiben privat. Ein Durchgang unterstützt bis zu 100 Einrichtungen.
@@ -207,8 +220,11 @@ löschen oder Spielern freigeben: Bei fehlenden initialisierten Speichern werden
 Schreibaktionen gesperrt, damit alte Aufträge nicht erneut ausgeführt werden.
 Native Hook-Abbrüche führen zu keiner Teilbuchung.
 
-Die Abnahme umfasst 27 Unit-Tests und elf native Integrationstests mit getrennten
-Clients. Das Modul ist ohne erzeugte Szene verwendbar. Im Quellprojekt enthält
+Die ursprüngliche Stufe-1-Abnahme umfasste 27 Unit-Tests und elf native
+Integrationstests. Die neue Kacheloberfläche ergänzt Sortierung, Plätze und native
+Browser-/Dialogbedienung; die aktuelle Suite umfasst 30 Unit-Tests und zwölf native
+Integrationstests mit getrennten Clients. Der Nachweis steht im Quellprojekt unter
+`docs/native-sheet-acceptance.md`. Das Modul ist ohne erzeugte Szene verwendbar. Im Quellprojekt enthält
 `docs/stage1-acceptance.md` die Zuordnung der Abnahmekriterien zu den Prüfungen.
 Eine eigene Testszene prüft normales Canvas-Verhalten; ein Szenengenerator wird
 damit nicht als implementiert ausgewiesen.

@@ -1,7 +1,10 @@
-<dl class="bastion-preview">
+<section class="card"><header class="header"><h3>{{localize "SHARED_BASTION.FacilityDetails"}}</h3></header>
+<dl class="bastion-preview card-content">
   <dt>{{localize "SHARED_BASTION.Type"}}</dt><dd>{{typeLabel}}</dd>
   <dt>{{localize "SHARED_BASTION.Size"}}</dt><dd>{{sizeLabel}}</dd>
   <dt>{{localize "SHARED_BASTION.StateLabel"}}</dt><dd>{{stateLabel}}</dd>
   <dt>{{localize "SHARED_BASTION.Order"}}</dt><dd>{{orderLabel}}</dd>
-</dl>
+</dl></section>
+{{#if notes}}<section class="card"><header class="header"><h3>{{localize "SHARED_BASTION.Notes"}}</h3></header><p class="card-content bastion-note">{{notes}}</p></section>{{/if}}
+{{#each staff}}{{#if maximum}}<section class="card"><header class="header"><h3>{{localize label}}: {{count}} / {{maximum}}</h3></header><div class="card-content">{{#each people}}<p>{{name}}{{#if missing}} · {{localize "SHARED_BASTION.MissingReference"}}{{/if}}</p>{{/each}}</div></section>{{/if}}{{/each}}
 <div class="bastion-description">{{{description}}}</div>

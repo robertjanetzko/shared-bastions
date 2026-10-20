@@ -1,14 +1,39 @@
 # Shared Bastion – Umsetzungsdesign
 
-Stand: 2026-10-19. Das abgeschlossene Umsetzungsinterview mit zehn Fragen
-präzisiert den [Implementierungsplan](../PLAN.md): native Einrichtungen leben auf
-einem gemeinsamen Bastion-Aktor, werden nach Besitzercharakter gruppiert und von
-den jeweiligen Spielern verwaltet. Charakterbögen bleiben privat und unverändert.
-Ein aktiver GM-Client führt erlaubte Schreibaktionen automatisch aus. Anschließend
-entsteht eine begehbare Szene als kompakter gemeinsamer Bau mit normalen
-Sichtregeln. Der [interaktive Prototyp v1](implementation-visual.html) zeigt den
-vereinbarten Bogen und eine Szenenvorschau als lokale Simulation. Er ist keine
-Foundry-Implementierung; die technische Integration ist noch nachzuweisen.
+Stand: 2026-10-20. Stufe 1 ist funktional abgenommen; die ausdrückliche
+Designentscheidung vom 20. Oktober ersetzt die bisherige Listenansicht durch
+native D&D5e-Einrichtungskacheln. Der [Implementierungsplan](../PLAN.md) führt die
+Neugestaltung unter N01; die [N01-Abnahme](native-sheet-acceptance.md) dokumentiert
+die Prüfungen. Die Abschnitte zum Interview dokumentieren die fachliche
+Grundlage; geänderte UI-Entscheidungen sind unten nachgeführt. Der
+[Prototyp v1](implementation-visual.html) bleibt eine historische lokale Simulation
+und ist nicht die visuelle Referenz des neuen Bogens. Der Szenengenerator bleibt
+zurückgestellt.
+
+## Native Oberfläche ab 2026-10-20
+
+Der Bogen enthält ausschließlich Besitzerabschnitte mit Spieler- und Charaktername,
+Basiseinrichtungen links und besonderen Einrichtungen rechts. Eigene Charaktere
+stehen zuerst, weitere nach dem alphabetisch ersten Nicht-GM mit Besitzerrecht,
+danach Charaktername. Beim GM gibt es keine Bevorzugung. Fehlende Zuordnungen
+stehen zuletzt. Benutzerreferenzen sind öffentliche Teilnehmermetadaten; private
+Level, Geldwerte und Voraussetzungen werden nicht veröffentlicht.
+
+Freie Plätze öffnen `CompendiumBrowser.selectOne` mit Kategorie und Besitzerlevel
+(für GM ohne Levelgrenze). Die native Auswahl erstellt nichts selbst; der bestehende
+Befehl bestimmt kostenlose Fertigstellung und individuelle Plätze erneut. Welt-Items
+bleiben im Abschnittskontextmenü verfügbar. Bestehende Charaktereinrichtungen
+zählen bis zur Übernahme mit. Ein Klick auf eine eigene Kachel öffnet eine begrenzte
+Unterklasse des nativen `ActivityChoiceDialog`; die ausgewählte Aktion läuft über
+den bisherigen Bau-/Auftragsadapter und GM-Befehlspfad. Kein `Item.use` und keine
+native Direktzahlung auf dem Träger. Fremde Kacheln erhalten keine Aktionen.
+
+Native Anwendungsmixins, Menüs, Karten, Icons und Themenvariablen werden verwendet.
+Nur die an den nativen Charakterbogen gebundenen Facility-Styles werden lokal
+adaptiert (D&D5e 6.0.6, `less/v2/character.less`, MIT). Die Bastion übernimmt keine
+Charakterbogenklasse und verändert keine Systemdateien. Rechtsklick/Umschalt+F10,
+Pfeiltasten und Enter bedienen Einrichtungskontextmenüs; GM-Verwaltung und Züge
+liegen im Fenstermenü. Beide Themen und einspaltige schmale Fenster werden geprüft.
 
 ## Begriffe (Terms)
 
@@ -68,7 +93,7 @@ Native Daten, Systemkonfigurationen und geeignete Auftragsfunktionen werden
 wiederverwendet. Kalenderfortschritt und Bastionzüge dürfen dieselbe Einrichtung
 nicht doppelt fortschreiben. Wiederholte Anfragen und Teilfehler bei Änderungen
 an mehreren Dokumenten müssen ohne doppelte Kosten oder Belohnungen behandelt
-werden. Diese Fähigkeiten sind Anforderungen und noch nicht praktisch belegt.
+werden. Diese Fähigkeiten sind in der ursprünglichen Stufe-1-Abnahme praktisch belegt.
 
 Bereits vorhandene Einrichtungen werden in einem einmaligen GM-Transfer mit
 Vorschau übernommen. Fortschritt, Besitzer und relevante Referenzen bleiben
@@ -123,14 +148,10 @@ alle fertigen Räume bleiben über den Hauptflur erreichbar.
   Einrichtungen. Q4 klärt dazu das Hinzufügen neuer Einrichtungen, Q10 die Grenze
   zwischen Betrieb und freier Regelbearbeitung. Die Antwort bedeutet weder eine
   allgemeine Bearbeitungsfreigabe noch eine Rückverlagerung der Items auf Charaktere.
-- **Q3 – Bogenaufbau: C.** Die Hauptansicht ist nach Besitzercharakter gegliedert;
-  jeder Abschnitt enthält dessen Einrichtungen, jeweils getrennt nach einfachen
-  und besonderen Einrichtungen. Ein zusätzlicher Reiter zeigt die Bastion insgesamt.
-  Beide Ansichten verwenden dieselben zentralen Daten. Name, Besitzer, Typ, Größe,
-  Bauzustand, Auftrag und Fortschritt sind sichtbar; Filter für alle, eigene und
-  einzelne Besitzer bleiben vorgesehen. Auf fremden Einrichtungen sind keine
-  Betriebsaktionen erlaubt. Prüfen: Eine Änderung erscheint ohne Neuladen sowohl
-  im Besitzerabschnitt als auch in der Gesamtübersicht und bei anderen Teilnehmern.
+- **Q3 – Bogenaufbau, aktualisiert am 2026-10-20.** Ausschließlich sortierte
+  Besitzerabschnitte mit Kacheln in zwei Spalten. Die frühere Wahl eines zusätzlichen
+  Gesamtübersichtsreiters und der Filter ist durch die neue Nutzerentscheidung
+  ersetzt. Änderungen erscheinen ohne Neuladen bei allen Teilnehmern.
 - **Q4 – Hinzufügen: A.** Spieler dürfen vorhandene eigene Einrichtungen bedienen
   und neue für ihren Charakter zulässige Einrichtungen hinzufügen. Die Auswahl
   verwendet zugängliche Welt-Items und Kompendien sowie individuelle Plätze und
@@ -173,7 +194,7 @@ alle fertigen Räume bleiben über den Hauptflur erreichbar.
 
 1. Der GM erstellt die Bastion und ordnet die teilnehmenden Charaktere zu.
 2. Teilnehmer öffnen den Bastion-Aktor im Akteurverzeichnis und sehen alle
-   Besitzerabschnitte oder die Gesamtübersicht.
+   sortierte Besitzerabschnitte mit Einrichtungskacheln.
 3. Ein Spieler wählt eine eigene Einrichtung und eine erlaubte Betriebsaktion
    oder fügt eine zulässige neue Einrichtung hinzu. Erforderliche Auftragsdaten
    werden vor der Ausführung eingegeben.

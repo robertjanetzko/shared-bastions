@@ -33,7 +33,7 @@ export function installDirectory(repository) {
     if (["dnd5e.calendarConfig", "dnd5e.bastionConfiguration"].includes(setting.key)) refresh();
   });
   for (const event of ["createItem", "updateItem", "deleteItem"]) Hooks.on(event, item => {
-    if (item.parent?.flags[MODULE_ID]?.bastion) refresh();
+    if (item.parent?.flags[MODULE_ID]?.bastion || repository.find()?.flags[MODULE_ID]?.participants.includes(item.parent?.uuid)) refresh();
   });
   game.socket.on("disconnect", refresh);
   game.socket.on("connect", refresh);

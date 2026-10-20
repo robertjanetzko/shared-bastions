@@ -363,3 +363,35 @@ aller Stufe-1-Kriterien steht in [stage1-acceptance.md](stage1-acceptance.md).
 verpackte Datei wurde byteweise mit der geprüften Quelle verglichen; Manifest
 und Installationsstruktur sind gültig. Handbuch, Foundry-Distribution, Secrets,
 Interview- und Testdaten sind ausgeschlossen. Keine Veröffentlichung durchgeführt.
+
+
+## N01: Native Kacheloberfläche
+
+Stand: 2026-10-20, Foundry 14.369 / D&D5e 6.0.6. Die öffentliche Laufzeit-API
+stellt `applications.api.ApplicationV2Mixin`, `applications.ContextMenu5e`,
+`applications.CompendiumBrowser.selectOne` und
+`applications.activity.ActivityChoiceDialog` bereit. Die Bogenklasse wird erst im
+Init-Hook erstellt; interne Quelldateipfade sind keine ausgelieferte Modul-API.
+
+Die native Aktivitätsauswahl erhält ausschließlich geprüfte Aufträge auf einem
+flüchtigen Item-Klon. Das Icon stammt aus der nativen Auftragskonfiguration;
+keine Ausführung über `Item.use` oder `activity.use`. Nach Auswahl folgen die
+bestehenden Bau-/Auftragsdialoge und der authentifizierte GM-Befehlspfad.
+Offene Dialoge nach Rechteentzug oder GM-Abmeldung führen keine Buchung aus.
+Beschäftigte Kacheln bleiben während Auswahl, Schließanimation und Speicherung
+gegen erneute Bedienung gesperrt.
+
+Der Kompendiumbrowser sperrt Typ/Kategorie und für Spieler die Besitzerstufe.
+Er durchsucht die aktivierten Kompendien, nicht Welt-Items. Diese bleiben im
+Abschnittskontextmenü erreichbar. Der GM kann dort auch bei ausgeschöpften
+besonderen Plätzen eine begründete Ausnahme anlegen. Native Karten, Slots,
+Fortschrittsanzeigen und Themenvariablen sind wiederverwendet; die an den
+Charakterbogen gebundenen Facility-Styles sind lokal adaptiert und mit ihrem
+MIT-Hinweis versehen. Keine Grafiken oder Schriften werden kopiert.
+
+Alle zwölf Integrationstests bestehen im Gesamtlauf (6,4 min), dazu 30 Unit-Tests,
+Schema-/Vorlagenprüfung und Paket-Audit. Native Erstellungsresultate werden in den
+Kalender-Fixtures nach Namen zugeordnet; ihre Listenposition bestimmt keine
+Besitzerrolle. Beide Themen, schmale Fenster und Dialoge sind visuell geprüft.
+Details: [N01-Abnahme](native-sheet-acceptance.md). Die ursprüngliche eingerichtete
+Testbastion liegt während des Prüflaufs auf einem getrennten Originalvolume.
