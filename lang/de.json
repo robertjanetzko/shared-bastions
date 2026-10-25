@@ -1,5 +1,16 @@
 {
   "SHARED_BASTION": {
+    "SpecialAdvancementTableInvalid": "Bitte mindestens eine Zeile angeben: eindeutige Stufen von 1–20 und ganze Anzahlen von 0–1000. Es wurde nichts gespeichert.",
+    "SpecialAdvancementCancel": "Abbrechen",
+    "SpecialAdvancementReset": "Systemstandard verwenden",
+    "SpecialAdvancementAdd": "Stufenschwelle hinzufügen",
+    "SpecialAdvancementRemove": "Zeile entfernen",
+    "SpecialAdvancementCount": "Besondere Einrichtungen insgesamt",
+    "SpecialAdvancementLevel": "Ab Stufe",
+    "SpecialAdvancementConfigure": "Stufentabelle bearbeiten",
+    "SpecialAdvancement": "Besondere Einrichtungen nach Stufe",
+    "SpecialAdvancementHint": "Lege die insgesamt erlaubten besonderen Einrichtungen ab jeder Charakterstufe fest. Unterhalb der ersten Stufe gilt 0. Gilt weltweit auch für native Charakterbögen. Bestehende Einrichtungen werden nicht entfernt. Andere Voraussetzungen bleiben bestehen.",
+    "SpecialAdvancementInvalid": "Ungültige Stufentabelle für besondere Einrichtungen. Verwende ein JSON-Objekt mit Stufen 1–20 und ganzen Anzahlen 0–1000. Bis zur Korrektur gelten die D&D5e-Standardwerte.",
     "Title": "Gemeinsame Bastion",
     "ActorChoice": "Shared Bastion",
     "OpenStatus": "Modulstatus anzeigen",

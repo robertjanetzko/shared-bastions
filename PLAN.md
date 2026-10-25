@@ -1,6 +1,6 @@
 # Shared Bastion – Anforderungen und Aufgaben
 
-Stand: 2026-10-20 · Status: Stufe 1 (T01–T10) abgenommen; native Bogen-Neugestaltung N01 abgenommen, Version 0.1.0.
+Stand: 2026-10-25 · Status: Stufe 1 (T01–T10) abgenommen; native Bogen-Neugestaltung N01 abgenommen, Version 0.1.0.
 
 Die Entscheidungen aus dem abgeschlossenen `grill-with-ui`-Interview sind hier
 eingearbeitet. Begründungen und Abläufe stehen im
@@ -491,3 +491,23 @@ ersetzt keine Prüfung in der Zielversion.
 | 2026-10-20 | Die ungenutzten Konten „SB T10 Alice“ und „SB T10 Bob“ nach ausdrücklicher Nutzerfreigabe gelöscht. | Identität und fehlende Akteurzuordnung vorab geprüft. Alle Akteurdaten und übrigen Benutzer vor/nach der Löschung identisch; „Manor House“ mit fünf Akteuren, zwei zentralen Einrichtungen und zwei Teilnehmern bestätigt. |
 | 2026-10-20 | Visuelle Nacharbeit N01: Kachelmaße aus D&D5e 6.0.6 übernommen; Abschnittskopf auf Portrait/Spielername/Stufe reduziert. Große Hinweisboxen durch fokussierbare Info-/Warnsymbole mit Text-Tooltip ersetzt; Zugübersicht am unteren Fensterrand. | Nativer Vergleich auf 14.369 / 6.0.6: Titel 13 und Untertitel 10 Pixel identisch; Dark/Light, schmale Fenster, Hover und Tastatur geprüft. Ungespeicherte Vorschau, Akteurdaten unverändert. Statische Prüfung, 30 Unit-Tests und Paketbau bestanden. Gesamte Integrationssuite für diese Darstellungsnacharbeit nicht erneut ausgeführt. |
 | 2026-10-20 | T03-Erstellung auf „Create Actor“ → „Shared Bastion“ umgestellt; zusätzlicher Verzeichnisbutton entfernt. Native Auswahl führt zur Teilnehmerkonfiguration, Name/Ordner werden übernommen. Weiterhin eine Bastion je Welt. | 30 Unit-Tests, 40 ES-Module/206 DE/EN-Schlüssel, native Offline-Prüfung und Paketbau bestanden. Erweiterter T03-Test auf 14.369 / 6.0.6 bestanden (24,9 s): Abbruch beider Schritte, normale NSC-Erstellung nach Auswahlwechsel, Name/Ordner, gesperrte zweite Bastion, Spielerrechte und Neuladen. Dialog-Screenshot visuell geprüft. Bekannter Core-Fehler bei Rechteentzug ohne Canvas unverändert; keine gesamte Integrationssuite wiederholt. Test auf separater Datenkopie. |
+
+### Ergänzung: konfigurierbare Staffelung besonderer Einrichtungen
+
+- [x] Weltlokaler GM-Tabellendialog für Stufe → Gesamtlimit, Laden beim Weltstart und
+  Übernahme von Änderungen auf allen Clients; leer verwendet D&D5e-Standardwerte.
+- [x] DE/EN-Beschreibung, Eingabeprüfung mit Fehlerhinweis/Standardwert-Rückfall,
+  Tests für Grenzen, Startladen, Änderungen und Rücksetzen sowie Bedienungsanleitung.
+- [ ] Native Prüfung mit getrennten GM-/Spielerclients und erneutem Weltbeitritt.
+
+Fortschritt 2026-10-25: Auf ausdrücklichen Nutzerwunsch die D&D5e-Konfiguration
+weltweit überschreibbar gemacht; wirkt auch auf native Charakterbögen. Keine
+Systemdateien geändert. `npm run check`, alle 32 Tests und `npm run build`
+bestanden. Native Integration unbestätigt: Docker-Socket-Zugriff gesperrt.
+
+Fortschritt 2026-10-25 (UI-Nacharbeit): Sichtbares JSON-Feld auf Nutzerwunsch
+ersetzt durch ApplicationV2-Tabellendialog mit Zahlenfeldern, Zeilenaktionen,
+Systemstandard und Speichern/Abbrechen. Bestehende Werte bleiben lesbar.
+Leere Tabellen und doppelte Stufen verhindern das Speichern. Dokumentation und
+DE/EN aktualisiert; `npm run check`, alle 33 Tests, Paketbau und Diff-Prüfung
+bestanden. Native/visuelle Dialogprüfung bleibt offen.

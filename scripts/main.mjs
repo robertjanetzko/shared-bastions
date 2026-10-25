@@ -1,3 +1,5 @@
+import { SpecialAdvancementConfig } from "./applications/special-advancement-config.mjs";
+import { registerSpecialAdvancement } from "./special-advancement.mjs";
 import { BastionUIAdapter } from "./adapters/bastion-ui.mjs";
 import { MODULE_ID } from "./constants.mjs";
 import { Dnd5eAdapter } from "./adapters/dnd5e.mjs";
@@ -11,6 +13,12 @@ import { TurnService } from "./services/turns.mjs";
 import { TransferService } from "./services/transfer.mjs";
 
 Hooks.once("init", () => {
+  registerSpecialAdvancement();
+  game.settings.registerMenu(MODULE_ID, "specialAdvancementConfig", {
+    name: "SHARED_BASTION.SpecialAdvancement", label: "SHARED_BASTION.SpecialAdvancementConfigure",
+    hint: "SHARED_BASTION.SpecialAdvancementHint", icon: "fa-solid fa-table-list",
+    type: SpecialAdvancementConfig, restricted: true
+  });
   const BastionSheet = createBastionSheet();
   game.settings.register(MODULE_ID, "bastionUuid", { scope: "world", config: false, type: String, default: "" });
   game.settings.register(MODULE_ID, "commandStoreVersion", { scope: "world", config: false, type: Number, default: 0 });

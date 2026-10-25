@@ -1,5 +1,16 @@
 {
   "SHARED_BASTION": {
+    "SpecialAdvancementTableInvalid": "Enter at least one row: unique levels from 1–20 and integer counts from 0–1000. Nothing has been saved.",
+    "SpecialAdvancementCancel": "Cancel",
+    "SpecialAdvancementReset": "Use system defaults",
+    "SpecialAdvancementAdd": "Add level threshold",
+    "SpecialAdvancementRemove": "Remove row",
+    "SpecialAdvancementCount": "Total special facilities",
+    "SpecialAdvancementLevel": "From level",
+    "SpecialAdvancementConfigure": "Edit level table",
+    "SpecialAdvancement": "Special facilities by level",
+    "SpecialAdvancementHint": "Set the total special facilities allowed from each character level. Below the first level, the limit is 0. Applies worldwide, including native character sheets. Existing facilities are not removed. Other prerequisites still apply.",
+    "SpecialAdvancementInvalid": "Invalid special facility advancement table. Use a JSON object with levels 1–20 and integer counts 0–1000. D&D5e defaults apply until corrected.",
     "Title": "Shared Bastion",
     "ActorChoice": "Shared Bastion",
     "OpenStatus": "Show module status",

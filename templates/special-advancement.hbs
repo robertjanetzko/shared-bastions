@@ -1,0 +1,18 @@
+<section>
+  <p>{{localize "SHARED_BASTION.SpecialAdvancementHint"}}</p>
+  {{#if error}}<p role="alert">{{localize "SHARED_BASTION.SpecialAdvancementTableInvalid"}}</p>{{/if}}
+  <table>
+    <thead><tr><th scope="col">{{localize "SHARED_BASTION.SpecialAdvancementLevel"}}</th><th scope="col">{{localize "SHARED_BASTION.SpecialAdvancementCount"}}</th><th scope="col">{{localize "SHARED_BASTION.SpecialAdvancementRemove"}}</th></tr></thead>
+    <tbody>{{#each rows}}<tr>
+      <td><input type="number" name="level" min="1" max="20" step="1" required value="{{level}}" aria-label="{{localize 'SHARED_BASTION.SpecialAdvancementLevel'}}"></td>
+      <td><input type="number" name="count" min="0" max="1000" step="1" required value="{{count}}" aria-label="{{localize 'SHARED_BASTION.SpecialAdvancementCount'}}"></td>
+      <td><button type="button" data-action="remove" data-index="{{@index}}" aria-label="{{localize 'SHARED_BASTION.SpecialAdvancementRemove'}}"><i class="fa-solid fa-trash" inert></i></button></td>
+    </tr>{{/each}}</tbody>
+  </table>
+  <button type="button" data-action="add">{{localize "SHARED_BASTION.SpecialAdvancementAdd"}}</button>
+  <button type="button" data-action="defaults">{{localize "SHARED_BASTION.SpecialAdvancementReset"}}</button>
+  <footer class="form-footer">
+    <button type="submit">{{localize "SHARED_BASTION.Save"}}</button>
+    <button type="button" data-action="cancel">{{localize "SHARED_BASTION.SpecialAdvancementCancel"}}</button>
+  </footer>
+</section>

@@ -1,7 +1,7 @@
 # AGENTS.md – Shared Bastion
 
 Dieses Dokument gilt für das gesamte Projekt. Es ist ein lebendes
-Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-20.
+Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-25.
 
 ## Projektziel und verbindliche Grundlage
 
@@ -161,6 +161,16 @@ zurückgestellten Ausbau.
 
 ## Aktueller Stand
 
+- Weltweite GM-Einstellung „Besondere Einrichtungen nach Stufe“: Tabellendialog
+  mit Stufe/Gesamtanzahl, Zeilen hinzufügen/entfernen, Systemstandard laden und
+  Speichern/Abbrechen. Kein sichtbares JSON-Einstellungsfeld; frühere Werte werden
+  übernommen. Intern weiterhin weltlokale Speicherung, Übernahme beim `ready`-Hook
+  und bei Änderungen auf allen Clients in
+  `CONFIG.DND5E.facilities.advancement.special`, auch für native Charakterbögen.
+  Keine automatische Anlage/Entfernung; andere Voraussetzungen bleiben erhalten.
+  33 Unit-Tests, Modulprüfung (43 Module, 217 DE/EN-Schlüssel), Diff-Prüfung und
+  Paketbau bestanden. Native Weltintegration und visuelle Prüfung des Dialogs
+  noch unbestätigt; Docker-Socket im vorherigen Lauf nicht zugänglich.
 - Erstellung ausschließlich über „Create Actor“ → „Shared Bastion“ und die
   anschließende Teilnehmerauswahl. Kein zusätzlicher Create-/Open-Bastion-Button
   im Akteurverzeichnis. Der D&D5e-6.0.6-Render-Hook wird im UI-Adapter ergänzt;

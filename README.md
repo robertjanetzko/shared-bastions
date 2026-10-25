@@ -273,3 +273,22 @@ Dieser Befehl beendet die Testcontainer und erhält ihre Daten. Für Logs:
 
 Die Details der Integrationsprüfung und die noch zu bestätigenden Schnittstellen
 stehen im Quellprojekt unter `docs/integration-findings.md`.
+
+### Eigene Stufentabelle für besondere Einrichtungen
+
+Als GM unter **Einstellungen → Einstellungen konfigurieren → Shared Bastion →
+Stufentabelle bearbeiten** den Tabellendialog öffnen. Jede Zeile enthält eine
+Charakterstufe (1–20) und die insgesamt erlaubte Anzahl besonderer Einrichtungen
+(0–1000). Zeilen lassen sich hinzufügen und entfernen. Doppelte Stufen sind
+unzulässig. Unterhalb der ersten Schwelle gilt 0; die Werte sind Gesamtlimits,
+keine zusätzlichen Einrichtungen.
+
+**Speichern** übernimmt die Tabelle weltweit. **Abbrechen** verwirft Änderungen.
+**Systemstandard verwenden** lädt die D&D5e-Werte in die Tabelle; erst Speichern
+setzt die Welt auf den Systemstandard zurück. Vorhandene frühere Einstellungen
+werden automatisch in die Tabelle übernommen.
+
+Beim Weltstart und bei Änderungen wird die Konfiguration auf allen Clients
+angewendet, auch für native Charakterbögen. Geöffnete Bögen anschließend neu
+öffnen. Einrichtungen werden weder automatisch angelegt noch entfernt. Andere
+Voraussetzungen wie die Mindeststufe einer Einrichtung bleiben bestehen.
