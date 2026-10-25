@@ -13,9 +13,12 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 .shared-bastion-command-message { display: none !important; }
-.bastion-sheet .window-content { padding: 0; }
+/* D&D5e reserves space below the titlebar even with hidden-title.
+ * Our heading lives in the content, so that native title gap is redundant. */
+.application.dnd5e2.bastion-sheet:not(.minimized) > .window-header { margin-block-end: 0; }
+.application.dnd5e2.bastion-sheet:not(.minimized) > .window-content { padding: 0; margin-block-start: 0; }
 .bastion-sheet .bastion-shell { display: flex; flex-direction: column; min-height: 0; height: 100%; }
-.bastion-sheet .bastion-heading { padding: 16px 24px 8px; text-align: center; }
+.bastion-sheet .bastion-heading { padding: 4px 24px 8px; text-align: center; }
 .bastion-sheet .bastion-heading h1 { margin: 0; border: 0; font-size: var(--font-size-32); }
 .bastion-sheet .bastion-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 24px 24px; container-type: inline-size; }
 .bastion-sheet .card-content { padding: 10px; }

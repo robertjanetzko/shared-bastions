@@ -161,6 +161,14 @@ zurückgestellten Ausbau.
 
 ## Aktueller Stand
 
+- Oberen Leerraum des Bastionbogens reduziert: D&D5e reserviert auch bei
+  `hidden-title` unter `.window-header` einen Titelabstand. In der tatsächlich
+  ausgelieferten lokalen System-CSS bestätigt (`margin-block-end:
+  calc(var(--font-size-24) + 6px)`). Nur im Bastionbogen den Header-Abstand
+  und den nativen negativen Inhaltsmargin auf 0 setzen; Inhaltspadding 0 und
+  Überschrift oben 4 Pixel. Statische Prüfung/Paketbau bestanden. Browserprüfung
+  noch offen: Playwright-Chromium fehlt im aktuellen Host-Cache.
+
 - Weltweite GM-Einstellung „Besondere Einrichtungen nach Stufe“: Tabellendialog
   mit Stufe/Gesamtanzahl, Zeilen hinzufügen/entfernen, Systemstandard laden und
   Speichern/Abbrechen. Kein sichtbares JSON-Einstellungsfeld; frühere Werte werden

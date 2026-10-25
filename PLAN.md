@@ -511,3 +511,16 @@ Systemstandard und Speichern/Abbrechen. Bestehende Werte bleiben lesbar.
 Leere Tabellen und doppelte Stufen verhindern das Speichern. Dokumentation und
 DE/EN aktualisiert; `npm run check`, alle 33 Tests, Paketbau und Diff-Prüfung
 bestanden. Native/visuelle Dialogprüfung bleibt offen.
+
+Fortschritt 2026-10-25 (N01-Abstand): Auf Nutzerwunsch den oberen Leerraum
+verringert: Fensterinhalt-Padding mit spezifischem Bastionselektor auf 0 gesetzt,
+Überschrift oben 4 statt 16 Pixel. `npm run check`, `npm run build` und
+Diff-Prüfung bestanden; native visuelle Prüfung dieser Änderung noch offen.
+
+Fortschritt 2026-10-25 (N01-Abstandskorrektur): Nutzerbild bestätigt, dass die
+vorherige Padding-Änderung nicht ausreichte. Tatsächlich ausgelieferte D&D5e-CSS
+über lokalen HTTP-Endpunkt gelesen: ausgeblendeter Fenstertitel behält großen
+Header-Margin. Diesen gezielt im nicht minimierten Bastionbogen auf 0 gesetzt,
+zusammen mit dem negativen Inhaltsmargin. Modulprüfung, Paketbau und Diff-Prüfung
+bestanden. Browser-Messversuch scheiterte am fehlenden Playwright-Chromium;
+visuelle Bestätigung bleibt offen.
