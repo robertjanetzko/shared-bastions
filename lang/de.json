@@ -1,6 +1,7 @@
 {
   "SHARED_BASTION": {
     "Title": "Gemeinsame Bastion",
+    "ActorChoice": "Shared Bastion",
     "OpenStatus": "Modulstatus anzeigen",
     "CommandRequest": "Bastionaktion",
     "CommandQueue": "Gemeinsame Bastion – offene Vorgänge",

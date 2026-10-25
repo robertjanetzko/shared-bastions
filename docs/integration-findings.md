@@ -395,3 +395,26 @@ Kalender-Fixtures nach Namen zugeordnet; ihre Listenposition bestimmt keine
 Besitzerrolle. Beide Themen, schmale Fenster und Dialoge sind visuell geprüft.
 Details: [N01-Abnahme](native-sheet-acceptance.md). Die ursprüngliche eingerichtete
 Testbastion liegt während des Prüflaufs auf einem getrennten Originalvolume.
+
+## Erstellung über den nativen Akteurdialog (2026-10-20)
+
+Auf Foundry 14.369 / D&D5e 6.0.6 ergänzt der öffentliche
+`renderCreateDocumentDialog`-Hook ausschließlich den GM-Dialog für Weltakteure
+um „Shared Bastion“. Der versionsabhängige DOM-Zugriff liegt in
+`scripts/adapters/actor-creation.mjs`. Kein zusätzlicher Document-Subtyp und
+keine Änderung installierter Systemdateien. Die Auswahl wird vor dem nativen
+Formularhandler abgefangen: Sie erreicht weder `Actor.create` noch die gespeicherte
+native Standardtyp-Auswahl. Normale Typen verwenden weiterhin den Systemablauf.
+
+Die bestehende Teilnehmerkonfiguration übernimmt Name und Ordner. Ordnerreferenzen
+werden im Befehlsvalidator und gegen einen existierenden Akteurordner geprüft.
+Die kanonische Registrierung und die Beschränkung auf eine Bastion bleiben erhalten;
+bei vorhandener Bastion ist der Eintrag mit erklärendem Tooltip gesperrt.
+Der zusätzliche Verzeichnisbutton entfällt.
+
+Der erweiterte native T03-Test besteht mit GM-/Spielerclient (24,9 s), einschließlich
+Abbruch beider Schritte ohne Bastion, normaler NSC-Erstellung nach Auswahlwechsel,
+Name/Ordner, Sperre einer zweiten Bastion, Spielerrechten und Neuladen.
+Dialog-Screenshot geprüft; 30 Unit-Tests, statische und native Offline-Prüfung sowie
+Paketbau bestanden. Nur T03 nativ wiederholt, kein neuer Gesamtlauf. Der bekannte
+Core-Fehler `cycleTokens` bei Rechteentzug ohne Canvas tritt weiterhin auf.

@@ -22,8 +22,11 @@ anzeigen“ Zielbereich und geprüfte Laufzeit an. Bestehende Charakterbögen we
 nicht verändert. Das fertige Archiv benötigt weder Node.js noch npm auf den
 Spielerrechnern; es wird in der Foundry-Installation geladen.
 
-Der GM erstellt die Bastion über „Bastion erstellen“ im Akteurverzeichnis und
-wählt die Teilnehmercharaktere. Danach öffnen alle Teilnehmer den gemeinsamen
+Der GM wählt im Akteurverzeichnis „Create Actor“ (Akteur erstellen) und dort
+„Shared Bastion“. Name und Ordner werden übernommen; anschließend wählt der GM
+die Teilnehmercharaktere. Ein Abbruch erstellt keinen Aktor. Pro Welt bleibt es
+bei einer gemeinsamen Bastion; bei vorhandener Bastion ist die Auswahl gesperrt.
+Danach öffnen alle Teilnehmer den gemeinsamen
 Aktor aus demselben Verzeichnis. Im Bastion-Bogen verwaltet der GM die Teilnehmer.
 Der Bogen zeigt pro Besitzercharakter Basiseinrichtungen links und besondere
 Einrichtungen rechts. Eigene Charaktere stehen zuerst, die übrigen nach

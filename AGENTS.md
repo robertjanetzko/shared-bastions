@@ -161,6 +161,17 @@ zurückgestellten Ausbau.
 
 ## Aktueller Stand
 
+- Erstellung ausschließlich über „Create Actor“ → „Shared Bastion“ und die
+  anschließende Teilnehmerauswahl. Kein zusätzlicher Create-/Open-Bastion-Button
+  im Akteurverzeichnis. Der D&D5e-6.0.6-Render-Hook wird im UI-Adapter ergänzt;
+  der Träger bleibt ein markierter Charakter, kein zusätzlicher Document-Subtyp.
+  Name und Akteurordner werden übernommen. Weiterhin genau eine registrierte
+  Bastion je Welt; mehrere unabhängige Bastionen sind ausdrücklich zurückgestellt.
+  Der erweiterte native T03-Test besteht auf 14.369 / 6.0.6 (24,9 s): Abbruch
+  beider Schritte, normale NSC-Erstellung, Name/Ordner, Einzelbastion-Sperre,
+  Spielerzugang und Neuladen. 30 Unit-Tests, 40 ES-Module, 206 DE/EN-Schlüssel,
+  native Offline-Prüfung und Paketbau bestanden; Dialog-Screenshot geprüft.
+  Für diese Änderung nur T03 nativ wiederholt, nicht die gesamte Suite.
 - `PLAN.md` und `AGENTS.md` sind nach dem Umsetzungsinterview aktualisiert.
 - Zehn Interviewfragen sind beantwortet und abgeschlossen. Das Ergebnis steht in
   `docs/implementation-design.md`; `docs/implementation-visual.html` enthält

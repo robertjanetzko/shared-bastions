@@ -20,7 +20,10 @@ export function validateRequest(request) {
     || !request.payload || typeof request.payload !== "object" || Array.isArray(request.payload)) throw new BastionError("InvalidRequest");
   const fields = Object.keys(request.payload).sort().join();
   if (["createBastion", "configureBastion"].includes(request.action)) {
-    if (!actorUuid.test(request.facility ?? "") || fields !== "name,participants"
+    const allowedFields = fields === "name,participants"
+      || (request.action === "createBastion" && fields === "folder,name,participants"
+        && typeof request.payload.folder === "string" && /^[A-Za-z0-9]+$/.test(request.payload.folder));
+    if (!actorUuid.test(request.facility ?? "") || !allowedFields
       || typeof request.payload.name !== "string" || !request.payload.name.trim() || request.payload.name.length > 120
       || !Array.isArray(request.payload.participants) || request.payload.participants.length > 100
       || request.payload.participants.some(uuid => !actorUuid.test(uuid))

@@ -64,8 +64,11 @@ export class BastionRepository {
   }
 
   async configuration(input) {
-    if (!input || Object.keys(input).sort().join() !== "name,participants"
+    if (!input || !["name,participants", "folder,name,participants"].includes(Object.keys(input).sort().join())
       || typeof input.name !== "string" || !input.name.trim() || input.name.length > 120) throw new BastionError("InvalidRequest");
+    if ("folder" in input && (typeof input.folder !== "string" || game.folders.get(input.folder)?.type !== "Actor")) {
+      throw new BastionError("InvalidRequest");
+    }
     const roster = await this.roster(input.participants);
     return { name: input.name.trim(), roster, ownership: await this.ownership(roster) };
   }
@@ -85,6 +88,7 @@ export class BastionRepository {
       _id: BASTION_ID,
       name: config.name,
       type: "character",
+      folder: input.folder ?? null,
       img: "icons/svg/castle.svg",
       ownership: config.ownership,
       flags: {
