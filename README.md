@@ -12,7 +12,21 @@ Praktisch geprüft auf **Foundry 14.369 / D&D5e 6.0.6**.
 Der Szenengenerator bleibt späterer Ausbau. Die frühere HTML-Simulation im
 Quellprojekt ist kein Bestandteil des installierten Moduls.
 
-## Lokal installieren
+## In Foundry installieren
+
+Im Foundry-Setup unter „Add-on Modules“ → „Install Module“ diesen Link als
+„Manifest URL“ einfügen und installieren:
+
+```text
+https://github.com/robertjanetzko/shared-bastions/releases/latest/download/module.json
+```
+
+Anschließend das Modul in der D&D5e-Welt unter „Module verwalten“ aktivieren.
+Geprüft ist **Foundry 14.369 / D&D5e 6.0.6**; auf anderen Foundry-Builds
+bleiben Schreibaktionen vorerst gesperrt. Der Manifest-Link zeigt auf das
+jeweils neueste veröffentlichte Release und dient auch der Updateprüfung.
+
+### Manuell installieren
 
 `dist/shared-bastion-0.1.0.zip` nach `Data/modules/` entpacken. Danach muss die Datei
 unter `Data/modules/shared-bastion/module.json` liegen. Alternativ den Projektordner

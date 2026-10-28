@@ -3,6 +3,9 @@
   "title": "Shared Bastion",
   "description": "Shared D&D5e bastion sheet with individually owned native facilities, orders, calendar progress and verified transfer.",
   "version": "0.1.0",
+  "url": "https://github.com/robertjanetzko/shared-bastions",
+  "manifest": "https://github.com/robertjanetzko/shared-bastions/releases/latest/download/module.json",
+  "download": "https://github.com/robertjanetzko/shared-bastions/releases/download/v0.1.0/shared-bastion-0.1.0.zip",
   "compatibility": { "minimum": "14.367", "maximum": "14", "verified": "14.369" },
   "relationships": {
     "systems": [{

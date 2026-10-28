@@ -1,7 +1,7 @@
 # AGENTS.md – Shared Bastion
 
 Dieses Dokument gilt für das gesamte Projekt. Es ist ein lebendes
-Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-25.
+Arbeitsdokument für Menschen und Coding-Agents. Stand: 2026-10-28.
 
 ## Projektziel und verbindliche Grundlage
 
@@ -160,6 +160,12 @@ Softwaregrafik; Sicht und Bewegung in einer generierten Szene gehören zum
 zurückgestellten Ausbau.
 
 ## Aktueller Stand
+
+- GitHub-Auslieferung für `robertjanetzko/shared-bastions` vorbereitet:
+  `module.json` enthält den dauerhaften Manifest-Link unter
+  `releases/latest/download/module.json` und den versionsfesten ZIP-Link für
+  `v0.1.0`. Release-Assets sind `module.json` und das mit `npm run build`
+  erzeugte `dist/shared-bastion-0.1.0.zip`; Installation in README beschrieben.
 
 - Oberen Leerraum des Bastionbogens reduziert: D&D5e reserviert auch bei
   `hidden-title` unter `.window-header` einen Titelabstand. In der tatsächlich
