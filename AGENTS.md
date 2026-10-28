@@ -161,11 +161,14 @@ zurückgestellten Ausbau.
 
 ## Aktueller Stand
 
-- GitHub-Auslieferung für `robertjanetzko/shared-bastions` vorbereitet:
+- GitHub-Release `v0.1.0` für `robertjanetzko/shared-bastions` veröffentlicht:
   `module.json` enthält den dauerhaften Manifest-Link unter
   `releases/latest/download/module.json` und den versionsfesten ZIP-Link für
   `v0.1.0`. Release-Assets sind `module.json` und das mit `npm run build`
   erzeugte `dist/shared-bastion-0.1.0.zip`; Installation in README beschrieben.
+  Beide öffentlichen Downloads ohne Anmeldung abgerufen und per SHA-256 mit
+  den lokalen Dateien verglichen. 33 Unit-Tests, Modulprüfung und ZIP-Audit
+  bestanden; keine erneute native Weltintegration für die Release-Vorbereitung.
 
 - Oberen Leerraum des Bastionbogens reduziert: D&D5e reserviert auch bei
   `hidden-title` unter `.window-header` einen Titelabstand. In der tatsächlich
